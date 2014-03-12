@@ -86,7 +86,7 @@
   z-index:10000000000000001 !important; 
 }
 
-#cs-message {
+#cs-video-title {
   position: absolute;
   color:white;
   top:30px;
@@ -96,7 +96,10 @@
     Helvetica, Arial, "Lucida Grande", sans-serif;  font-weight:"Light" ;
 }
 
-#cs-video-title {
+#cs-video-time-remaining {
+    position: absolute;
+    right:0px;
+    top:30px;
     color:white;
     font-size:27px;
     z-index:10000000000000001 !important;
@@ -121,18 +124,8 @@
   z-index:10000000000000001 !important;
 }
 
-#cs-video {
+#cs-video-player {
  float:left;
  width:100%;
 }
-
-#cs-play-btn{
- position:absolute;
- margin:0 auto;
- height:109px;
- width:109px;
- background:url('play.png');
- z-index:10000000000000003 !important;
-}
-
 

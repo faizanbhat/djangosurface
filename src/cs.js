@@ -7,29 +7,22 @@
 
   $(function() {
     var surface;
-    return surface = new Surface();
+    return surface = new Surface("Radar Online");
   });
 
   DomManager = (function() {
     function DomManager() {
       this.getStyle = __bind(this.getStyle, this);
       this.getScript = __bind(this.getScript, this);
+      this.get = __bind(this.get, this);
       this.appendDivToParent = __bind(this.appendDivToParent, this);
-      this.appendDiv = __bind(this.appendDiv, this);
-      this.appendDivToBody = __bind(this.appendDivToBody, this);
+      this.appendDivOutsideBody = __bind(this.appendDivOutsideBody, this);
       this.body = document.getElementsByTagName("body")[0];
       this.head = document.getElementsByTagName("head")[0];
       this.html = document.getElementsByTagName("html")[0];
     }
 
-    DomManager.prototype.appendDivToBody = function(id) {
-      var s;
-      s = document.createElement("div");
-      s.id = id;
-      return this.body.appendChild(s);
-    };
-
-    DomManager.prototype.appendDiv = function(id) {
+    DomManager.prototype.appendDivOutsideBody = function(id) {
       var s;
       s = document.createElement("div");
       s.id = id;
@@ -42,6 +35,12 @@
       s.id = id;
       parent = document.getElementById(parent_id);
       return parent.appendChild(s);
+    };
+
+    DomManager.prototype.get = function(id) {
+      var elem;
+      elem = document.getElementById(id);
+      return elem;
     };
 
     DomManager.prototype.getScript = function(url, success) {
@@ -75,9 +74,11 @@
   })();
 
   Surface = (function() {
-    function Surface() {
+    function Surface(site_name) {
+      this.site_name = site_name;
       this.remove_overlay = __bind(this.remove_overlay, this);
-      this.play = __bind(this.play, this);
+      this.update_time_remaining = __bind(this.update_time_remaining, this);
+      this.set_bindings = __bind(this.set_bindings, this);
       this.load_elements = __bind(this.load_elements, this);
       this.set_overlay = __bind(this.set_overlay, this);
       this.dom = new DomManager();
@@ -93,14 +94,13 @@
         'overflow': 'hidden',
         'height': '100%'
       });
-      this.dom.appendDiv("cs-wrapper");
+      this.dom.appendDivOutsideBody("cs-wrapper");
       this.dom.appendDivToParent("cs-overlay", "cs-wrapper");
       return this.$wrapper = $("#cs-wrapper");
     };
 
     Surface.prototype.load_elements = function() {
-      var message, play, v,
-        _this = this;
+      var label, v;
       this.dom.appendDivToParent("cs-header", "cs-wrapper");
       this.dom.appendDivToParent("cs-close", "cs-header");
       this.dom.appendDivToParent("cs-main", "cs-wrapper");
@@ -109,37 +109,51 @@
       this.dom.appendDivToParent("cs-rule", "cs-info-wrapper");
       this.dom.appendDivToParent("cs-bottom-line", "cs-info-wrapper");
       this.dom.appendDivToParent("cs-label", "cs-top-line");
-      this.dom.appendDivToParent("cs-message", "cs-bottom-line");
+      this.dom.appendDivToParent("cs-video-title", "cs-bottom-line");
+      this.dom.appendDivToParent("cs-video-time-remaining", "cs-bottom-line");
       this.dom.appendDivToParent("cs-player-wrapper", "cs-wrapper");
       this.dom.appendDivToParent("cs-player-container", "cs-player-wrapper");
       this.dom.appendDivToParent("cs-footer", "cs-wrapper");
+      this.dom.appendDivToParent("cs-video-title", "cs-wrapper");
+      label = $("#cs-label");
+      label.html(this.site_name + " TV");
+      this.$video_title = $("#cs-video-title");
+      this.$video_title.html("Meet the team behind Genesis Media");
+      this.$video_time_remaining = $("#cs-video-time-remaining");
+      this.$video_time_remaining.html("00:00");
+      v = document.createElement("video");
+      v.setAttribute("id", "cs-video-player");
+      v.setAttribute("poster", "src/poster.png");
+      v.src = "src/3.mp4";
+      this.video = this.dom.get("cs-player-container").appendChild(v);
+      this.video.play();
+      return this.set_bindings();
+    };
+
+    Surface.prototype.set_bindings = function() {
+      var _this = this;
       $("#cs-close").click(function() {
         return _this.remove_overlay();
       });
-      this.$label = $("#cs-label");
-      this.$label.html("Trending Now");
-      v = document.createElement("video");
-      v.setAttribute("id", "cs-video");
-      v.setAttribute("poster", "src/poster.png");
-      v.src = "src/3.mp4";
-      document.getElementById("cs-player-container").appendChild(v);
-      this.video = document.getElementById("cs-video");
-      play = document.createElement("div");
-      play.id = "cs-play-btn";
-      this.video.appendChild(play);
-      this.video.play();
-      $("#cs-play-btn").click(function() {
-        return _this.play();
-      });
-      message = this.dom.appendDivToParent("cs-message", "cs-wrapper");
-      this.$message = $("#cs-message");
-      return this.$message.html("Now Playing: <span id='cs-video-title'>Meet the team behind Genesis Media</span>");
+      return this.video.addEventListener('timeupdate', this.update_time_remaining);
     };
 
-    Surface.prototype.play = function() {
-      $("#cs-play-btn").remove();
-      this.$message.html("Genesis Media");
-      return this.video.play();
+    Surface.prototype.update_time_remaining = function() {
+      var mins, mins_text, secs, secs_text, time_in_secs;
+      time_in_secs = this.video.duration - this.video.currentTime;
+      mins = Math.floor(time_in_secs / 60);
+      secs = Math.ceil(time_in_secs % 60);
+      if (mins > 9) {
+        mins_text = '' + mins;
+      } else {
+        mins_text = '0' + mins;
+      }
+      if (secs > 9) {
+        secs_text = '' + secs;
+      } else {
+        secs_text = '0' + secs;
+      }
+      return this.$video_time_remaining.html(mins_text + ":" + secs_text);
     };
 
     Surface.prototype.remove_overlay = function() {

@@ -3,20 +3,15 @@ $ = jQuery
 $ ->
   
   # Add stylesheet
-  surface = new Surface()
+  surface = new Surface("Radar Online")
 
 class DomManager
   constructor:()->
     @body = document.getElementsByTagName("body")[0]
     @head = document.getElementsByTagName("head")[0]
     @html = document.getElementsByTagName("html")[0]
-    
-  appendDivToBody:(id)=>
-    s = document.createElement("div")
-    s.id = id
-    @body.appendChild(s)
-    
-  appendDiv:(id)=>
+      
+  appendDivOutsideBody:(id)=>
     s = document.createElement("div")
     s.id = id
     @html.appendChild(s)
@@ -27,6 +22,10 @@ class DomManager
     parent = document.getElementById(parent_id)
     parent.appendChild(s)
   
+  get:(id)=>
+    elem = document.getElementById(id)
+    return elem
+    
   getScript:(url,success)=>
     done = false
     script = document.createElement("script")
@@ -49,7 +48,7 @@ class DomManager
     @head.appendChild(l)
     
 class Surface
-  constructor:()->
+  constructor:(@site_name)->
     @dom = new DomManager()
     @dom.getStyle("src/style.css")
     @set_overlay()
@@ -64,12 +63,14 @@ class Surface
         'height': '100%'
     })
     # TODO: Fix scrolling bug
-    @dom.appendDiv("cs-wrapper")
+    @dom.appendDivOutsideBody("cs-wrapper")
     @dom.appendDivToParent("cs-overlay","cs-wrapper")
     @$wrapper = $("#cs-wrapper")
     
     
   load_elements:=>
+    
+    # Layout
     @dom.appendDivToParent("cs-header","cs-wrapper")
     @dom.appendDivToParent("cs-close","cs-header")
     @dom.appendDivToParent("cs-main","cs-wrapper")
@@ -78,45 +79,54 @@ class Surface
     @dom.appendDivToParent("cs-rule","cs-info-wrapper")
     @dom.appendDivToParent("cs-bottom-line","cs-info-wrapper")
     @dom.appendDivToParent("cs-label","cs-top-line")
-    @dom.appendDivToParent("cs-message","cs-bottom-line")
+    @dom.appendDivToParent("cs-video-title","cs-bottom-line")
+    @dom.appendDivToParent("cs-video-time-remaining","cs-bottom-line")
     @dom.appendDivToParent("cs-player-wrapper","cs-wrapper")
     @dom.appendDivToParent("cs-player-container","cs-player-wrapper")
     @dom.appendDivToParent("cs-footer","cs-wrapper")
-        
+    @dom.appendDivToParent("cs-video-title","cs-wrapper")
     
-
-    $("#cs-close").click =>
-      @remove_overlay()
-
+    # Messaging
+    label = $("#cs-label")
+    label.html(@site_name+" TV")
     
-    @$label = $("#cs-label")
-    @$label.html("Trending Now")
+    @$video_title = $("#cs-video-title")
+    @$video_title.html("Meet the team behind Genesis Media")
     
+    @$video_time_remaining = $("#cs-video-time-remaining")
+    @$video_time_remaining.html("00:00")
+    
+    
+    # Video Player
     v = document.createElement("video")
-    v.setAttribute("id","cs-video")
+    v.setAttribute("id","cs-video-player")
     v.setAttribute("poster","src/poster.png")
     v.src="src/3.mp4"
-    document.getElementById("cs-player-container").appendChild(v)    
-    
-    @video = document.getElementById("cs-video")
-    
-    play = document.createElement("div")
-    play.id ="cs-play-btn"
-    @video.appendChild(play)
+    @video = @dom.get("cs-player-container").appendChild(v)   
     @video.play()
-      
-    $("#cs-play-btn").click =>
-      @play()
     
-    message = @dom.appendDivToParent("cs-message","cs-wrapper")
-    @$message = $("#cs-message")
-    @$message.html("Now Playing: <span id='cs-video-title'>Meet the team behind Genesis Media</span>")
+    @set_bindings()
+    
+  set_bindings:=>
+    $("#cs-close").click =>
+      @remove_overlay()
+    @video.addEventListener('timeupdate', @update_time_remaining);
+    
   
-  play:=>
-    $("#cs-play-btn").remove()
-    @$message.html("Genesis Media")
-    @video.play()
-    
+  update_time_remaining:=>
+    time_in_secs = @video.duration-@video.currentTime
+    mins = Math.floor(time_in_secs / 60)
+    secs = Math.ceil(time_in_secs % 60)
+    if mins > 9
+      mins_text = ''+ mins 
+    else
+      mins_text = '0'+mins
+    if secs > 9
+      secs_text = ''+ secs 
+    else
+      secs_text = '0'+secs
+    @$video_time_remaining.html(mins_text+":"+secs_text)
+  
   remove_overlay:=>
     $("body").css("-webkit-filter","blur(0px)")
     $("html").css("filter","blur(0px)")
