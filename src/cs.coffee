@@ -26,11 +26,6 @@ class DomManager
     s.id = id
     parent = document.getElementById(parent_id)
     parent.appendChild(s)
-        
-  addScript:(url)=>
-    s = document.createElement("script")
-    s.src = url
-    @head.appendChild(s)
   
   getScript:(url,success)=>
     done = false
@@ -50,6 +45,7 @@ class DomManager
     l = document.createElement("link")
     l.href = url
     l.rel = "stylesheet"
+    l.type = "text/css"
     @head.appendChild(l)
     
 class Surface
@@ -74,42 +70,50 @@ class Surface
     
     
   load_elements:=>
-    label = @dom.appendDivToParent("cs-label","cs-wrapper")
+    @dom.appendDivToParent("cs-header","cs-wrapper")
+    @dom.appendDivToParent("cs-close","cs-header")
+    @dom.appendDivToParent("cs-main","cs-wrapper")
+    @dom.appendDivToParent("cs-info-wrapper","cs-wrapper")
+    @dom.appendDivToParent("cs-top-line","cs-info-wrapper")
+    @dom.appendDivToParent("cs-rule","cs-info-wrapper")
+    @dom.appendDivToParent("cs-bottom-line","cs-info-wrapper")
+    @dom.appendDivToParent("cs-label","cs-top-line")
+    @dom.appendDivToParent("cs-message","cs-bottom-line")
+    @dom.appendDivToParent("cs-player-wrapper","cs-wrapper")
+    @dom.appendDivToParent("cs-player-container","cs-player-wrapper")
+    @dom.appendDivToParent("cs-footer","cs-wrapper")
+        
+    
+
+    $("#cs-close").click =>
+      @remove_overlay()
+
+    
     @$label = $("#cs-label")
     @$label.html("Trending Now")
-    
-    hr = document.createElement("hr")
-    hr.setAttribute("class","cs-thin-rule")
-    @$label.append(hr)
     
     v = document.createElement("video")
     v.setAttribute("id","cs-video")
     v.setAttribute("poster","src/poster.png")
-    v.src="/Applications/MAMP/htdocs/gm/media/3.mp4"
-    @$wrapper.append(v)
+    v.src="src/3.mp4"
+    document.getElementById("cs-player-container").appendChild(v)    
+    
     @video = document.getElementById("cs-video")
+    
+    play = document.createElement("div")
+    play.id ="cs-play-btn"
+    @video.appendChild(play)
+    @video.play()
+      
+    $("#cs-play-btn").click =>
+      @play()
     
     message = @dom.appendDivToParent("cs-message","cs-wrapper")
     @$message = $("#cs-message")
-    @$message.html("Watch: Genesis Media")
-    
-    play = document.createElement("img");
-    play.id="cs-play"
-    play.src = "src/play.png"
-    $("#cs-wrapper").append(play)
-    $("#cs-play").click =>
-      @play()
-    
-    close = document.createElement("img");
-    close.id="cs-close"
-    close.src = "src/close.png"
-    $("#cs-wrapper").append(close)
-    $("#cs-close").click =>
-      @remove_overlay()
-      
-    
+    @$message.html("Now Playing: <span id='cs-video-title'>Meet the team behind Genesis Media</span>")
+  
   play:=>
-    $("#cs-play").remove()
+    $("#cs-play-btn").remove()
     @$message.html("Genesis Media")
     @video.play()
     

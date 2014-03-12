@@ -14,7 +14,6 @@
     function DomManager() {
       this.getStyle = __bind(this.getStyle, this);
       this.getScript = __bind(this.getScript, this);
-      this.addScript = __bind(this.addScript, this);
       this.appendDivToParent = __bind(this.appendDivToParent, this);
       this.appendDiv = __bind(this.appendDiv, this);
       this.appendDivToBody = __bind(this.appendDivToBody, this);
@@ -45,13 +44,6 @@
       return parent.appendChild(s);
     };
 
-    DomManager.prototype.addScript = function(url) {
-      var s;
-      s = document.createElement("script");
-      s.src = url;
-      return this.head.appendChild(s);
-    };
-
     DomManager.prototype.getScript = function(url, success) {
       var done, script;
       done = false;
@@ -74,6 +66,7 @@
       l = document.createElement("link");
       l.href = url;
       l.rel = "stylesheet";
+      l.type = "text/css";
       return this.head.appendChild(l);
     };
 
@@ -106,41 +99,45 @@
     };
 
     Surface.prototype.load_elements = function() {
-      var close, hr, label, message, play, v,
+      var message, play, v,
         _this = this;
-      label = this.dom.appendDivToParent("cs-label", "cs-wrapper");
+      this.dom.appendDivToParent("cs-header", "cs-wrapper");
+      this.dom.appendDivToParent("cs-close", "cs-header");
+      this.dom.appendDivToParent("cs-main", "cs-wrapper");
+      this.dom.appendDivToParent("cs-info-wrapper", "cs-wrapper");
+      this.dom.appendDivToParent("cs-top-line", "cs-info-wrapper");
+      this.dom.appendDivToParent("cs-rule", "cs-info-wrapper");
+      this.dom.appendDivToParent("cs-bottom-line", "cs-info-wrapper");
+      this.dom.appendDivToParent("cs-label", "cs-top-line");
+      this.dom.appendDivToParent("cs-message", "cs-bottom-line");
+      this.dom.appendDivToParent("cs-player-wrapper", "cs-wrapper");
+      this.dom.appendDivToParent("cs-player-container", "cs-player-wrapper");
+      this.dom.appendDivToParent("cs-footer", "cs-wrapper");
+      $("#cs-close").click(function() {
+        return _this.remove_overlay();
+      });
       this.$label = $("#cs-label");
       this.$label.html("Trending Now");
-      hr = document.createElement("hr");
-      hr.setAttribute("class", "cs-thin-rule");
-      this.$label.append(hr);
       v = document.createElement("video");
       v.setAttribute("id", "cs-video");
       v.setAttribute("poster", "src/poster.png");
-      v.src = "/Applications/MAMP/htdocs/gm/media/3.mp4";
-      this.$wrapper.append(v);
+      v.src = "src/3.mp4";
+      document.getElementById("cs-player-container").appendChild(v);
       this.video = document.getElementById("cs-video");
-      message = this.dom.appendDivToParent("cs-message", "cs-wrapper");
-      this.$message = $("#cs-message");
-      this.$message.html("Watch: Genesis Media");
-      play = document.createElement("img");
-      play.id = "cs-play";
-      play.src = "src/play.png";
-      $("#cs-wrapper").append(play);
-      $("#cs-play").click(function() {
+      play = document.createElement("div");
+      play.id = "cs-play-btn";
+      this.video.appendChild(play);
+      this.video.play();
+      $("#cs-play-btn").click(function() {
         return _this.play();
       });
-      close = document.createElement("img");
-      close.id = "cs-close";
-      close.src = "src/close.png";
-      $("#cs-wrapper").append(close);
-      return $("#cs-close").click(function() {
-        return _this.remove_overlay();
-      });
+      message = this.dom.appendDivToParent("cs-message", "cs-wrapper");
+      this.$message = $("#cs-message");
+      return this.$message.html("Now Playing: <span id='cs-video-title'>Meet the team behind Genesis Media</span>");
     };
 
     Surface.prototype.play = function() {
-      $("#cs-play").remove();
+      $("#cs-play-btn").remove();
       this.$message.html("Genesis Media");
       return this.video.play();
     };

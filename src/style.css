@@ -1,3 +1,12 @@
+#cs-wrapper {
+    position:fixed;
+    height:100%;
+    width:100%;
+    left:0;
+    top:0;
+    background-color:transparent;
+}
+
 #cs-overlay {
     height:100%;
     width:100%;
@@ -8,76 +17,122 @@
     background-color:black;
     opacity: 0.7;
 }
-#cs-wrapper {
-    height:100%;
-    width:100%;
-    position:fixed;
-    left:0;
-    top:0;
-    background-color:transparent;
+
+#cs-header {
+  position:relative;
+  top:0px;
+  height:70px;
+  width:100%;
+  background:transparent;
+  z-index:10000000000000001 !important;
 }
 
-#cs-label {
+#cs-close{
+ position:absolute;
+ top:15px;
+ right:15px;
+ height:39px;
+ width:39px;
+ background:url('close.png');;
+ z-index:10000000000000001 !important;
+}
+
+#cs-info-wrapper{
+  position:relative;
+  background-color:transparent;
+  width:100%;
+  height:140px;
+  z-index:10000000000000001 !important; 
   
+}
+
+#cs-top-line{
+  position:relative;
+  width:60%;
+  margin: 0 auto;
+  background-color:transparent;
+  height:40px;
+  z-index:10000000000000001 !important; 
+  
+}
+#cs-label {
   position: absolute;
-  top:10%;
-  left:30%;
   color:white;
+  top:10px;
   font-size:16px;
   z-index:10000000000000001 !important;
   font-family: "HelveticaNeue", "Helvetica Neue", "Helvetica Neue", 
     Helvetica, Arial, "Lucida Grande", sans-serif;  font-weight:"Regular" ;
 }
 
+#cs-rule {
+      position:relative;
+      height: 1px;
+      width:60%;
+      margin: 0 auto;
+      
+      top:0px;
+      background:white;
+      /* Set the hr color */
+      z-index:10000000000000001 !important; 
+}
+
+#cs-bottom-line{
+  position:relative;
+  width:60%;
+  margin: 0 auto;
+  background-color:transparent;
+  height:70px;
+  z-index:10000000000000001 !important; 
+}
+
 #cs-message {
-  
   position: absolute;
-  top:15%;
-  left:30%;
   color:white;
+  top:30px;
   font-size:27px;
   z-index:10000000000000001 !important;
-  font-family: "HelveticaNeue", "Helvetica Neue", "Helvetica Neue", 
-    Helvetica, Arial, "Lucida Grande", sans-serif;  font-weight:"Regular" ;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue", "Helvetica Neue", 
+    Helvetica, Arial, "Lucida Grande", sans-serif;  font-weight:"Light" ;
 }
 
-#cs-play{
- position:relative;
- top:-180px;
- left:49%;
- height:140px;
- width:140px;
-
- z-index:10000000000000001 !important;
- 
+#cs-video-title {
+    color:white;
+    font-size:27px;
+    z-index:10000000000000001 !important;
+    font-family: "HelveticaNeue-Light", "Helvetica Neue", "Helvetica Neue", 
+      Helvetica, Arial, "Lucida Grande", sans-serif;  font-weight:"Light" ;
 }
 
-#cs-close{
- position:absolute;
- top:30px;
- right:30px;
+#cs-player-wrapper{
+  position:relative;
+  width:100%;
+  background-color:transparent;
+  height:500px;
+  z-index:10000000000000001 !important;
+  
+}
 
- z-index:10000000000000001 !important;
- 
+#cs-player-container{
+  position:relative;
+  width:60%;
+  margin: auto;
+  background-color:yellow;
+  z-index:10000000000000001 !important;
 }
 
 #cs-video {
- position:relative;
- top:220px;
- left:30%;
- height:640px;
- width:1024px;
- z-index:10000000000000001 !important; 
+ float:left;
+ width:100%;
 }
 
-.cs-thin-rule {
-      position:relative;
-      border: none;
-      height: 1px;
-      left:-2px;
-      width:1024px;
-      /* Set the hr color */
-      color: #fff; //old IE
-      background-color: #fff; //Modern Browsers
-
+#cs-play-btn{
+ position:absolute;
+ margin:0 auto;
+ height:109px;
+ width:109px;
+ background:url('play.png');
+ z-index:10000000000000003 !important;
 }
+
+
