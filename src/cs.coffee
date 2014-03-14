@@ -3,8 +3,9 @@ $ = jQuery
 $ ->
   
   # Add stylesheet
-  window.media = [{src:"src/3.mp4",poster:"src/poster.png",title:"Meet the team behind Genesis Media"}]
-  surface = new Surface("Radar Online")
+  # window.media = [{src:"src/3.mp4",poster:"src/poster.png",title:"Meet the team behind Genesis Media"}]
+  window.media = [{src:"src/truth.mp4",poster:"src/poster.png",title:"Meet the new Kia"}]
+  surface = new Surface("Advertisement")
 
 class DomManager
   constructor:()->
@@ -16,7 +17,12 @@ class DomManager
     s = document.createElement("div")
     s.id = id
     @html.appendChild(s)
-    
+  
+  appendDivToBody:(id)=>
+    s = document.createElement("div")
+    s.id = id
+    @body.appendChild(s)
+
   appendDivToParent:(id,parent_id)=>
     s = document.createElement("div")
     s.id = id
@@ -52,6 +58,7 @@ class Surface
   constructor:(@site_name)->    
     # Read media files
     @player = null
+    @small_player = null
     @videos = []
     for item in window.media
       vf = new VideoFile(item.src,0,item.poster,item.title)
@@ -70,7 +77,7 @@ class Surface
     return @videos[@current_video_index]
   
   set_overlay:=>
-    $("body").css("-webkit-filter","blur(20px)")
+    $("body").css("-webkit-filter","blur(15px)")
     $("body").css("filter","blur(20px)")
     # disable scroll
     $('html, body').css({
@@ -104,7 +111,7 @@ class Surface
     
     # Messaging
     label = $("#cs-label")
-    label.html(@site_name+" TV")
+    label.html(@site_name)
     
     @$video_title = $("#cs-video-title")
     @$video_title.html(@current_video().title())
@@ -116,21 +123,88 @@ class Surface
     # Video Player
     p = document.createElement("video")
     p.setAttribute("id","cs-video-player")
-    p.setAttribute("poster",@current_video().poster())
+    p.setAttribute("poster",@current_video().poster)
     p.src=@current_video().source()
-    @player = @dom.get("cs-player-container").appendChild(p)   
+    @dom.get("cs-player-container").appendChild(p)
+    @player = @dom.get("cs-video-player")   
+    @player.addEventListener('timeupdate', @update_time_remaining);
+    
     @player.play()
     
     @set_bindings()
     
+    @load_elements_for_slug()
+
+  load_elements_for_slug:=>
+    @dom.appendDivToBody("cs-slug-wrapper")
+    @dom.appendDivToParent("cs-slug-header","cs-slug-wrapper")
+    @dom.appendDivToParent("cs-slug-header-expand-btn","cs-slug-header")
+    @dom.appendDivToParent("cs-slug-header-mute-btn","cs-slug-header")
+    @dom.appendDivToParent("cs-small-player-container","cs-slug-wrapper")
+    @$slug_wrapper = $("#cs-slug-wrapper")
+
+    $('#cs-slug-header-expand-btn').on("click", =>
+      @maximise()
+      )
+    
+    $('#cs-slug-header-mute-btn').on("click", =>
+      @toggle_mute()
+    )
+      
+    # Video Player
+    p = document.createElement("video")
+    p.setAttribute("id","cs-small-video-player")
+    p.setAttribute("poster",@current_video().poster)
+    p.src=@current_video().source()
+
+    @dom.get("cs-small-player-container").appendChild(p)   
+    @small_player = @dom.get("cs-small-video-player")   
+    @small_player.addEventListener('timeupdate', @update_time_remaining(this))
+
+    
+    @hide_slug()
+  
+  toggle_mute:=>
+    if @small_player.muted or @small_player.volume is 0
+      @small_player.volume = 1
+      $('#cs-slug-header-mute-btn').css("background","url('src/mute.png')")
+    else
+      @small_player.volume = 0
+      $('#cs-slug-header-mute-btn').css("background","url('src/unmute.png')")
+
+
+  show_slug:=>
+
+    @small_player.src = @current_video().source()
+    
+    # play
+    @small_player.play()    
+    
+    # set time on loaded
+    @small_player.onloadedmetadata = =>
+      @small_player.currentTime = @current_video().position()
+      
+    # show
+    $("#cs-slug-wrapper").show()
+  
+  hide_slug:=>
+    @small_player.pause()
+    
+    # read current time from small player and store in current video
+    @current_video().setPosition(@small_player.currentTime)
+    
+    $("#cs-slug-wrapper").hide()
+    
   set_bindings:=>
     $("#cs-close").click =>
       @minimise()
-    @player.addEventListener('timeupdate', @update_time_remaining);
-    
   minimise: =>
+    # Update video file current time
+   
+    
     @remove_overlay()
     @hide_wrapper()
+    @show_slug()
 
   update_time_remaining:=>
     # Update label
@@ -147,9 +221,6 @@ class Surface
       else
         secs_text = '0'+secs
       @$video_time_remaining.html(mins_text+":"+secs_text)
-    
-      # Update video file
-      @current_video().setPosition(time_in_secs)
   
   remove_overlay:=>
     $("body").css("-webkit-filter","blur(0px)")
@@ -164,17 +235,34 @@ class Surface
     @player.pause()
     @$wrapper.remove()
     
-  hide_wrapper:=>
-    @player.pause()
-    @$wrapper.hide()
-    
   maximise:=>
     # TODO:add player class to abstract player implementation details
-    @player.src = @current_video().source()
-    console.log @player.currentTime
+    @hide_slug()
     @set_overlay()
+    @show_wrapper()
+    
+  show_wrapper:=>
+    
+    @player.src = @current_video().source()
+    
+    # play
+    @player.play()    
+    
+    @player.onloadedmetadata = =>
+      console.log "loaded"
+      @player.currentTime = @current_video().position()
+
+    # show
     @$wrapper.show()
-    @player.play()
+        
+  hide_wrapper:=>
+    @player.pause()
+    
+    # read current time from big player and store in current video
+    @current_video().setPosition(@player.currentTime)
+    
+    @$wrapper.hide()
+    
     
 class VideoFile
   constructor:(src,position,poster,title)->
@@ -197,6 +285,3 @@ class VideoFile
     
   title:=>
     return @video_title
-    
-  poster:=>
-    return @poster

@@ -9,12 +9,12 @@
     var surface;
     window.media = [
       {
-        src: "src/3.mp4",
+        src: "src/truth.mp4",
         poster: "src/poster.png",
-        title: "Meet the team behind Genesis Media"
+        title: "Meet the new Kia"
       }
     ];
-    return surface = new Surface("Radar Online");
+    return surface = new Surface("Advertisement");
   });
 
   DomManager = (function() {
@@ -23,6 +23,7 @@
       this.getScript = __bind(this.getScript, this);
       this.get = __bind(this.get, this);
       this.appendDivToParent = __bind(this.appendDivToParent, this);
+      this.appendDivToBody = __bind(this.appendDivToBody, this);
       this.appendDivOutsideBody = __bind(this.appendDivOutsideBody, this);
       this.body = document.getElementsByTagName("body")[0];
       this.head = document.getElementsByTagName("head")[0];
@@ -34,6 +35,13 @@
       s = document.createElement("div");
       s.id = id;
       return this.html.appendChild(s);
+    };
+
+    DomManager.prototype.appendDivToBody = function(id) {
+      var s;
+      s = document.createElement("div");
+      s.id = id;
+      return this.body.appendChild(s);
     };
 
     DomManager.prototype.appendDivToParent = function(id, parent_id) {
@@ -84,17 +92,23 @@
     function Surface(site_name) {
       var item, vf, _i, _len, _ref;
       this.site_name = site_name;
-      this.maximise = __bind(this.maximise, this);
       this.hide_wrapper = __bind(this.hide_wrapper, this);
+      this.show_wrapper = __bind(this.show_wrapper, this);
+      this.maximise = __bind(this.maximise, this);
       this.remove_wrapper = __bind(this.remove_wrapper, this);
       this.remove_overlay = __bind(this.remove_overlay, this);
       this.update_time_remaining = __bind(this.update_time_remaining, this);
       this.minimise = __bind(this.minimise, this);
       this.set_bindings = __bind(this.set_bindings, this);
+      this.hide_slug = __bind(this.hide_slug, this);
+      this.show_slug = __bind(this.show_slug, this);
+      this.toggle_mute = __bind(this.toggle_mute, this);
+      this.load_elements_for_slug = __bind(this.load_elements_for_slug, this);
       this.load_elements = __bind(this.load_elements, this);
       this.set_overlay = __bind(this.set_overlay, this);
       this.current_video = __bind(this.current_video, this);
       this.player = null;
+      this.small_player = null;
       this.videos = [];
       _ref = window.media;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -114,7 +128,7 @@
     };
 
     Surface.prototype.set_overlay = function() {
-      $("body").css("-webkit-filter", "blur(20px)");
+      $("body").css("-webkit-filter", "blur(15px)");
       $("body").css("filter", "blur(20px)");
       return $('html, body').css({
         'overflow': 'hidden',
@@ -145,31 +159,85 @@
       this.dom.appendDivToParent("cs-video-toolbar-forward", "cs-video-toolbar");
       this.dom.appendDivToParent("cs-video-toolbar-rewind", "cs-video-toolbar");
       label = $("#cs-label");
-      label.html(this.site_name + " TV");
+      label.html(this.site_name);
       this.$video_title = $("#cs-video-title");
       this.$video_title.html(this.current_video().title());
       this.$video_time_remaining = $("#cs-video-time-remaining");
       this.$video_time_remaining.html("");
       p = document.createElement("video");
       p.setAttribute("id", "cs-video-player");
-      p.setAttribute("poster", this.current_video().poster());
+      p.setAttribute("poster", this.current_video().poster);
       p.src = this.current_video().source();
-      this.player = this.dom.get("cs-player-container").appendChild(p);
+      this.dom.get("cs-player-container").appendChild(p);
+      this.player = this.dom.get("cs-video-player");
+      this.player.addEventListener('timeupdate', this.update_time_remaining);
       this.player.play();
-      return this.set_bindings();
+      this.set_bindings();
+      return this.load_elements_for_slug();
+    };
+
+    Surface.prototype.load_elements_for_slug = function() {
+      var p,
+        _this = this;
+      this.dom.appendDivToBody("cs-slug-wrapper");
+      this.dom.appendDivToParent("cs-slug-header", "cs-slug-wrapper");
+      this.dom.appendDivToParent("cs-slug-header-expand-btn", "cs-slug-header");
+      this.dom.appendDivToParent("cs-slug-header-mute-btn", "cs-slug-header");
+      this.dom.appendDivToParent("cs-small-player-container", "cs-slug-wrapper");
+      this.$slug_wrapper = $("#cs-slug-wrapper");
+      $('#cs-slug-header-expand-btn').on("click", function() {
+        return _this.maximise();
+      });
+      $('#cs-slug-header-mute-btn').on("click", function() {
+        return _this.toggle_mute();
+      });
+      p = document.createElement("video");
+      p.setAttribute("id", "cs-small-video-player");
+      p.setAttribute("poster", this.current_video().poster);
+      p.src = this.current_video().source();
+      this.dom.get("cs-small-player-container").appendChild(p);
+      this.small_player = this.dom.get("cs-small-video-player");
+      this.small_player.addEventListener('timeupdate', this.update_time_remaining(this));
+      return this.hide_slug();
+    };
+
+    Surface.prototype.toggle_mute = function() {
+      if (this.small_player.muted || this.small_player.volume === 0) {
+        this.small_player.volume = 1;
+        return $('#cs-slug-header-mute-btn').css("background", "url('src/mute.png')");
+      } else {
+        this.small_player.volume = 0;
+        return $('#cs-slug-header-mute-btn').css("background", "url('src/unmute.png')");
+      }
+    };
+
+    Surface.prototype.show_slug = function() {
+      var _this = this;
+      this.small_player.src = this.current_video().source();
+      this.small_player.play();
+      this.small_player.onloadedmetadata = function() {
+        return _this.small_player.currentTime = _this.current_video().position();
+      };
+      return $("#cs-slug-wrapper").show();
+    };
+
+    Surface.prototype.hide_slug = function() {
+      this.small_player.pause();
+      this.current_video().setPosition(this.small_player.currentTime);
+      return $("#cs-slug-wrapper").hide();
     };
 
     Surface.prototype.set_bindings = function() {
       var _this = this;
-      $("#cs-close").click(function() {
+      return $("#cs-close").click(function() {
         return _this.minimise();
       });
-      return this.player.addEventListener('timeupdate', this.update_time_remaining);
     };
 
     Surface.prototype.minimise = function() {
       this.remove_overlay();
-      return this.hide_wrapper();
+      this.hide_wrapper();
+      return this.show_slug();
     };
 
     Surface.prototype.update_time_remaining = function() {
@@ -188,8 +256,7 @@
         } else {
           secs_text = '0' + secs;
         }
-        this.$video_time_remaining.html(mins_text + ":" + secs_text);
-        return this.current_video().setPosition(time_in_secs);
+        return this.$video_time_remaining.html(mins_text + ":" + secs_text);
       }
     };
 
@@ -208,17 +275,27 @@
       return this.$wrapper.remove();
     };
 
-    Surface.prototype.hide_wrapper = function() {
-      this.player.pause();
-      return this.$wrapper.hide();
+    Surface.prototype.maximise = function() {
+      this.hide_slug();
+      this.set_overlay();
+      return this.show_wrapper();
     };
 
-    Surface.prototype.maximise = function() {
+    Surface.prototype.show_wrapper = function() {
+      var _this = this;
       this.player.src = this.current_video().source();
-      console.log(this.player.currentTime);
-      this.set_overlay();
-      this.$wrapper.show();
-      return this.player.play();
+      this.player.play();
+      this.player.onloadedmetadata = function() {
+        console.log("loaded");
+        return _this.player.currentTime = _this.current_video().position();
+      };
+      return this.$wrapper.show();
+    };
+
+    Surface.prototype.hide_wrapper = function() {
+      this.player.pause();
+      this.current_video().setPosition(this.player.currentTime);
+      return this.$wrapper.hide();
     };
 
     return Surface;
@@ -227,7 +304,6 @@
 
   VideoFile = (function() {
     function VideoFile(src, position, poster, title) {
-      this.poster = __bind(this.poster, this);
       this.title = __bind(this.title, this);
       this.setSource = __bind(this.setSource, this);
       this.setPosition = __bind(this.setPosition, this);
@@ -257,10 +333,6 @@
 
     VideoFile.prototype.title = function() {
       return this.video_title;
-    };
-
-    VideoFile.prototype.poster = function() {
-      return this.poster;
     };
 
     return VideoFile;
