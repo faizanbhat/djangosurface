@@ -69,8 +69,8 @@ class Player
   constructor:(id,parent_id,poster)->
     p = document.createElement("video")
     p.setAttribute("id",id)
-    p.setAttribute("data-setup",'{ "controls": true, "autoplay": false, "preload": "true", "width": "100%"}')
-    p.setAttribute("class","video-js vjs-default-skin vjs-big-play-centered")      
+    # p.setAttribute("data-setup",'{ "controls": true, "autoplay": false, "preload": "true"}')
+    # p.setAttribute("class","element-to-stretch video-js vjs-default-skin vjs-big-play-centered ")      
     document.getElementById(parent_id).appendChild(p)
     @elem = document.getElementById(id)   
     never_played = true
@@ -132,7 +132,6 @@ class Surface
     
   
   player_ready:=>
-    console.log "ready----"
     @set_overlay()
     
     # Load elements
@@ -168,11 +167,12 @@ class Surface
     @dom.appendDivToParent("cs-player-wrapper","cs-wrapper")
     @dom.appendDivToParent("cs-player-container","cs-player-wrapper")
     @dom.appendDivToParent("cs-footer","cs-wrapper")
-    @dom.appendDivToParent("cs-video-title","cs-wrapper")
     @dom.appendDivToParent("cs-video-toolbar","cs-wrapper")
     @dom.appendDivToParent("cs-video-toolbar-forward","cs-video-toolbar")
     @dom.appendDivToParent("cs-video-toolbar-rewind","cs-video-toolbar")
     
+    player_container = $("#cs-player-container")
+    player_container.addClass("videoWrapper wideScreen")      
     
     # Messaging
     label = $("#cs-label")

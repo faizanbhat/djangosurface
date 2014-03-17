@@ -7341,5 +7341,3 @@ vjs.autoSetupTimeout(1);
 vjs.plugin = function(name, init){
   vjs.Player.prototype[name] = init;
 };
-
-videojs.options.flash.swf = "http://example.com/path/to/video-js.swf"

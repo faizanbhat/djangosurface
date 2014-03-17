@@ -126,8 +126,6 @@
       var never_played, p;
       p = document.createElement("video");
       p.setAttribute("id", id);
-      p.setAttribute("data-setup", '{ "controls": true, "autoplay": false, "preload": "true", "width": "100%"}');
-      p.setAttribute("class", "video-js vjs-default-skin vjs-big-play-centered");
       document.getElementById(parent_id).appendChild(p);
       this.elem = document.getElementById(id);
       never_played = true;
@@ -227,7 +225,6 @@
     }
 
     Surface.prototype.player_ready = function() {
-      console.log("ready----");
       this.set_overlay();
       return this.load_elements();
     };
@@ -246,7 +243,7 @@
     };
 
     Surface.prototype.load_elements = function() {
-      var label;
+      var label, player_container;
       this.dom.appendDivOutsideBody("cs-wrapper");
       this.dom.appendDivToParent("cs-overlay", "cs-wrapper");
       this.$wrapper = $("#cs-wrapper");
@@ -263,10 +260,11 @@
       this.dom.appendDivToParent("cs-player-wrapper", "cs-wrapper");
       this.dom.appendDivToParent("cs-player-container", "cs-player-wrapper");
       this.dom.appendDivToParent("cs-footer", "cs-wrapper");
-      this.dom.appendDivToParent("cs-video-title", "cs-wrapper");
       this.dom.appendDivToParent("cs-video-toolbar", "cs-wrapper");
       this.dom.appendDivToParent("cs-video-toolbar-forward", "cs-video-toolbar");
       this.dom.appendDivToParent("cs-video-toolbar-rewind", "cs-video-toolbar");
+      player_container = $("#cs-player-container");
+      player_container.addClass("videoWrapper wideScreen");
       label = $("#cs-label");
       label.html(this.site_name);
       this.$video_title = $("#cs-video-title");
