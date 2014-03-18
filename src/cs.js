@@ -25,8 +25,7 @@
       options = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), callback = arguments[_i++];
       this.libraries = {
         jQuery: "http://ajax.googleapis.com/ajax/libs/jquery/$version/jquery.js",
-        videoJs: "http://vjs.zencdn.net/$version/video.js",
-        videoJsLocal: "video-js/video.dev.js"
+        videoJs: "http://vjs.zencdn.net/$version/video.js"
       };
       lib = options[0], version = options[1], compressed = options[2];
       if (this.libraries[lib]) {
@@ -112,7 +111,7 @@
   })();
 
   Player = (function() {
-    function Player(id, parent_id, poster) {
+    function Player(id, parent_id) {
       this.addEventListener = __bind(this.addEventListener, this);
       this.isMuted = __bind(this.isMuted, this);
       this.timeRemaining = __bind(this.timeRemaining, this);
@@ -207,7 +206,6 @@
       this.load_elements = __bind(this.load_elements, this);
       this.set_overlay = __bind(this.set_overlay, this);
       this.current_video = __bind(this.current_video, this);
-      this.player_ready = __bind(this.player_ready, this);
       this.player = null;
       this.small_player = null;
       this.videos = [];
@@ -220,14 +218,9 @@
       this.current_video_index = 0;
       this.dom = new DomManager();
       this.dom.getStyle("src/style.css");
-      this.dom.getStyle("video-js/video-js.css");
-      new ScriptLoader("videoJsLocal", this.player_ready);
-    }
-
-    Surface.prototype.player_ready = function() {
       this.set_overlay();
-      return this.load_elements();
-    };
+      this.load_elements();
+    }
 
     Surface.prototype.current_video = function() {
       return this.videos[this.current_video_index];
@@ -274,6 +267,7 @@
       this.player = new Player("cs-video-player", "cs-player-container");
       this.player.addEventListener('timeupdate', this.update_time_remaining);
       this.player.loadFile(this.current_video());
+      this.player.play();
       this.set_bindings();
       return this.load_elements_for_slug();
     };

@@ -115,13 +115,15 @@
   background-color:transparent;
   height:500px;
   z-index:10000000000000001 !important;
-  
 }
 
 #cs-player-container{
+  z-index:10000000000000001 !important;
+  
 }
 
 #cs-video-player {
+  z-index:10000000000000001 !important;
 }
 
 
@@ -142,18 +144,7 @@
   height:200px;
   background:white;
   border:3px solid lightgray;
-  
-}
-
-.shift{
-  position:absolute;
-  bottom:35px;
-  right:3px;
-  width:300px;
-  height:200px;
-  background:white;
-  border:3px solid lightgray;
-  
+  z-index:10000000000000001 !important;
 }
 
 #cs-slug-header{
@@ -192,9 +183,6 @@
 
 #cs-small-video-player{
   width:100%;
-  
-
-  
 }
 
 .videoWrapper {
@@ -203,8 +191,7 @@
 }
 
 * html .videoWrapper {
-	margin-bottom: 45px;
-	margin-bot\tom: 0;
+	margin-bottom: 0px;
 }
 
 .videoWrapper div,

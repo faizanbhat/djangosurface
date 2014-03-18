@@ -8,11 +8,8 @@ $ ->
   surface = new Surface("Advertisement")
 
 class ScriptLoader
-
-
     constructor: (options..., callback) ->
-        
-        @libraries = {jQuery: "http://ajax.googleapis.com/ajax/libs/jquery/$version/jquery.js",videoJs: "http://vjs.zencdn.net/$version/video.js", videoJsLocal: "video-js/video.dev.js"}
+        @libraries = {jQuery: "http://ajax.googleapis.com/ajax/libs/jquery/$version/jquery.js",videoJs: "http://vjs.zencdn.net/$version/video.js"}
         [lib, version, compressed] = options
         if @libraries[lib] then lib = @libraries[lib]
 
@@ -66,11 +63,9 @@ class DomManager
     @head.appendChild(l)
 
 class Player
-  constructor:(id,parent_id,poster)->
+  constructor:(id,parent_id)->
     p = document.createElement("video")
     p.setAttribute("id",id)
-    # p.setAttribute("data-setup",'{ "controls": true, "autoplay": false, "preload": "true"}')
-    # p.setAttribute("class","element-to-stretch video-js vjs-default-skin vjs-big-play-centered ")      
     document.getElementById(parent_id).appendChild(p)
     @elem = document.getElementById(id)   
     never_played = true
@@ -127,11 +122,7 @@ class Surface
     # Setup Dom
     @dom = new DomManager()
     @dom.getStyle("src/style.css")
-    @dom.getStyle("video-js/video-js.css")
-    new ScriptLoader("videoJsLocal", @player_ready)
-    
-  
-  player_ready:=>
+      
     @set_overlay()
     
     # Load elements
@@ -189,7 +180,7 @@ class Surface
     @player = new Player("cs-video-player","cs-player-container")   
     @player.addEventListener('timeupdate', @update_time_remaining);
     @player.loadFile(@current_video())
-    # @player.play()
+    @player.play()
     
     @set_bindings()
     
