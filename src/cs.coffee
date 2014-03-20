@@ -64,6 +64,7 @@ class DomManager
 
 class Player
   constructor:(id,parent_id)->
+    @parent_id = parent_id
     p = document.createElement("video")
     p.setAttribute("id",id)
     document.getElementById(parent_id).appendChild(p)
@@ -117,12 +118,17 @@ class Player
       @elem.onclick = =>window.open(url,'_blank')
     else
       @elem.onclick = undefined
+      
+  moveToParentWithId:(new_parent_id)=>
+    document.getElementById(@parent_id).removeChild(@elem)
+    document.getElementById(new_parent_id).appendChild(@elem)
+    @parent_id = new_parent_id
+    
   
 class Surface
   constructor:(@site_name)->    
     # Read media files
     @player = null
-    @small_player = null
     @videos = []
     for item in window.media
       vf = new VideoFile(item.src,0,item.poster,item.title,item.url)
@@ -137,7 +143,6 @@ class Surface
     
     # Load elements
     @load_elements()
-    @current_player
 
   current_video:=>
     return @videos[@current_video_index]
@@ -147,9 +152,9 @@ class Surface
     if (@current_video_index+1) < @videos.length
       console.log @videos.length
       @current_video_index=@current_video_index+1
-      @current_player.loadFile(@current_video())
+      @player.loadFile(@current_video())
       @$video_title.html(@current_video().title())
-      @current_player.play()
+      @player.play()
 
     
   set_overlay:=>
@@ -184,7 +189,7 @@ class Surface
     @dom.appendDivToParent("cs-video-toolbar-rewind","cs-video-toolbar")
     
     player_container = $("#cs-player-container")
-    player_container.addClass("videoWrapper wideScreen")      
+    player_container.addClass("largeVideoWrapper wideScreen")      
     
     # Messaging
     label = $("#cs-label")
@@ -203,7 +208,6 @@ class Surface
     @player.onended(@next);
     
     @player.loadFile(@current_video())
-    @current_player = @player
     @player.play()
     
     @set_bindings()
@@ -212,12 +216,14 @@ class Surface
 
   load_elements_for_slug:=>
     @dom.appendDivToBody("cs-slug-wrapper")
-    @dom.appendDivToParent("cs-slug-header","cs-slug-wrapper")
-    @dom.appendDivToParent("cs-slug-header-expand-btn","cs-slug-header")
-    @dom.appendDivToParent("cs-slug-header-mute-btn","cs-slug-header")
     @dom.appendDivToParent("cs-small-player-container","cs-slug-wrapper")
     @$slug_wrapper = $("#cs-slug-wrapper")
-
+    
+    player_container = $("#cs-small-player-container")
+    player_container.addClass("smallVideoWrapper wideScreen")      
+    @dom.appendDivToParent("cs-slug-header-expand-btn","cs-video-player")
+    @dom.appendDivToParent("cs-slug-header-mute-btn","cs-video-player")
+    
     $('#cs-slug-header-expand-btn').on("click", =>
       @maximise()
       )
@@ -227,36 +233,26 @@ class Surface
     )
       
     # Video Player
-    @small_player = new Player("cs-small-video-player","cs-small-player-container")
-    @small_player.onended(@next);
-    @hide_slug()
-  
+    @hide_slug()    
+    
   toggle_mute:=>
-    console.log "wf"
-    if @small_player.isMuted()
-      @small_player.unmute()
+    if @player.isMuted()
+      @player.unmute()
       $('#cs-slug-header-mute-btn').css("background","url('src/mute.png')")
     else
-      @small_player.mute()
+      @player.mute()
       $('#cs-slug-header-mute-btn').css("background","url('src/unmute.png')")
 
 
   show_slug:=>
-    
-    @small_player.loadFile(@current_video())
-    @current_player = @small_player
-    # play
-    @small_player.play()
-              
-    # show
+    @player.moveToParentWithId("cs-small-player-container")
     $("#cs-slug-wrapper").show()
+    @player.play()
+# TODO: Remove this after implementing proper full screen method
+    @player.elem.onclick = @maximise
     
-  hide_slug:=>
-    @small_player.pause()
-    
-    # read current time from small player and store in current video
-    @current_video().setPosition(@small_player.currentTime())
-    
+  hide_slug:=>    
+    @current_video().setPosition(@player.currentTime())
     $("#cs-slug-wrapper").hide()
     
   set_bindings:=>
@@ -295,7 +291,6 @@ class Surface
     })
     
   remove_wrapper:=>
-    @player.pause()
     @$wrapper.remove()
     
   maximise:=>
@@ -304,23 +299,13 @@ class Surface
     @set_overlay()
     @show_wrapper()
     
-  show_wrapper:=>
-    
-    console.log @current_video()
-    @player.loadFile(@current_video())
-    @current_player = @player
-    # play
-    @player.play()    
-    
-    # show
+  show_wrapper:=>    
+    @player.moveToParentWithId("cs-player-container")
     @$wrapper.show()
+    @player.play()
         
-  hide_wrapper:=>
-    @player.pause()
-    
-    # read current time from big player and store in current video
-    @current_video().setPosition(@player.currentTime())
-    
+  hide_wrapper:=>    
+    @current_video().setPosition(@player.currentTime())    
     @$wrapper.hide()
     
     
