@@ -222,15 +222,14 @@
       var item, vf, _i, _len, _ref;
       this.site_name = site_name;
       this.remove_overlay = __bind(this.remove_overlay, this);
+      this.set_overlay = __bind(this.set_overlay, this);
       this.update_time_remaining = __bind(this.update_time_remaining, this);
       this.toggle_mute = __bind(this.toggle_mute, this);
       this.set_bindings = __bind(this.set_bindings, this);
-      this.load_elements_for_slug = __bind(this.load_elements_for_slug, this);
-      this.load_elements = __bind(this.load_elements, this);
+      this.load_UI = __bind(this.load_UI, this);
       this.hide_slug = __bind(this.hide_slug, this);
       this.maximise = __bind(this.maximise, this);
       this.minimise = __bind(this.minimise, this);
-      this.set_overlay = __bind(this.set_overlay, this);
       this.play_next_video = __bind(this.play_next_video, this);
       this.current_video = __bind(this.current_video, this);
       this.player = null;
@@ -243,10 +242,9 @@
       }
       this.current_video_index = 0;
       this.dom = new DomManager();
-      this.dom.getStyle("src/style.css");
       this.set_overlay();
-      this.load_elements();
-      this.load_elements_for_slug();
+      this.dom.getStyle("src/style.css");
+      this.load_UI();
     }
 
     Surface.prototype.current_video = function() {
@@ -261,15 +259,6 @@
         this.$video_title.html(this.current_video().title());
         return this.player.play();
       }
-    };
-
-    Surface.prototype.set_overlay = function() {
-      $("body").css("-webkit-filter", "blur(15px)");
-      $("body").css("filter", "blur(20px)");
-      return $('html, body').css({
-        'overflow': 'hidden',
-        'height': '100%'
-      });
     };
 
     Surface.prototype.minimise = function() {
@@ -295,7 +284,7 @@
       return $("#cs-slug-wrapper").hide();
     };
 
-    Surface.prototype.load_elements = function() {
+    Surface.prototype.load_UI = function() {
       var html, label, player_container, s;
       s = document.createElement("div");
       s.id = "cs-wrapper";
@@ -332,11 +321,7 @@
       this.player.addEventListener('timeupdate', this.update_time_remaining);
       this.player.onended(this.play_next_video);
       this.player.loadFile(this.current_video());
-      return this.player.play();
-    };
-
-    Surface.prototype.load_elements_for_slug = function() {
-      var player_container;
+      this.player.play();
       this.dom.appendDivToBody("cs-slug-wrapper");
       this.dom.appendDivToParent("cs-small-player-container", "cs-slug-wrapper");
       this.$slug_wrapper = $("#cs-slug-wrapper");
@@ -378,6 +363,15 @@
         }
         return this.$video_time_remaining.html(mins_text + ":" + secs_text);
       }
+    };
+
+    Surface.prototype.set_overlay = function() {
+      $("body").css("-webkit-filter", "blur(15px)");
+      $("body").css("filter", "blur(20px)");
+      return $('html, body').css({
+        'overflow': 'hidden',
+        'height': '100%'
+      });
     };
 
     Surface.prototype.remove_overlay = function() {

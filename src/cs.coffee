@@ -131,17 +131,14 @@ class Surface
       vf = new VideoFile(item.src,0,item.poster,item.title,item.url)
       @videos.push vf
     @current_video_index = 0;  
-
+    
     # Setup Dom
     @dom = new DomManager()
-    @dom.getStyle("src/style.css")
-      
     @set_overlay()
     
-    # Load elements
-    @load_elements()
-    @load_elements_for_slug()
-
+    @dom.getStyle("src/style.css")
+    @load_UI()
+    
   current_video:=>
     return @videos[@current_video_index]
   
@@ -152,16 +149,6 @@ class Surface
       @player.loadFile(@current_video())
       @$video_title.html(@current_video().title())
       @player.play()
-
-    
-  set_overlay:=>
-    $("body").css("-webkit-filter","blur(15px)")
-    $("body").css("filter","blur(20px)")
-    # disable scroll
-    $('html, body').css({
-        'overflow': 'hidden',
-        'height': '100%'
-    })
   
   minimise: =>
     @current_video().setPosition(@player.currentTime()) # Update video file current time
@@ -192,7 +179,8 @@ class Surface
     @current_video().setPosition(@player.currentTime())
     $("#cs-slug-wrapper").hide()
 
-  load_elements:=>
+  load_UI:=>
+        
     # Append Surface wrapper OUTSIDE body
     s = document.createElement("div")
     s.id = "cs-wrapper"
@@ -240,8 +228,8 @@ class Surface
     @player.onended(@play_next_video);
     @player.loadFile(@current_video())
     @player.play()
-    
-  load_elements_for_slug:=>
+
+#   Load elements for slug  
     @dom.appendDivToBody("cs-slug-wrapper")
     @dom.appendDivToParent("cs-small-player-container","cs-slug-wrapper")
     @$slug_wrapper = $("#cs-slug-wrapper")
@@ -249,8 +237,7 @@ class Surface
     player_container = $("#cs-small-player-container")
     player_container.addClass("smallVideoWrapper wideScreen")      
     
-    # Video Player
-    @hide_slug()    
+    @hide_slug()    # Hide slug
 
   set_bindings:=>
     $("#cs-close").click =>
@@ -279,6 +266,16 @@ class Surface
 
       @$video_time_remaining.html(mins_text+":"+secs_text)
   
+  
+  set_overlay:=>
+    $("body").css("-webkit-filter","blur(15px)")
+    $("body").css("filter","blur(20px)")
+    # disable scroll
+    $('html, body').css({
+        'overflow': 'hidden',
+        'height': '100%'
+    })
+    
   remove_overlay:=>
     $("body").css("-webkit-filter","blur(0px)")
     $("html").css("filter","blur(0px)")
