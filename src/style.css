@@ -110,24 +110,20 @@
 }
 
 #cs-player-wrapper{
-  position:relative;
-  width:100%;
+  width:60%;
+  margin:0 auto;
   background-color:transparent;
   height:500px;
+  z-index:10000000000000001 !important;
+}
+
+#cs-player-container{
   z-index:10000000000000001 !important;
   
 }
 
-#cs-player-container{
-  position:relative;
-  width:60%;
-  margin: auto;
-  z-index:10000000000000001 !important;
-}
-
 #cs-video-player {
- float:left;
- width:100%;
+  z-index:10000000000000001 !important;
 }
 
 
@@ -147,7 +143,8 @@
   width:300px;
   height:200px;
   background:white;
-  z-index:100000000000008 !important;
+  border:3px solid lightgray;
+  z-index:10000000000000001 !important;
 }
 
 #cs-slug-header{
@@ -156,7 +153,6 @@
 
   background-color:black;
   opacity: 1.0
-  z-index:100000000000008 !important;
 }
 
 #cs-slug-header-expand-btn {
@@ -165,7 +161,6 @@
   top:0px;
   width:27px;
   height:27px;
-  z-index:100000000000008 !important;
   background:url('expand.png');
   
 }
@@ -176,7 +171,6 @@
   top:0px;
   width:27px;
   height:27px;
-  z-index:100000000000008 !important;
   background:url('mute.png');
   
 }
@@ -184,38 +178,46 @@
 #cs-small-player-container{
   position:relative;
   height:85%;
-  z-index:100000000000008 !important;
   
 }
 
 #cs-small-video-player{
   width:100%;
-  z-index:100000000000009 !important;
-  
 }
 
-/*#cs-video-toolbar-forward {
-  position:absolute;
-  width:55px;
-  height:54px;
-  top:20px;
-  right:0px;
-  background:url('forward.png');
-  z-index:10000000000000001 !important;
-  
+.videoWrapper {
+	position: relative;
+	height: 0;
 }
 
-#cs-video-toolbar-rewind {
-  position:absolute;
-  width:55px;
-  height:54px;
-  top:20px;
-  left:0px;
-  background:url('rewind.png');
-  z-index:10000000000000001 !important;
-  
-}*/
+* html .videoWrapper {
+	margin-bottom: 0px;
+}
 
+.videoWrapper div,
+.videoWrapper embed, 
+.videoWrapper object,
+.videoWrapper video {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+}
 
+.wideScreen {
+  padding-bottom: 56.25%;
+}
 
+.fourBYthree {
+  padding-bottom: 75%;
+}
+
+.chrome_25 {
+  padding-top: 25px;
+}
+
+.chrome_35 {
+  padding-top: 35px;
+}
 

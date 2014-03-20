@@ -4,9 +4,31 @@ $ ->
   
   # Add stylesheet
   # window.media = [{src:"src/3.mp4",poster:"src/poster.png",title:"Meet the team behind Genesis Media"}]
-  window.media = [{src:"src/truth.mp4",poster:"src/poster.png",title:"Meet the new Kia"}]
-  surface = new Surface("Advertisement")
+  window.media = [{src:"src/propel.mp4",poster:"src/poster.png",title:"Advertisement: Propel Fitness Water",url:"https://www.facebook.com/propel"},{src:"src/miller.mp4",poster:"src/poster.png",title:"Marissa Miller's Shape Magazine Cover",url:""},{src:"src/audrina.mp4",poster:"src/poster.png",title:"Audrina Patridge",url:""}]
+  surface = new Surface("ShapeTV")
 
+class ScriptLoader
+    constructor: (options..., callback) ->
+        @libraries = {jQuery: "http://ajax.googleapis.com/ajax/libs/jquery/$version/jquery.js",videoJs: "http://vjs.zencdn.net/$version/video.js"}
+        [lib, version, compressed] = options
+        if @libraries[lib] then lib = @libraries[lib]
+
+        loadCallback = =>
+            return if @loaded
+            @loaded = true
+            callback()
+
+        s = document.createElement 'script'
+        s.onload = loadCallback
+        s.onreadystatechange = ->
+            console.log "on ready state change"
+            loadCallback() if /loaded|complete/.test(s.readyState)
+        
+        s.src = lib.replace('$version', version)
+        
+        if compressed then lib = lib.replace('.js', '.min.js')
+        document.getElementsByTagName('body')[0].appendChild(s)
+        
 class DomManager
   constructor:()->
     @body = document.getElementsByTagName("body")[0]
@@ -33,20 +55,6 @@ class DomManager
     elem = document.getElementById(id)
     return elem
     
-  getScript:(url,success)=>
-    done = false
-    script = document.createElement("script")
-    script.src = url
-    script.onload = ->
-      if (!done && (!this.readyState || this.readyState == "loaded" || this.readyState == "complete"))
-        done = true
-        if loaded is True and typeof success is 'function'
-          success()
-          
-    script.onreadystatechange = script.onload
-    
-    @head.appendChild(script)    
-    
   getStyle:(url)=>
     l = document.createElement("link")
     l.href = url
@@ -54,6 +62,62 @@ class DomManager
     l.type = "text/css"
     @head.appendChild(l)
 
+class Player
+  constructor:(id,parent_id)->
+    p = document.createElement("video")
+    p.setAttribute("id",id)
+    document.getElementById(parent_id).appendChild(p)
+    @elem = document.getElementById(id)   
+    never_played = true
+    
+  play:=>
+    @elem.play()
+    never_played = false
+    
+  pause:=>
+    @elem.pause()
+    
+  mute:=>
+    @elem.volume=0
+    
+  unmute:=>
+    @elem.volume=1
+  
+  loadFile:(vf)=>
+    @elem.src = vf.source()
+    if vf.poster() and @never_played
+      @elem.setAttribute("poster",vf.poster())
+    @elem.onloadedmetadata = =>
+      @elem.currentTime = vf.position()
+    @setUrl(vf.url())
+       
+  duration:=>
+    return @elem.duration
+    
+  currentTime:=>
+    return @elem.currentTime
+    
+  timeRemaining:=>
+    return @elem.duration - @elem.currentTime
+    
+  isMuted:=>
+    if @elem.volume is 0 or @elem.muted
+      return true
+    else
+      return false
+      
+  addEventListener:(callback, func)=>
+    @elem.addEventListener(callback, func)
+    
+  onended:(func) =>
+    @elem.onended = func
+    
+  setUrl:(url) =>
+    if url.length > 0
+      @elem.onclick = =>window.open(url,'_blank')
+    else
+      @elem.onclick = undefined
+  
 class Surface
   constructor:(@site_name)->    
     # Read media files
@@ -61,21 +125,33 @@ class Surface
     @small_player = null
     @videos = []
     for item in window.media
-      vf = new VideoFile(item.src,0,item.poster,item.title)
+      vf = new VideoFile(item.src,0,item.poster,item.title,item.url)
       @videos.push vf
     @current_video_index = 0;  
 
     # Setup Dom
     @dom = new DomManager()
     @dom.getStyle("src/style.css")
+      
     @set_overlay()
     
     # Load elements
     @load_elements()
+    @current_player
 
   current_video:=>
     return @videos[@current_video_index]
   
+  next:=>
+    console.log "Video ended"
+    if (@current_video_index+1) < @videos.length
+      console.log @videos.length
+      @current_video_index=@current_video_index+1
+      @current_player.loadFile(@current_video())
+      @$video_title.html(@current_video().title())
+      @current_player.play()
+
+    
   set_overlay:=>
     $("body").css("-webkit-filter","blur(15px)")
     $("body").css("filter","blur(20px)")
@@ -103,11 +179,12 @@ class Surface
     @dom.appendDivToParent("cs-player-wrapper","cs-wrapper")
     @dom.appendDivToParent("cs-player-container","cs-player-wrapper")
     @dom.appendDivToParent("cs-footer","cs-wrapper")
-    @dom.appendDivToParent("cs-video-title","cs-wrapper")
     @dom.appendDivToParent("cs-video-toolbar","cs-wrapper")
     @dom.appendDivToParent("cs-video-toolbar-forward","cs-video-toolbar")
     @dom.appendDivToParent("cs-video-toolbar-rewind","cs-video-toolbar")
     
+    player_container = $("#cs-player-container")
+    player_container.addClass("videoWrapper wideScreen")      
     
     # Messaging
     label = $("#cs-label")
@@ -121,14 +198,12 @@ class Surface
     
     
     # Video Player
-    p = document.createElement("video")
-    p.setAttribute("id","cs-video-player")
-    p.setAttribute("poster",@current_video().poster)
-    p.src=@current_video().source()
-    @dom.get("cs-player-container").appendChild(p)
-    @player = @dom.get("cs-video-player")   
+    @player = new Player("cs-video-player","cs-player-container")   
     @player.addEventListener('timeupdate', @update_time_remaining);
+    @player.onended(@next);
     
+    @player.loadFile(@current_video())
+    @current_player = @player
     @player.play()
     
     @set_bindings()
@@ -152,63 +227,52 @@ class Surface
     )
       
     # Video Player
-    p = document.createElement("video")
-    p.setAttribute("id","cs-small-video-player")
-    p.setAttribute("poster",@current_video().poster)
-    p.src=@current_video().source()
-
-    @dom.get("cs-small-player-container").appendChild(p)   
-    @small_player = @dom.get("cs-small-video-player")   
-    @small_player.addEventListener('timeupdate', @update_time_remaining(this))
-
-    
+    @small_player = new Player("cs-small-video-player","cs-small-player-container")
+    @small_player.onended(@next);
     @hide_slug()
   
   toggle_mute:=>
-    if @small_player.muted or @small_player.volume is 0
-      @small_player.volume = 1
+    console.log "wf"
+    if @small_player.isMuted()
+      @small_player.unmute()
       $('#cs-slug-header-mute-btn').css("background","url('src/mute.png')")
     else
-      @small_player.volume = 0
+      @small_player.mute()
       $('#cs-slug-header-mute-btn').css("background","url('src/unmute.png')")
 
 
   show_slug:=>
-
-    @small_player.src = @current_video().source()
     
+    @small_player.loadFile(@current_video())
+    @current_player = @small_player
     # play
-    @small_player.play()    
-    
-    # set time on loaded
-    @small_player.onloadedmetadata = =>
-      @small_player.currentTime = @current_video().position()
-      
+    @small_player.play()
+              
     # show
     $("#cs-slug-wrapper").show()
-  
+    
   hide_slug:=>
     @small_player.pause()
     
     # read current time from small player and store in current video
-    @current_video().setPosition(@small_player.currentTime)
+    @current_video().setPosition(@small_player.currentTime())
     
     $("#cs-slug-wrapper").hide()
     
   set_bindings:=>
     $("#cs-close").click =>
       @minimise()
+      
   minimise: =>
     # Update video file current time
    
-    
     @remove_overlay()
     @hide_wrapper()
     @show_slug()
 
   update_time_remaining:=>
     # Update label
-    time_in_secs = @player.duration-@player.currentTime
+    time_in_secs = @player.timeRemaining()
     if typeof time_in_secs is 'number'
       mins = Math.floor(time_in_secs / 60)
       secs = Math.ceil(time_in_secs % 60)
@@ -229,7 +293,6 @@ class Surface
         'overflow': 'auto',
         'height': 'auto'
     })
-    @hide_wrapper();
     
   remove_wrapper:=>
     @player.pause()
@@ -243,15 +306,12 @@ class Surface
     
   show_wrapper:=>
     
-    @player.src = @current_video().source()
-    
+    console.log @current_video()
+    @player.loadFile(@current_video())
+    @current_player = @player
     # play
     @player.play()    
     
-    @player.onloadedmetadata = =>
-      console.log "loaded"
-      @player.currentTime = @current_video().position()
-
     # show
     @$wrapper.show()
         
@@ -259,18 +319,19 @@ class Surface
     @player.pause()
     
     # read current time from big player and store in current video
-    @current_video().setPosition(@player.currentTime)
+    @current_video().setPosition(@player.currentTime())
     
     @$wrapper.hide()
     
     
 class VideoFile
-  constructor:(src,position,poster,title)->
+  constructor:(src,position,poster,title,url)->
     @file_src = src ? ""
     @playback_position = position ? 0
     @video_poster = poster ? ""
     @video_title = title ? ""
-
+    @video_url = url
+    
   source:=>
     return @file_src
 
@@ -285,3 +346,11 @@ class VideoFile
     
   title:=>
     return @video_title
+  
+  url:=>  
+    return @video_url
+
+  poster:=>
+    if @video_poster.length > 0
+      return @video_poster
+    return null
