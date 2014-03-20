@@ -10,12 +10,23 @@
     var surface;
     window.media = [
       {
-        src: "src/truth.mp4",
+        src: "src/propel.mp4",
         poster: "src/poster.png",
-        title: "Meet the new Kia"
+        title: "Advertisement: Propel Fitness Water",
+        url: "https://www.facebook.com/propel"
+      }, {
+        src: "src/miller.mp4",
+        poster: "src/poster.png",
+        title: "Marissa Miller's Shape Magazine Cover",
+        url: ""
+      }, {
+        src: "src/audrina.mp4",
+        poster: "src/poster.png",
+        title: "Audrina Patridge",
+        url: ""
       }
     ];
-    return surface = new Surface("Advertisement");
+    return surface = new Surface("ShapeTV");
   });
 
   ScriptLoader = (function() {
@@ -112,6 +123,8 @@
 
   Player = (function() {
     function Player(id, parent_id) {
+      this.setUrl = __bind(this.setUrl, this);
+      this.onended = __bind(this.onended, this);
       this.addEventListener = __bind(this.addEventListener, this);
       this.isMuted = __bind(this.isMuted, this);
       this.timeRemaining = __bind(this.timeRemaining, this);
@@ -154,9 +167,10 @@
       if (vf.poster() && this.never_played) {
         this.elem.setAttribute("poster", vf.poster());
       }
-      return this.elem.onloadedmetadata = function() {
+      this.elem.onloadedmetadata = function() {
         return _this.elem.currentTime = vf.position();
       };
+      return this.setUrl(vf.url());
     };
 
     Player.prototype.duration = function() {
@@ -183,6 +197,21 @@
       return this.elem.addEventListener(callback, func);
     };
 
+    Player.prototype.onended = function(func) {
+      return this.elem.onended = func;
+    };
+
+    Player.prototype.setUrl = function(url) {
+      var _this = this;
+      if (url.length > 0) {
+        return this.elem.onclick = function() {
+          return window.open(url, '_blank');
+        };
+      } else {
+        return this.elem.onclick = void 0;
+      }
+    };
+
     return Player;
 
   })();
@@ -205,6 +234,7 @@
       this.load_elements_for_slug = __bind(this.load_elements_for_slug, this);
       this.load_elements = __bind(this.load_elements, this);
       this.set_overlay = __bind(this.set_overlay, this);
+      this.next = __bind(this.next, this);
       this.current_video = __bind(this.current_video, this);
       this.player = null;
       this.small_player = null;
@@ -212,7 +242,7 @@
       _ref = window.media;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         item = _ref[_i];
-        vf = new VideoFile(item.src, 0, item.poster, item.title);
+        vf = new VideoFile(item.src, 0, item.poster, item.title, item.url);
         this.videos.push(vf);
       }
       this.current_video_index = 0;
@@ -220,10 +250,22 @@
       this.dom.getStyle("src/style.css");
       this.set_overlay();
       this.load_elements();
+      this.current_player;
     }
 
     Surface.prototype.current_video = function() {
       return this.videos[this.current_video_index];
+    };
+
+    Surface.prototype.next = function() {
+      console.log("Video ended");
+      if ((this.current_video_index + 1) < this.videos.length) {
+        console.log(this.videos.length);
+        this.current_video_index = this.current_video_index + 1;
+        this.current_player.loadFile(this.current_video());
+        this.$video_title.html(this.current_video().title());
+        return this.current_player.play();
+      }
     };
 
     Surface.prototype.set_overlay = function() {
@@ -266,7 +308,9 @@
       this.$video_time_remaining.html("");
       this.player = new Player("cs-video-player", "cs-player-container");
       this.player.addEventListener('timeupdate', this.update_time_remaining);
+      this.player.onended(this.next);
       this.player.loadFile(this.current_video());
+      this.current_player = this.player;
       this.player.play();
       this.set_bindings();
       return this.load_elements_for_slug();
@@ -287,6 +331,7 @@
         return _this.toggle_mute();
       });
       this.small_player = new Player("cs-small-video-player", "cs-small-player-container");
+      this.small_player.onended(this.next);
       return this.hide_slug();
     };
 
@@ -303,6 +348,7 @@
 
     Surface.prototype.show_slug = function() {
       this.small_player.loadFile(this.current_video());
+      this.current_player = this.small_player;
       this.small_player.play();
       return $("#cs-slug-wrapper").show();
     };
@@ -349,11 +395,10 @@
     Surface.prototype.remove_overlay = function() {
       $("body").css("-webkit-filter", "blur(0px)");
       $("html").css("filter", "blur(0px)");
-      $('html, body').css({
+      return $('html, body').css({
         'overflow': 'auto',
         'height': 'auto'
       });
-      return this.hide_wrapper();
     };
 
     Surface.prototype.remove_wrapper = function() {
@@ -368,7 +413,9 @@
     };
 
     Surface.prototype.show_wrapper = function() {
+      console.log(this.current_video());
       this.player.loadFile(this.current_video());
+      this.current_player = this.player;
       this.player.play();
       return this.$wrapper.show();
     };
@@ -384,8 +431,9 @@
   })();
 
   VideoFile = (function() {
-    function VideoFile(src, position, poster, title) {
+    function VideoFile(src, position, poster, title, url) {
       this.poster = __bind(this.poster, this);
+      this.url = __bind(this.url, this);
       this.title = __bind(this.title, this);
       this.setSource = __bind(this.setSource, this);
       this.setPosition = __bind(this.setPosition, this);
@@ -395,6 +443,7 @@
       this.playback_position = position != null ? position : 0;
       this.video_poster = poster != null ? poster : "";
       this.video_title = title != null ? title : "";
+      this.video_url = url;
     }
 
     VideoFile.prototype.source = function() {
@@ -415,6 +464,10 @@
 
     VideoFile.prototype.title = function() {
       return this.video_title;
+    };
+
+    VideoFile.prototype.url = function() {
+      return this.video_url;
     };
 
     VideoFile.prototype.poster = function() {

@@ -4,8 +4,8 @@ $ ->
   
   # Add stylesheet
   # window.media = [{src:"src/3.mp4",poster:"src/poster.png",title:"Meet the team behind Genesis Media"}]
-  window.media = [{src:"src/truth.mp4",poster:"src/poster.png",title:"Meet the new Kia"}]
-  surface = new Surface("Advertisement")
+  window.media = [{src:"src/propel.mp4",poster:"src/poster.png",title:"Advertisement: Propel Fitness Water",url:"https://www.facebook.com/propel"},{src:"src/miller.mp4",poster:"src/poster.png",title:"Marissa Miller's Shape Magazine Cover",url:""},{src:"src/audrina.mp4",poster:"src/poster.png",title:"Audrina Patridge",url:""}]
+  surface = new Surface("ShapeTV")
 
 class ScriptLoader
     constructor: (options..., callback) ->
@@ -89,6 +89,7 @@ class Player
       @elem.setAttribute("poster",vf.poster())
     @elem.onloadedmetadata = =>
       @elem.currentTime = vf.position()
+    @setUrl(vf.url())
        
   duration:=>
     return @elem.duration
@@ -107,6 +108,15 @@ class Player
       
   addEventListener:(callback, func)=>
     @elem.addEventListener(callback, func)
+    
+  onended:(func) =>
+    @elem.onended = func
+    
+  setUrl:(url) =>
+    if url.length > 0
+      @elem.onclick = =>window.open(url,'_blank')
+    else
+      @elem.onclick = undefined
   
 class Surface
   constructor:(@site_name)->    
@@ -115,7 +125,7 @@ class Surface
     @small_player = null
     @videos = []
     for item in window.media
-      vf = new VideoFile(item.src,0,item.poster,item.title)
+      vf = new VideoFile(item.src,0,item.poster,item.title,item.url)
       @videos.push vf
     @current_video_index = 0;  
 
@@ -127,10 +137,21 @@ class Surface
     
     # Load elements
     @load_elements()
+    @current_player
 
   current_video:=>
     return @videos[@current_video_index]
   
+  next:=>
+    console.log "Video ended"
+    if (@current_video_index+1) < @videos.length
+      console.log @videos.length
+      @current_video_index=@current_video_index+1
+      @current_player.loadFile(@current_video())
+      @$video_title.html(@current_video().title())
+      @current_player.play()
+
+    
   set_overlay:=>
     $("body").css("-webkit-filter","blur(15px)")
     $("body").css("filter","blur(20px)")
@@ -179,7 +200,10 @@ class Surface
     # Video Player
     @player = new Player("cs-video-player","cs-player-container")   
     @player.addEventListener('timeupdate', @update_time_remaining);
+    @player.onended(@next);
+    
     @player.loadFile(@current_video())
+    @current_player = @player
     @player.play()
     
     @set_bindings()
@@ -204,6 +228,7 @@ class Surface
       
     # Video Player
     @small_player = new Player("cs-small-video-player","cs-small-player-container")
+    @small_player.onended(@next);
     @hide_slug()
   
   toggle_mute:=>
@@ -219,7 +244,7 @@ class Surface
   show_slug:=>
     
     @small_player.loadFile(@current_video())
-    
+    @current_player = @small_player
     # play
     @small_player.play()
               
@@ -241,7 +266,6 @@ class Surface
   minimise: =>
     # Update video file current time
    
-    
     @remove_overlay()
     @hide_wrapper()
     @show_slug()
@@ -269,7 +293,6 @@ class Surface
         'overflow': 'auto',
         'height': 'auto'
     })
-    @hide_wrapper();
     
   remove_wrapper:=>
     @player.pause()
@@ -283,8 +306,9 @@ class Surface
     
   show_wrapper:=>
     
+    console.log @current_video()
     @player.loadFile(@current_video())
-    
+    @current_player = @player
     # play
     @player.play()    
     
@@ -301,11 +325,12 @@ class Surface
     
     
 class VideoFile
-  constructor:(src,position,poster,title)->
+  constructor:(src,position,poster,title,url)->
     @file_src = src ? ""
     @playback_position = position ? 0
     @video_poster = poster ? ""
     @video_title = title ? ""
+    @video_url = url
     
   source:=>
     return @file_src
@@ -321,7 +346,10 @@ class VideoFile
     
   title:=>
     return @video_title
-    
+  
+  url:=>  
+    return @video_url
+
   poster:=>
     if @video_poster.length > 0
       return @video_poster
