@@ -33,13 +33,7 @@ class DomManager
   constructor:()->
     @body = document.getElementsByTagName("body")[0]
     @head = document.getElementsByTagName("head")[0]
-    @html = document.getElementsByTagName("html")[0]
       
-  appendDivOutsideBody:(id)=>
-    s = document.createElement("div")
-    s.id = id
-    @html.appendChild(s)
-  
   appendDivToBody:(id)=>
     s = document.createElement("div")
     s.id = id
@@ -67,9 +61,12 @@ class Player
     @parent_id = parent_id
     p = document.createElement("video")
     p.setAttribute("id",id)
+    p.setAttribute("controls","true")
     document.getElementById(parent_id).appendChild(p)
     @elem = document.getElementById(id)   
     never_played = true
+    # Todo: Remove 
+    @mute()
     
   play:=>
     @elem.play()
@@ -143,12 +140,12 @@ class Surface
     
     # Load elements
     @load_elements()
+    @load_elements_for_slug()
 
   current_video:=>
     return @videos[@current_video_index]
   
-  next:=>
-    console.log "Video ended"
+  play_next_video:=>
     if (@current_video_index+1) < @videos.length
       console.log @videos.length
       @current_video_index=@current_video_index+1
@@ -165,12 +162,45 @@ class Surface
         'overflow': 'hidden',
         'height': '100%'
     })
+  
+  minimise: =>
+    @current_video().setPosition(@player.currentTime()) # Update video file current time
+    @remove_overlay()
+    @$wrapper.hide()
+    
+    @player.moveToParentWithId("cs-small-player-container") # Move player
         
+    $("#cs-slug-wrapper").show() # Show slug
+    
+    @player.play() # For some reason player stops after it's moved around
+    
+    # TODO: Remove this after implementing proper full screen method
+    @player.elem.onclick = @maximise
+
+  maximise:=>
+    @hide_slug() # Use twice so this gets its own method
+
+    @set_overlay() # Add overlay + blur again
+    
+    @player.moveToParentWithId("cs-player-container") # Move player
+    
+    @$wrapper.show() # Show wrapper
+    
+    @player.play() # For some reason player stops after it's moved around
+
+  hide_slug:=>    
+    @current_video().setPosition(@player.currentTime())
+    $("#cs-slug-wrapper").hide()
+
   load_elements:=>
-    # Layout
-    @dom.appendDivOutsideBody("cs-wrapper")
+    # Append Surface wrapper OUTSIDE body
+    s = document.createElement("div")
+    s.id = "cs-wrapper"
+    html = document.getElementsByTagName("html")[0]
+    html.appendChild(s)
+
+    # Create Div Structure
     @dom.appendDivToParent("cs-overlay","cs-wrapper")
-    @$wrapper = $("#cs-wrapper")
     @dom.appendDivToParent("cs-header","cs-wrapper")
     @dom.appendDivToParent("cs-close","cs-header")
     @dom.appendDivToParent("cs-main","cs-wrapper")
@@ -187,84 +217,50 @@ class Surface
     @dom.appendDivToParent("cs-video-toolbar","cs-wrapper")
     @dom.appendDivToParent("cs-video-toolbar-forward","cs-video-toolbar")
     @dom.appendDivToParent("cs-video-toolbar-rewind","cs-video-toolbar")
-    
+     
+    @$wrapper = $("#cs-wrapper")
+    @$video_title = $("#cs-video-title")
+    @$video_time_remaining  = $("#cs-video-time-remaining")
+    label = $("#cs-label")
     player_container = $("#cs-player-container")
+    
+    # Player style
     player_container.addClass("largeVideoWrapper wideScreen")      
     
     # Messaging
-    label = $("#cs-label")
     label.html(@site_name)
-    
-    @$video_title = $("#cs-video-title")
     @$video_title.html(@current_video().title())
-    
-    @$video_time_remaining = $("#cs-video-time-remaining")
     @$video_time_remaining.html("")
     
+    @set_bindings()
     
     # Video Player
     @player = new Player("cs-video-player","cs-player-container")   
     @player.addEventListener('timeupdate', @update_time_remaining);
-    @player.onended(@next);
-    
+    @player.onended(@play_next_video);
     @player.loadFile(@current_video())
     @player.play()
     
-    @set_bindings()
-    
-    @load_elements_for_slug()
-
   load_elements_for_slug:=>
     @dom.appendDivToBody("cs-slug-wrapper")
     @dom.appendDivToParent("cs-small-player-container","cs-slug-wrapper")
     @$slug_wrapper = $("#cs-slug-wrapper")
-    
+
     player_container = $("#cs-small-player-container")
     player_container.addClass("smallVideoWrapper wideScreen")      
-    @dom.appendDivToParent("cs-slug-header-expand-btn","cs-video-player")
-    @dom.appendDivToParent("cs-slug-header-mute-btn","cs-video-player")
     
-    $('#cs-slug-header-expand-btn').on("click", =>
-      @maximise()
-      )
-    
-    $('#cs-slug-header-mute-btn').on("click", =>
-      @toggle_mute()
-    )
-      
     # Video Player
     @hide_slug()    
-    
-  toggle_mute:=>
-    if @player.isMuted()
-      @player.unmute()
-      $('#cs-slug-header-mute-btn').css("background","url('src/mute.png')")
-    else
-      @player.mute()
-      $('#cs-slug-header-mute-btn').css("background","url('src/unmute.png')")
 
-
-  show_slug:=>
-    @player.moveToParentWithId("cs-small-player-container")
-    $("#cs-slug-wrapper").show()
-    @player.play()
-# TODO: Remove this after implementing proper full screen method
-    @player.elem.onclick = @maximise
-    
-  hide_slug:=>    
-    @current_video().setPosition(@player.currentTime())
-    $("#cs-slug-wrapper").hide()
-    
   set_bindings:=>
     $("#cs-close").click =>
       @minimise()
-      
-  minimise: =>
-    # Update video file current time
-   
-    @remove_overlay()
-    @hide_wrapper()
-    @show_slug()
+
+  toggle_mute:=>
+    if @player.isMuted()
+      @player.unmute()
+    else
+      @player.mute()
 
   update_time_remaining:=>
     # Update label
@@ -280,6 +276,7 @@ class Surface
         secs_text = ''+ secs 
       else
         secs_text = '0'+secs
+
       @$video_time_remaining.html(mins_text+":"+secs_text)
   
   remove_overlay:=>
@@ -288,26 +285,7 @@ class Surface
     $('html, body').css({
         'overflow': 'auto',
         'height': 'auto'
-    })
-    
-  remove_wrapper:=>
-    @$wrapper.remove()
-    
-  maximise:=>
-    # TODO:add player class to abstract player implementation details
-    @hide_slug()
-    @set_overlay()
-    @show_wrapper()
-    
-  show_wrapper:=>    
-    @player.moveToParentWithId("cs-player-container")
-    @$wrapper.show()
-    @player.play()
-        
-  hide_wrapper:=>    
-    @current_video().setPosition(@player.currentTime())    
-    @$wrapper.hide()
-    
+    })    
     
 class VideoFile
   constructor:(src,position,poster,title,url)->
