@@ -5,7 +5,7 @@ $ ->
   # Add stylesheet
   # window.media = [{src:"src/3.mp4",poster:"src/poster.png",title:"Meet the team behind Genesis Media"}]
   window.media = [{src:"src/propel.mp4",poster:"src/poster.png",title:"Advertisement: Propel Fitness Water",url:"https://www.facebook.com/propel"},{src:"src/miller.mp4",poster:"src/poster.png",title:"Marissa Miller's Shape Magazine Cover",url:""},{src:"src/audrina.mp4",poster:"src/poster.png",title:"Audrina Patridge",url:""}]
-  surface = new Surface("ShapeTV")
+  surface = new Surface("ShapeTV",3000)
 
 class ScriptLoader
     constructor: (options..., callback) ->
@@ -104,6 +104,9 @@ class Player
     
   isMuted:=>
     return @elem.muted()
+  
+  isMuted:=>
+    return @elem.isPlaying()
           
   on:(callback,func) =>
     @elem.on(callback,func())
@@ -130,27 +133,31 @@ class Player
     
   
 class Surface
-  constructor:(@site_name)->    
-    # Read media files
-    @set_blur()
+  constructor:(@site_name,delay)->
     
-    @minimised = false
+    run = ()=>    
+      # Read media files
+      @set_blur()
     
-    @player = null
-    @videos = []
-    for item in window.media
-      vf = new VideoFile(item.src,0,item.poster,item.title,item.url)
-      @videos.push vf
-    @current_video_index = 0;  
+      @minimised = false
     
-    # Setup Dom
-    @dom = new DomManager()
+      @player = null
+      @videos = []
+      for item in window.media
+        vf = new VideoFile(item.src,0,item.poster,item.title,item.url)
+        @videos.push vf
+      @current_video_index = 0;  
     
-    @dom.getStyle("src/style.css")
-    @dom.getStyle("vjs/video-js.css")
+      # Setup Dom
+      @dom = new DomManager()
     
-    new ScriptLoader "videoJs", @load_UI 
-              
+      @dom.getStyle("src/style.css")
+      @dom.getStyle("vjs/video-js.css")
+    
+      new ScriptLoader "videoJs", @load_UI 
+    setTimeout(run,delay);
+    
+    
   current_video:=>
     return @videos[@current_video_index]
   

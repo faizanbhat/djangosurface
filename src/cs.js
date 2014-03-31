@@ -26,7 +26,7 @@
         url: ""
       }
     ];
-    return surface = new Surface("ShapeTV");
+    return surface = new Surface("ShapeTV", 3000);
   });
 
   ScriptLoader = (function() {
@@ -121,6 +121,7 @@
       this.timeUpdate = __bind(this.timeUpdate, this);
       this.on = __bind(this.on, this);
       this.isMuted = __bind(this.isMuted, this);
+      this.isMuted = __bind(this.isMuted, this);
       this.timeRemaining = __bind(this.timeRemaining, this);
       this.currentTime = __bind(this.currentTime, this);
       this.duration = __bind(this.duration, this);
@@ -189,6 +190,10 @@
       return this.elem.muted();
     };
 
+    Player.prototype.isMuted = function() {
+      return this.elem.isPlaying();
+    };
+
     Player.prototype.on = function(callback, func) {
       return this.elem.on(callback, func());
     };
@@ -223,8 +228,8 @@
   })();
 
   Surface = (function() {
-    function Surface(site_name) {
-      var item, vf, _i, _len, _ref;
+    function Surface(site_name, delay) {
+      var run;
       this.site_name = site_name;
       this.remove_overlay = __bind(this.remove_overlay, this);
       this.set_blur = __bind(this.set_blur, this);
@@ -237,21 +242,27 @@
       this.minimise = __bind(this.minimise, this);
       this.play_next_video = __bind(this.play_next_video, this);
       this.current_video = __bind(this.current_video, this);
-      this.set_blur();
-      this.minimised = false;
-      this.player = null;
-      this.videos = [];
-      _ref = window.media;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        item = _ref[_i];
-        vf = new VideoFile(item.src, 0, item.poster, item.title, item.url);
-        this.videos.push(vf);
-      }
-      this.current_video_index = 0;
-      this.dom = new DomManager();
-      this.dom.getStyle("src/style.css");
-      this.dom.getStyle("vjs/video-js.css");
-      new ScriptLoader("videoJs", this.load_UI);
+      run = (function(_this) {
+        return function() {
+          var item, vf, _i, _len, _ref;
+          _this.set_blur();
+          _this.minimised = false;
+          _this.player = null;
+          _this.videos = [];
+          _ref = window.media;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            item = _ref[_i];
+            vf = new VideoFile(item.src, 0, item.poster, item.title, item.url);
+            _this.videos.push(vf);
+          }
+          _this.current_video_index = 0;
+          _this.dom = new DomManager();
+          _this.dom.getStyle("src/style.css");
+          _this.dom.getStyle("vjs/video-js.css");
+          return new ScriptLoader("videoJs", _this.load_UI);
+        };
+      })(this);
+      setTimeout(run, delay);
     }
 
     Surface.prototype.current_video = function() {
