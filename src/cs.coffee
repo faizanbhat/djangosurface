@@ -92,8 +92,6 @@ class Player
       console.log "Loaded meta data"
       @elem.currentTime(vf.position())
       )
-      
-    @setUrl(vf.url())
        
   duration:=>
     return @elem.duration()
@@ -118,12 +116,6 @@ class Player
     
   ready:(func)=>
     @elem.ready(func())
-
-  setUrl:(url) =>
-    if url.length > 0
-      @elem.onclick = =>window.open(url,'_blank')
-    else
-      @elem.onclick = undefined
       
   moveToParentWithId:(new_parent_id)=>
     container = document.getElementById(@parent_id)
