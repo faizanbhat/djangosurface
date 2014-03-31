@@ -178,12 +178,8 @@
 #cs-small-video-player{
 }
 
-.smallVideoWrapper {
-  position:relative;
-  height:0;
-}
 
-.smallVideoWrapper div,
+.smallVideoWrapper .video-js,
 .smallVideoWrapper embed, 
 .smallVideoWrapper object,
 .smallVideoWrapper video {
@@ -192,7 +188,7 @@
   left: 0;
   top: 0;
   background:black;
-  border:2px solid black;
+  border:1px solid black;
 }
 
 /*.wideScreen {

@@ -122,7 +122,10 @@ class Player
     player_div = document.getElementById(@id)
     container.removeChild(player_div)
     console.log new_parent_id
-    document.getElementById(new_parent_id).appendChild(player_div)
+    new_parent = document.getElementById(new_parent_id)
+    new_parent.appendChild(player_div)
+    player_div.width = new_parent.width
+    player_div.height = new_parent.height
     @parent_id = new_parent_id
     
   
@@ -130,6 +133,8 @@ class Surface
   constructor:(@site_name)->    
     # Read media files
     @set_blur()
+    
+    @minimised = false
     
     @player = null
     @videos = []
@@ -142,7 +147,7 @@ class Surface
     @dom = new DomManager()
     
     @dom.getStyle("src/style.css")
-    @dom.getStyle("vjs/video-js.min.css")
+    @dom.getStyle("vjs/video-js.css")
     
     new ScriptLoader "videoJs", @load_UI 
               
@@ -163,24 +168,37 @@ class Surface
     @$wrapper.hide()
     
     @player.moveToParentWithId("cs-small-player-container") # Move player
+
+    $(".vjs-fullscreen-control").css("display","inline")
+    
+    $(".vjs-fullscreen-control")[0].onclick = @maximise
         
     $("#cs-slug-wrapper").show() # Show slug
     
     @player.play() # For some reason player stops after it's moved around
     
+    @minimised = true
+    
     # TODO: Remove this after implementing proper full screen method
     @player.elem.onclick = @maximise
 
   maximise:=>
-    @hide_slug() # Use twice so this gets its own method
+    if (@minimised==true)
+        console.log "hi"
+        
+        $(".vjs-fullscreen-control").css("display","none")
+        
+        @hide_slug() # Use twice so this gets its own method
 
-    @set_blur() # Add overlay + blur again
+        @set_blur() # Add overlay + blur again
     
-    @player.moveToParentWithId("cs-player-container") # Move player
+        @player.moveToParentWithId("cs-player-container") # Move player
     
-    @$wrapper.show() # Show wrapper
+        @$wrapper.show() # Show wrapper
     
-    @player.play() # For some reason player stops after it's moved around
+        @player.play() # For some reason player stops after it's moved around
+        
+        @minimised = false
 
   hide_slug:=>    
     @current_video().setPosition(@player.currentTime())
@@ -231,7 +249,7 @@ class Surface
     @player.ready(=>
       @player.timeUpdate(@update_time_remaining)
       @player.loadFile(@current_video())
-      # @player.ended(@play_next_video) Todo: Fix BUG
+      @player.ended(@play_next_video)
     )
     
 #   Load elements for slug  

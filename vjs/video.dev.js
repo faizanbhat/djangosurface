@@ -3661,43 +3661,44 @@ vjs.Player.prototype.isFullScreen = function(isFS){
  * @return {vjs.Player} self
  */
 vjs.Player.prototype.requestFullScreen = function(){
-  var requestFullScreen = vjs.support.requestFullScreen;
-  this.isFullScreen(true);
-
-  if (requestFullScreen) {
-    // the browser supports going fullscreen at the element level so we can
-    // take the controls fullscreen as well as the video
-
-    // Trigger fullscreenchange event after change
-    // We have to specifically add this each time, and remove
-    // when cancelling fullscreen. Otherwise if there's multiple
-    // players on a page, they would all be reacting to the same fullscreen
-    // events
-    vjs.on(document, requestFullScreen.eventName, vjs.bind(this, function(e){
-      this.isFullScreen(document[requestFullScreen.isFullScreen]);
-
-      // If cancelling fullscreen, remove event listener.
-      if (this.isFullScreen() === false) {
-        vjs.off(document, requestFullScreen.eventName, arguments.callee);
-      }
-
-      this.trigger('fullscreenchange');
-    }));
-
-    this.el_[requestFullScreen.requestFn]();
-
-  } else if (this.tech.supportsFullScreen()) {
-    // we can't take the video.js controls fullscreen but we can go fullscreen
-    // with native controls
-    this.techCall('enterFullScreen');
-  } else {
-    // fullscreen isn't supported so we'll just stretch the video element to
-    // fill the viewport
-    this.enterFullWindow();
-    this.trigger('fullscreenchange');
-  }
-
-  return this;
+  
+  //     var requestFullScreen = vjs.support.requestFullScreen;
+  //     this.isFullScreen(true);
+  // 
+  //     if (requestFullScreen) {
+  //       // the browser supports going fullscreen at the element level so we can
+  //       // take the controls fullscreen as well as the video
+  // 
+  //       // Trigger fullscreenchange event after change
+  //       // We have to specifically add this each time, and remove
+  //       // when cancelling fullscreen. Otherwise if there's multiple
+  //       // players on a page, they would all be reacting to the same fullscreen
+  //       // events
+  //       vjs.on(document, requestFullScreen.eventName, vjs.bind(this, function(e){
+  //         this.isFullScreen(document[requestFullScreen.isFullScreen]);
+  // 
+  //         // If cancelling fullscreen, remove event listener.
+  //         if (this.isFullScreen() === false) {
+  //           vjs.off(document, requestFullScreen.eventName, arguments.callee);
+  //         }
+  // 
+  //         this.trigger('fullscreenchange');
+  //       }));
+  // 
+  //       this.el_[requestFullScreen.requestFn]();
+  // 
+  //     } else if (this.tech.supportsFullScreen()) {
+  //       // we can't take the video.js controls fullscreen but we can go fullscreen
+  //       // with native controls
+  //       this.techCall('enterFullScreen');
+  //     } else {
+  //       // fullscreen isn't supported so we'll just stretch the video element to
+  //       // fill the viewport
+  //       this.enterFullWindow();
+  //       this.trigger('fullscreenchange');
+  //     }
+  // 
+  //     return this;
 };
 
 /**
