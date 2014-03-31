@@ -115,7 +115,7 @@ class Player
     @elem.on("ended",func)
     
   ready:(func)=>
-    @elem.ready(func())
+    @elem.ready(func)
       
   moveToParentWithId:(new_parent_id)=>
     container = document.getElementById(@parent_id)
@@ -235,6 +235,7 @@ class Surface
     )
     
 #   Load elements for slug  
+    console.log "reached"
     @dom.appendDivToBody("cs-slug-wrapper")
     @dom.appendDivToParent("cs-small-player-container","cs-slug-wrapper")
     @$slug_wrapper = $("#cs-slug-wrapper")
