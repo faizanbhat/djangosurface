@@ -9,7 +9,7 @@ $ ->
 
 class ScriptLoader
     constructor: (options..., callback) ->
-        @libraries = {jQuery: "http://ajax.googleapis.com/ajax/libs/jquery/$version/jquery.js",videoJs: "http://vjs.zencdn.net/$version/video.js"}
+        @libraries = {jQuery: "http://ajax.googleapis.com/ajax/libs/jquery/$version/jquery.js",videoJs: "vjs/video.dev.js"}
         [lib, version, compressed] = options
         if @libraries[lib] then lib = @libraries[lib]
 
@@ -27,7 +27,7 @@ class ScriptLoader
         s.src = lib.replace('$version', version)
         
         if compressed then lib = lib.replace('.js', '.min.js')
-        document.getElementsByTagName('body')[0].appendChild(s)
+        document.getElementsByTagName('head')[0].appendChild(s)
         
 class DomManager
   constructor:()->
@@ -46,8 +46,8 @@ class DomManager
     parent.appendChild(s)
   
   get:(id)=>
-    elem = document.getElementById(id)
-    return elem
+    e = document.getElementById(id)
+    return e
     
   getStyle:(url)=>
     l = document.createElement("link")
@@ -58,58 +58,67 @@ class DomManager
 
 class Player
   constructor:(id,parent_id)->
+    @id = id
     @parent_id = parent_id
     p = document.createElement("video")
     p.setAttribute("id",id)
-    p.setAttribute("controls","true")
+    p.setAttribute("class","video-js vjs-default-skin vjs-big-play-button")
+    p.setAttribute("height","100%")
+    p.setAttribute("width","100%")
+    p.setAttribute("data-setup","{}")
+    p.setAttribute("controls","")
     document.getElementById(parent_id).appendChild(p)
-    @elem = document.getElementById(id)   
-    never_played = true
+    @elem = videojs(id)
     # Todo: Remove 
     @mute()
-    
+
   play:=>
     @elem.play()
-    never_played = false
     
   pause:=>
     @elem.pause()
     
   mute:=>
-    @elem.volume=0
+    @elem.volume(0)
     
   unmute:=>
-    @elem.volume=1
+    @elem.volume(1)
   
   loadFile:(vf)=>
-    @elem.src = vf.source()
-    if vf.poster() and @never_played
-      @elem.setAttribute("poster",vf.poster())
-    @elem.onloadedmetadata = =>
-      @elem.currentTime = vf.position()
+    @elem.src(vf.source())
+    if vf.poster()
+      @elem.poster(vf.poster())
+    @elem.on("loadedmetadata", =>
+      console.log "Loaded meta data"
+      @elem.currentTime(vf.position())
+      )
+      
     @setUrl(vf.url())
        
   duration:=>
-    return @elem.duration
+    return @elem.duration()
     
   currentTime:=>
-    return @elem.currentTime
-    
+    return @elem.currentTime()
+        
   timeRemaining:=>
-    return @elem.duration - @elem.currentTime
+    return @duration() - @currentTime()
     
   isMuted:=>
-    if @elem.volume is 0 or @elem.muted
-      return true
-    else
-      return false
-      
-  addEventListener:(callback, func)=>
-    @elem.addEventListener(callback, func)
+    return @elem.muted()
+          
+  on:(callback,func) =>
+    @elem.on(callback,func())
+  
+  timeUpdate:(func)=>
+    @elem.on("timeupdate",func)
     
-  onended:(func) =>
-    @elem.onended = func
+  ended:(func) =>
+    @elem.on("ended",func)
     
+  ready:(func)=>
+    @elem.ready(func())
+
   setUrl:(url) =>
     if url.length > 0
       @elem.onclick = =>window.open(url,'_blank')
@@ -117,14 +126,19 @@ class Player
       @elem.onclick = undefined
       
   moveToParentWithId:(new_parent_id)=>
-    document.getElementById(@parent_id).removeChild(@elem)
-    document.getElementById(new_parent_id).appendChild(@elem)
+    container = document.getElementById(@parent_id)
+    player_div = document.getElementById(@id)
+    container.removeChild(player_div)
+    console.log new_parent_id
+    document.getElementById(new_parent_id).appendChild(player_div)
     @parent_id = new_parent_id
     
   
 class Surface
   constructor:(@site_name)->    
     # Read media files
+    @set_blur()
+    
     @player = null
     @videos = []
     for item in window.media
@@ -134,17 +148,18 @@ class Surface
     
     # Setup Dom
     @dom = new DomManager()
-    @set_overlay()
     
     @dom.getStyle("src/style.css")
-    @load_UI()
+    @dom.getStyle("vjs/video-js.min.css")
     
+    new ScriptLoader "videoJs", @load_UI 
+              
   current_video:=>
     return @videos[@current_video_index]
   
   play_next_video:=>
+    console.log "Playing next"
     if (@current_video_index+1) < @videos.length
-      console.log @videos.length
       @current_video_index=@current_video_index+1
       @player.loadFile(@current_video())
       @$video_title.html(@current_video().title())
@@ -167,7 +182,7 @@ class Surface
   maximise:=>
     @hide_slug() # Use twice so this gets its own method
 
-    @set_overlay() # Add overlay + blur again
+    @set_blur() # Add overlay + blur again
     
     @player.moveToParentWithId("cs-player-container") # Move player
     
@@ -192,19 +207,16 @@ class Surface
     @dom.appendDivToParent("cs-header","cs-wrapper")
     @dom.appendDivToParent("cs-close","cs-header")
     @dom.appendDivToParent("cs-main","cs-wrapper")
-    @dom.appendDivToParent("cs-info-wrapper","cs-wrapper")
+    @dom.appendDivToParent("cs-info-wrapper","cs-main")
     @dom.appendDivToParent("cs-top-line","cs-info-wrapper")
     @dom.appendDivToParent("cs-rule","cs-info-wrapper")
     @dom.appendDivToParent("cs-bottom-line","cs-info-wrapper")
     @dom.appendDivToParent("cs-label","cs-top-line")
     @dom.appendDivToParent("cs-video-title","cs-bottom-line")
     @dom.appendDivToParent("cs-video-time-remaining","cs-bottom-line")
-    @dom.appendDivToParent("cs-player-wrapper","cs-wrapper")
+    @dom.appendDivToParent("cs-player-wrapper","cs-main")
     @dom.appendDivToParent("cs-player-container","cs-player-wrapper")
     @dom.appendDivToParent("cs-footer","cs-wrapper")
-    @dom.appendDivToParent("cs-video-toolbar","cs-wrapper")
-    @dom.appendDivToParent("cs-video-toolbar-forward","cs-video-toolbar")
-    @dom.appendDivToParent("cs-video-toolbar-rewind","cs-video-toolbar")
      
     @$wrapper = $("#cs-wrapper")
     @$video_title = $("#cs-video-title")
@@ -213,7 +225,7 @@ class Surface
     player_container = $("#cs-player-container")
     
     # Player style
-    player_container.addClass("largeVideoWrapper wideScreen")      
+    player_container.addClass("largeVideoWrapper")      
     
     # Messaging
     label.html(@site_name)
@@ -224,18 +236,19 @@ class Surface
     
     # Video Player
     @player = new Player("cs-video-player","cs-player-container")   
-    @player.addEventListener('timeupdate', @update_time_remaining);
-    @player.onended(@play_next_video);
-    @player.loadFile(@current_video())
-    @player.play()
-
+    @player.ready(=>
+      @player.timeUpdate(@update_time_remaining)
+      @player.loadFile(@current_video())
+      # @player.ended(@play_next_video) Todo: Fix BUG
+    )
+    
 #   Load elements for slug  
     @dom.appendDivToBody("cs-slug-wrapper")
     @dom.appendDivToParent("cs-small-player-container","cs-slug-wrapper")
     @$slug_wrapper = $("#cs-slug-wrapper")
 
     player_container = $("#cs-small-player-container")
-    player_container.addClass("smallVideoWrapper wideScreen")      
+    player_container.addClass("smallVideoWrapper")      
     
     @hide_slug()    # Hide slug
 
@@ -267,7 +280,7 @@ class Surface
       @$video_time_remaining.html(mins_text+":"+secs_text)
   
   
-  set_overlay:=>
+  set_blur:=>
     $("body").css("-webkit-filter","blur(15px)")
     $("body").css("filter","blur(20px)")
     # disable scroll

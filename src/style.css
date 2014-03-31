@@ -7,6 +7,13 @@
     background-color:transparent;
 }
 
+#cs-main {
+  position:relative;
+  height:100%;
+  width:60%;
+  margin:0 auto;
+}
+
 #cs-overlay {
     height:100%;
     width:100%;
@@ -48,7 +55,7 @@
 
 #cs-top-line{
   position:relative;
-  width:60%;
+  width:100%;
   margin: 0 auto;
   background-color:transparent;
   height:40px;
@@ -69,7 +76,7 @@
 #cs-rule {
       position:relative;
       height: 1px;
-      width:60%;
+      width:100%;
       margin: 0 auto;
       
       top:0px;
@@ -80,7 +87,7 @@
 
 #cs-bottom-line{
   position:relative;
-  width:60%;
+  width:100%;
   margin: 0 auto;
   background-color:transparent;
   height:70px;
@@ -110,7 +117,6 @@
 }
 
 #cs-player-wrapper{
-  width:60%;
   margin:0 auto;
   background-color:transparent;
   height:500px;
@@ -124,10 +130,12 @@
 
 #cs-video-player {
   z-index:10000000000000001 !important;
+  
 }
 
 .largeVideoWrapper {
 	position: relative;
+	padding-bottom: 56.25%;
 	height: 0;
 }
 
@@ -135,10 +143,7 @@
 	margin-bottom: 0px;
 }
 
-.largeVideoWrapper div,
-.largeVideoWrapper embed, 
-.largeVideoWrapper object,
-.largeVideoWrapper video {
+.largeVideoWrapper .video-js {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -190,10 +195,10 @@
   border:2px solid black;
 }
 
-.wideScreen {
+/*.wideScreen {
   padding-bottom: 56.25%;
 }
-
+*/
 .fourBYthree {
   padding-bottom: 75%;
 }

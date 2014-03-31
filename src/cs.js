@@ -36,7 +36,7 @@
       options = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), callback = arguments[_i++];
       this.libraries = {
         jQuery: "http://ajax.googleapis.com/ajax/libs/jquery/$version/jquery.js",
-        videoJs: "http://vjs.zencdn.net/$version/video.js"
+        videoJs: "vjs/video.dev.js"
       };
       lib = options[0], version = options[1], compressed = options[2];
       if (this.libraries[lib]) {
@@ -61,7 +61,7 @@
       if (compressed) {
         lib = lib.replace('.js', '.min.js');
       }
-      document.getElementsByTagName('body')[0].appendChild(s);
+      document.getElementsByTagName('head')[0].appendChild(s);
     }
 
     return ScriptLoader;
@@ -94,9 +94,9 @@
     };
 
     DomManager.prototype.get = function(id) {
-      var elem;
-      elem = document.getElementById(id);
-      return elem;
+      var e;
+      e = document.getElementById(id);
+      return e;
     };
 
     DomManager.prototype.getStyle = function(url) {
@@ -116,8 +116,10 @@
     function Player(id, parent_id) {
       this.moveToParentWithId = __bind(this.moveToParentWithId, this);
       this.setUrl = __bind(this.setUrl, this);
-      this.onended = __bind(this.onended, this);
-      this.addEventListener = __bind(this.addEventListener, this);
+      this.ready = __bind(this.ready, this);
+      this.ended = __bind(this.ended, this);
+      this.timeUpdate = __bind(this.timeUpdate, this);
+      this.on = __bind(this.on, this);
       this.isMuted = __bind(this.isMuted, this);
       this.timeRemaining = __bind(this.timeRemaining, this);
       this.currentTime = __bind(this.currentTime, this);
@@ -127,21 +129,23 @@
       this.mute = __bind(this.mute, this);
       this.pause = __bind(this.pause, this);
       this.play = __bind(this.play, this);
-      var never_played, p;
+      var p;
+      this.id = id;
       this.parent_id = parent_id;
       p = document.createElement("video");
       p.setAttribute("id", id);
-      p.setAttribute("controls", "true");
+      p.setAttribute("class", "video-js vjs-default-skin vjs-big-play-button");
+      p.setAttribute("height", "100%");
+      p.setAttribute("width", "100%");
+      p.setAttribute("data-setup", "{}");
+      p.setAttribute("controls", "");
       document.getElementById(parent_id).appendChild(p);
-      this.elem = document.getElementById(id);
-      never_played = true;
+      this.elem = videojs(id);
       this.mute();
     }
 
     Player.prototype.play = function() {
-      var never_played;
-      this.elem.play();
-      return never_played = false;
+      return this.elem.play();
     };
 
     Player.prototype.pause = function() {
@@ -149,51 +153,56 @@
     };
 
     Player.prototype.mute = function() {
-      return this.elem.volume = 0;
+      return this.elem.volume(0);
     };
 
     Player.prototype.unmute = function() {
-      return this.elem.volume = 1;
+      return this.elem.volume(1);
     };
 
     Player.prototype.loadFile = function(vf) {
       var _this = this;
-      this.elem.src = vf.source();
-      if (vf.poster() && this.never_played) {
-        this.elem.setAttribute("poster", vf.poster());
+      this.elem.src(vf.source());
+      if (vf.poster()) {
+        this.elem.poster(vf.poster());
       }
-      this.elem.onloadedmetadata = function() {
-        return _this.elem.currentTime = vf.position();
-      };
+      this.elem.on("loadedmetadata", function() {
+        console.log("Loaded meta data");
+        return _this.elem.currentTime(vf.position());
+      });
       return this.setUrl(vf.url());
     };
 
     Player.prototype.duration = function() {
-      return this.elem.duration;
+      return this.elem.duration();
     };
 
     Player.prototype.currentTime = function() {
-      return this.elem.currentTime;
+      return this.elem.currentTime();
     };
 
     Player.prototype.timeRemaining = function() {
-      return this.elem.duration - this.elem.currentTime;
+      return this.duration() - this.currentTime();
     };
 
     Player.prototype.isMuted = function() {
-      if (this.elem.volume === 0 || this.elem.muted) {
-        return true;
-      } else {
-        return false;
-      }
+      return this.elem.muted();
     };
 
-    Player.prototype.addEventListener = function(callback, func) {
-      return this.elem.addEventListener(callback, func);
+    Player.prototype.on = function(callback, func) {
+      return this.elem.on(callback, func());
     };
 
-    Player.prototype.onended = function(func) {
-      return this.elem.onended = func;
+    Player.prototype.timeUpdate = function(func) {
+      return this.elem.on("timeupdate", func);
+    };
+
+    Player.prototype.ended = function(func) {
+      return this.elem.on("ended", func);
+    };
+
+    Player.prototype.ready = function(func) {
+      return this.elem.ready(func());
     };
 
     Player.prototype.setUrl = function(url) {
@@ -208,8 +217,12 @@
     };
 
     Player.prototype.moveToParentWithId = function(new_parent_id) {
-      document.getElementById(this.parent_id).removeChild(this.elem);
-      document.getElementById(new_parent_id).appendChild(this.elem);
+      var container, player_div;
+      container = document.getElementById(this.parent_id);
+      player_div = document.getElementById(this.id);
+      container.removeChild(player_div);
+      console.log(new_parent_id);
+      document.getElementById(new_parent_id).appendChild(player_div);
       return this.parent_id = new_parent_id;
     };
 
@@ -222,7 +235,7 @@
       var item, vf, _i, _len, _ref;
       this.site_name = site_name;
       this.remove_overlay = __bind(this.remove_overlay, this);
-      this.set_overlay = __bind(this.set_overlay, this);
+      this.set_blur = __bind(this.set_blur, this);
       this.update_time_remaining = __bind(this.update_time_remaining, this);
       this.toggle_mute = __bind(this.toggle_mute, this);
       this.set_bindings = __bind(this.set_bindings, this);
@@ -232,6 +245,7 @@
       this.minimise = __bind(this.minimise, this);
       this.play_next_video = __bind(this.play_next_video, this);
       this.current_video = __bind(this.current_video, this);
+      this.set_blur();
       this.player = null;
       this.videos = [];
       _ref = window.media;
@@ -242,9 +256,9 @@
       }
       this.current_video_index = 0;
       this.dom = new DomManager();
-      this.set_overlay();
       this.dom.getStyle("src/style.css");
-      this.load_UI();
+      this.dom.getStyle("vjs/video-js.min.css");
+      new ScriptLoader("videoJs", this.load_UI);
     }
 
     Surface.prototype.current_video = function() {
@@ -252,8 +266,8 @@
     };
 
     Surface.prototype.play_next_video = function() {
+      console.log("Playing next");
       if ((this.current_video_index + 1) < this.videos.length) {
-        console.log(this.videos.length);
         this.current_video_index = this.current_video_index + 1;
         this.player.loadFile(this.current_video());
         this.$video_title.html(this.current_video().title());
@@ -273,7 +287,7 @@
 
     Surface.prototype.maximise = function() {
       this.hide_slug();
-      this.set_overlay();
+      this.set_blur();
       this.player.moveToParentWithId("cs-player-container");
       this.$wrapper.show();
       return this.player.play();
@@ -285,7 +299,8 @@
     };
 
     Surface.prototype.load_UI = function() {
-      var html, label, player_container, s;
+      var html, label, player_container, s,
+        _this = this;
       s = document.createElement("div");
       s.id = "cs-wrapper";
       html = document.getElementsByTagName("html")[0];
@@ -294,39 +309,36 @@
       this.dom.appendDivToParent("cs-header", "cs-wrapper");
       this.dom.appendDivToParent("cs-close", "cs-header");
       this.dom.appendDivToParent("cs-main", "cs-wrapper");
-      this.dom.appendDivToParent("cs-info-wrapper", "cs-wrapper");
+      this.dom.appendDivToParent("cs-info-wrapper", "cs-main");
       this.dom.appendDivToParent("cs-top-line", "cs-info-wrapper");
       this.dom.appendDivToParent("cs-rule", "cs-info-wrapper");
       this.dom.appendDivToParent("cs-bottom-line", "cs-info-wrapper");
       this.dom.appendDivToParent("cs-label", "cs-top-line");
       this.dom.appendDivToParent("cs-video-title", "cs-bottom-line");
       this.dom.appendDivToParent("cs-video-time-remaining", "cs-bottom-line");
-      this.dom.appendDivToParent("cs-player-wrapper", "cs-wrapper");
+      this.dom.appendDivToParent("cs-player-wrapper", "cs-main");
       this.dom.appendDivToParent("cs-player-container", "cs-player-wrapper");
       this.dom.appendDivToParent("cs-footer", "cs-wrapper");
-      this.dom.appendDivToParent("cs-video-toolbar", "cs-wrapper");
-      this.dom.appendDivToParent("cs-video-toolbar-forward", "cs-video-toolbar");
-      this.dom.appendDivToParent("cs-video-toolbar-rewind", "cs-video-toolbar");
       this.$wrapper = $("#cs-wrapper");
       this.$video_title = $("#cs-video-title");
       this.$video_time_remaining = $("#cs-video-time-remaining");
       label = $("#cs-label");
       player_container = $("#cs-player-container");
-      player_container.addClass("largeVideoWrapper wideScreen");
+      player_container.addClass("largeVideoWrapper");
       label.html(this.site_name);
       this.$video_title.html(this.current_video().title());
       this.$video_time_remaining.html("");
       this.set_bindings();
       this.player = new Player("cs-video-player", "cs-player-container");
-      this.player.addEventListener('timeupdate', this.update_time_remaining);
-      this.player.onended(this.play_next_video);
-      this.player.loadFile(this.current_video());
-      this.player.play();
+      this.player.ready(function() {
+        _this.player.timeUpdate(_this.update_time_remaining);
+        return _this.player.loadFile(_this.current_video());
+      });
       this.dom.appendDivToBody("cs-slug-wrapper");
       this.dom.appendDivToParent("cs-small-player-container", "cs-slug-wrapper");
       this.$slug_wrapper = $("#cs-slug-wrapper");
       player_container = $("#cs-small-player-container");
-      player_container.addClass("smallVideoWrapper wideScreen");
+      player_container.addClass("smallVideoWrapper");
       return this.hide_slug();
     };
 
@@ -365,7 +377,7 @@
       }
     };
 
-    Surface.prototype.set_overlay = function() {
+    Surface.prototype.set_blur = function() {
       $("body").css("-webkit-filter", "blur(15px)");
       $("body").css("filter", "blur(20px)");
       return $('html, body').css({
