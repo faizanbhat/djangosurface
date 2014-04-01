@@ -264,7 +264,7 @@ class Surface
       $("#cs-close").attr('onclick','').unbind('click')
 
   enable_minimise: =>
-    $("#cs-close").css("opacity","1.0")
+    $("#cs-close").css("opacity","0.8")
     $("#cs-close").attr('onclick','').unbind('click')    
     $("#cs-close").click =>
       @minimise()
