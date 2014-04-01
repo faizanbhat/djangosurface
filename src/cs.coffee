@@ -261,7 +261,14 @@ class Surface
     
     # Messaging
     label.html(@site_name)
-    @$video_title.html(@current_video().title())
+    if @current_video().isAd()
+      @$video_title.html(@videos[@current_video_index+1].title())
+      
+      
+    else
+      @$video_title.html(@current_video().title())
+      
+      
     @$video_time_remaining.html("")
     
     @enable_minimise()
@@ -274,11 +281,11 @@ class Surface
       @player.ended(@play_next_video)
       @player.set_fullscreen_action(@maximise)
       @player.onplay(@disable_minimise)
+      @player.onplay(=>@$video_title.html(@current_video().title()))
       @player.onpause(@enable_minimise)
     )
     
 #   Load elements for slug  
-    console.log "reached"
     @dom.appendDivToBody("cs-slug-wrapper")
     @dom.appendDivToParent("cs-small-player-container","cs-slug-wrapper")
     @$slug_wrapper = $("#cs-slug-wrapper")

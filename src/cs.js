@@ -393,7 +393,11 @@
       player_container = $("#cs-player-container");
       player_container.addClass("largeVideoWrapper");
       label.html(this.site_name);
-      this.$video_title.html(this.current_video().title());
+      if (this.current_video().isAd()) {
+        this.$video_title.html(this.videos[this.current_video_index + 1].title());
+      } else {
+        this.$video_title.html(this.current_video().title());
+      }
       this.$video_time_remaining.html("");
       this.enable_minimise();
       this.player = new Player("cs-video-player", "cs-player-container");
@@ -404,10 +408,12 @@
           _this.player.ended(_this.play_next_video);
           _this.player.set_fullscreen_action(_this.maximise);
           _this.player.onplay(_this.disable_minimise);
+          _this.player.onplay(function() {
+            return _this.$video_title.html(_this.current_video().title());
+          });
           return _this.player.onpause(_this.enable_minimise);
         };
       })(this));
-      console.log("reached");
       this.dom.appendDivToBody("cs-slug-wrapper");
       this.dom.appendDivToParent("cs-small-player-container", "cs-slug-wrapper");
       this.$slug_wrapper = $("#cs-slug-wrapper");
