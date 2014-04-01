@@ -127,6 +127,12 @@ class Player
   
   ready:(func)=>
     @elem.ready(func)
+  
+  loadedmetadata:(func)=>
+    @elem.on("loadedmetadata",func)
+    
+  setCurrentTime:(time)=>
+    @elem.currentTime(time)
       
   moveToParentWithId:(new_parent_id)=>
     container = document.getElementById(@parent_id)
@@ -152,11 +158,14 @@ class Player
     return @elem.isPlaying()
     
   
+  
 class Surface
   constructor:(@site_name,delay)->
     
     @current_video_index = @getCookie("gmcs-surface-current-video-index")
-    console.log @current_video_index
+    @current_time  = @getCookie("gmcs-surface-current_time")
+    
+    console.log "Current index = "+ @current_video_index
     run = ()=>    
       @set_blur()
     
@@ -281,7 +290,6 @@ class Surface
      
     @$wrapper = $("#cs-wrapper")
     @$video_title = $("#cs-video-title")
-    @$video_time_remaining  = $("#cs-video-time-remaining")
     label = $("#cs-label")
     player_container = $("#cs-player-container")
     
@@ -296,23 +304,23 @@ class Surface
       
     else
       @$video_title.html(@current_video().title())
-      
-      
-    @$video_time_remaining.html("")
     
     @enable_minimise()
     
     # Video Player
     @player = new Player("cs-video-player","cs-player-container")   
     @player.ready(=>
-      @player.timeUpdate(@update_time_remaining)
       @player.loadFile(@current_video())
+      console.log "Current time = " + @current_time
+      if @current_time > 0
+        @player.loadedmetadata(=>@player.setCurrentTime(@current_time);console.log "Player time set to " + @player.currentTime())
       @player.ended(@play_next_video)
       @player.set_fullscreen_action(@maximise)
       if @current_video().isAd()
         console.log "it's ad"
         @player.onplay(@disable_minimise)
       @player.onplay(=>@$video_title.html(@current_video().title()))
+      @player.timeUpdate(@update_current_time)
     )
     
 #   Load elements for slug  
@@ -335,22 +343,9 @@ class Surface
     else
       @player.mute()
 
-  update_time_remaining:=>
-    # Update label
-    time_in_secs = @player.timeRemaining()
-    if typeof time_in_secs is 'number'
-      mins = Math.floor(time_in_secs / 59)
-      secs = Math.ceil(time_in_secs % 59)
-      if mins > 9
-        mins_text = ''+ mins 
-      else
-        mins_text = '0'+mins
-      if secs > 9
-        secs_text = ''+ secs 
-      else
-        secs_text = '0'+secs
-
-      @$video_time_remaining.html(mins_text+":"+secs_text)
+  update_current_time:=>
+    if @player.playing
+      @setCookie("gmcs-surface-current_time",@player.currentTime(),10000)
   
   
   set_blur:=>

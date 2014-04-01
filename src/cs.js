@@ -132,6 +132,8 @@
       this.disable_fullscreen = __bind(this.disable_fullscreen, this);
       this.enable_fullscreen = __bind(this.enable_fullscreen, this);
       this.moveToParentWithId = __bind(this.moveToParentWithId, this);
+      this.setCurrentTime = __bind(this.setCurrentTime, this);
+      this.loadedmetadata = __bind(this.loadedmetadata, this);
       this.ready = __bind(this.ready, this);
       this.onpause = __bind(this.onpause, this);
       this.onplay = __bind(this.onplay, this);
@@ -250,6 +252,14 @@
       return this.elem.ready(func);
     };
 
+    Player.prototype.loadedmetadata = function(func) {
+      return this.elem.on("loadedmetadata", func);
+    };
+
+    Player.prototype.setCurrentTime = function(time) {
+      return this.elem.currentTime(time);
+    };
+
     Player.prototype.moveToParentWithId = function(new_parent_id) {
       var container, new_parent, player_div;
       container = document.getElementById(this.parent_id);
@@ -289,7 +299,7 @@
       this.site_name = site_name;
       this.remove_overlay = __bind(this.remove_overlay, this);
       this.set_blur = __bind(this.set_blur, this);
-      this.update_time_remaining = __bind(this.update_time_remaining, this);
+      this.update_current_time = __bind(this.update_current_time, this);
       this.toggle_mute = __bind(this.toggle_mute, this);
       this.set_bindings = __bind(this.set_bindings, this);
       this.load_UI = __bind(this.load_UI, this);
@@ -301,7 +311,8 @@
       this.play_next_video = __bind(this.play_next_video, this);
       this.current_video = __bind(this.current_video, this);
       this.current_video_index = this.getCookie("gmcs-surface-current-video-index");
-      console.log(this.current_video_index);
+      this.current_time = this.getCookie("gmcs-surface-current_time");
+      console.log("Current index = " + this.current_video_index);
       run = (function(_this) {
         return function() {
           var item, vf, _i, _len, _ref;
@@ -424,7 +435,6 @@
       this.dom.appendDivToParent("cs-footer", "cs-wrapper");
       this.$wrapper = $("#cs-wrapper");
       this.$video_title = $("#cs-video-title");
-      this.$video_time_remaining = $("#cs-video-time-remaining");
       label = $("#cs-label");
       player_container = $("#cs-player-container");
       player_container.addClass("largeVideoWrapper");
@@ -434,22 +444,28 @@
       } else {
         this.$video_title.html(this.current_video().title());
       }
-      this.$video_time_remaining.html("");
       this.enable_minimise();
       this.player = new Player("cs-video-player", "cs-player-container");
       this.player.ready((function(_this) {
         return function() {
-          _this.player.timeUpdate(_this.update_time_remaining);
           _this.player.loadFile(_this.current_video());
+          console.log("Current time = " + _this.current_time);
+          if (_this.current_time > 0) {
+            _this.player.loadedmetadata(function() {
+              _this.player.setCurrentTime(_this.current_time);
+              return console.log("Player time set to " + _this.player.currentTime());
+            });
+          }
           _this.player.ended(_this.play_next_video);
           _this.player.set_fullscreen_action(_this.maximise);
           if (_this.current_video().isAd()) {
             console.log("it's ad");
             _this.player.onplay(_this.disable_minimise);
           }
-          return _this.player.onplay(function() {
+          _this.player.onplay(function() {
             return _this.$video_title.html(_this.current_video().title());
           });
+          return _this.player.timeUpdate(_this.update_current_time);
         };
       })(this));
       this.dom.appendDivToBody("cs-slug-wrapper");
@@ -476,23 +492,9 @@
       }
     };
 
-    Surface.prototype.update_time_remaining = function() {
-      var mins, mins_text, secs, secs_text, time_in_secs;
-      time_in_secs = this.player.timeRemaining();
-      if (typeof time_in_secs === 'number') {
-        mins = Math.floor(time_in_secs / 59);
-        secs = Math.ceil(time_in_secs % 59);
-        if (mins > 9) {
-          mins_text = '' + mins;
-        } else {
-          mins_text = '0' + mins;
-        }
-        if (secs > 9) {
-          secs_text = '' + secs;
-        } else {
-          secs_text = '0' + secs;
-        }
-        return this.$video_time_remaining.html(mins_text + ":" + secs_text);
+    Surface.prototype.update_current_time = function() {
+      if (this.player.playing) {
+        return this.setCookie("gmcs-surface-current_time", this.player.currentTime(), 10000);
       }
     };
 
