@@ -4,7 +4,7 @@ $ ->
   
   # Add stylesheet
   # window.media = [{src:"src/3.mp4",poster:"src/poster.png",title:"Meet the team behind Genesis Media"}]
-  window.media = [{src:{mp4:"src/propel.mp4",webm:"src/propel.webm"},poster:"src/poster.png",title:"Advertisement: Propel Fitness Water",url:"https://www.facebook.com/propel"},{src:{mp4:"src/miller.mp4",webm:"src/miller.webm"},poster:"src/poster.png",title:"Marissa Miller's Shape Magazine Cover",url:""},{src:{mp4:"src/audrina.mp4",webm:"src/audrina.webm"},poster:"src/poster.png",title:"Audrina Patridge",url:""}]
+  window.media = [{ad:true,src:{mp4:"src/propel.mp4",webm:"src/propel.webm"},poster:"src/poster.png",title:"Advertisement: Propel Fitness Water",url:"https://www.facebook.com/propel"},{ad:true,src:{mp4:"src/miller.mp4",webm:"src/miller.webm"},poster:"src/poster.png",title:"Marissa Miller's Shape Magazine Cover",url:""},{ad:true,src:{mp4:"src/audrina.mp4",webm:"src/audrina.webm"},poster:"src/poster.png",title:"Audrina Patridge",url:""}]
   surface = new Surface("ShapeTV",0)
 
 class ScriptLoader
@@ -133,15 +133,16 @@ class Surface
   constructor:(@site_name,delay)->
     
     run = ()=>    
-      # Read media files
       @set_blur()
     
       @minimised = false
-    
+      @minimisable = false
       @player = null
+      # Read media files
+      
       @videos = []
       for item in window.media
-        vf = new VideoFile(item.src,0,item.poster,item.title,item.url)
+        vf = new VideoFile(item.src,0,item.poster,item.title,item.url,item.ad)
         @videos.push vf
       @current_video_index = 0;  
     
@@ -166,6 +167,18 @@ class Surface
       @$video_title.html(@current_video().title())
       @player.play()
   
+  disable_minimise: =>
+    @minimisable = false
+    $("#cs-close").css("opacity","0.2")
+    $("#cs-close").attr('onclick','').unbind('click')
+    
+  enable_minimise: =>
+    if @minimisable is false
+      $("#cs-close").css("opacity","1.0")
+      $("#cs-close").click =>
+        @minimise()
+      @minimisable = true
+
   minimise: =>
     @current_video().setPosition(@player.currentTime()) # Update video file current time
     @remove_overlay()
@@ -188,7 +201,6 @@ class Surface
 
   maximise:=>
     if (@minimised==true)
-        console.log "hi"
         
         $(".vjs-fullscreen-control").css("display","none")
         
@@ -246,7 +258,7 @@ class Surface
     @$video_title.html(@current_video().title())
     @$video_time_remaining.html("")
     
-    @set_bindings()
+    @enable_minimise()
     
     # Video Player
     @player = new Player("cs-video-player","cs-player-container")   
@@ -321,13 +333,12 @@ class Surface
     })    
     
 class VideoFile
-  constructor:(src,position,poster,title,url)->
+  constructor:(src,position,poster,title,@video_url,@ad)->
     @file_src = src ? ""
     @playback_position = position ? 0
     @video_poster = poster ? ""
     @video_title = title ? ""
-    @video_url = url
-    
+
   sources:=>
     return @file_src
 
@@ -347,3 +358,6 @@ class VideoFile
     if @video_poster.length > 0
       return @video_poster
     return null
+    
+  isAd:=>
+    return @ad

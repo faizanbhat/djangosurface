@@ -10,6 +10,7 @@
     var surface;
     window.media = [
       {
+        ad: true,
         src: {
           mp4: "src/propel.mp4",
           webm: "src/propel.webm"
@@ -18,6 +19,7 @@
         title: "Advertisement: Propel Fitness Water",
         url: "https://www.facebook.com/propel"
       }, {
+        ad: true,
         src: {
           mp4: "src/miller.mp4",
           webm: "src/miller.webm"
@@ -26,6 +28,7 @@
         title: "Marissa Miller's Shape Magazine Cover",
         url: ""
       }, {
+        ad: true,
         src: {
           mp4: "src/audrina.mp4",
           webm: "src/audrina.webm"
@@ -253,6 +256,8 @@
       this.hide_slug = __bind(this.hide_slug, this);
       this.maximise = __bind(this.maximise, this);
       this.minimise = __bind(this.minimise, this);
+      this.enable_minimise = __bind(this.enable_minimise, this);
+      this.disable_minimise = __bind(this.disable_minimise, this);
       this.play_next_video = __bind(this.play_next_video, this);
       this.current_video = __bind(this.current_video, this);
       run = (function(_this) {
@@ -260,12 +265,13 @@
           var item, vf, _i, _len, _ref;
           _this.set_blur();
           _this.minimised = false;
+          _this.minimisable = false;
           _this.player = null;
           _this.videos = [];
           _ref = window.media;
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             item = _ref[_i];
-            vf = new VideoFile(item.src, 0, item.poster, item.title, item.url);
+            vf = new VideoFile(item.src, 0, item.poster, item.title, item.url, item.ad);
             _this.videos.push(vf);
           }
           _this.current_video_index = 0;
@@ -292,6 +298,24 @@
       }
     };
 
+    Surface.prototype.disable_minimise = function() {
+      this.minimisable = false;
+      $("#cs-close").css("opacity", "0.2");
+      return $("#cs-close").attr('onclick', '').unbind('click');
+    };
+
+    Surface.prototype.enable_minimise = function() {
+      if (this.minimisable === false) {
+        $("#cs-close").css("opacity", "1.0");
+        $("#cs-close").click((function(_this) {
+          return function() {
+            return _this.minimise();
+          };
+        })(this));
+        return this.minimisable = true;
+      }
+    };
+
     Surface.prototype.minimise = function() {
       this.current_video().setPosition(this.player.currentTime());
       this.remove_overlay();
@@ -307,7 +331,6 @@
 
     Surface.prototype.maximise = function() {
       if (this.minimised === true) {
-        console.log("hi");
         $(".vjs-fullscreen-control").css("display", "none");
         this.hide_slug();
         this.set_blur();
@@ -352,7 +375,7 @@
       label.html(this.site_name);
       this.$video_title.html(this.current_video().title());
       this.$video_time_remaining.html("");
-      this.set_bindings();
+      this.enable_minimise();
       this.player = new Player("cs-video-player", "cs-player-container");
       this.player.ready((function(_this) {
         return function() {
@@ -437,7 +460,10 @@
   })();
 
   VideoFile = (function() {
-    function VideoFile(src, position, poster, title, url) {
+    function VideoFile(src, position, poster, title, video_url, ad) {
+      this.video_url = video_url;
+      this.ad = ad;
+      this.isAd = __bind(this.isAd, this);
       this.poster = __bind(this.poster, this);
       this.url = __bind(this.url, this);
       this.title = __bind(this.title, this);
@@ -448,7 +474,6 @@
       this.playback_position = position != null ? position : 0;
       this.video_poster = poster != null ? poster : "";
       this.video_title = title != null ? title : "";
-      this.video_url = url;
     }
 
     VideoFile.prototype.sources = function() {
@@ -476,6 +501,10 @@
         return this.video_poster;
       }
       return null;
+    };
+
+    VideoFile.prototype.isAd = function() {
+      return this.ad;
     };
 
     return VideoFile;
