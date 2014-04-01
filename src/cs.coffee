@@ -163,33 +163,41 @@ class Surface
   constructor:(@site_name,delay)->
     
     @current_video_index = @getCookie("gmcs-surface-current-video-index")
+    if @current_video_index is null
+      @current_video_index = 0;  
     @current_time  = @getCookie("gmcs-surface-current_time")
+    if @current_time is null
+      @current_time = 0;  
+    @start_minimised = @getCookie("gmcs-surface-minimised")
+    if @start_minimised is null
+      @start_minimised = 0
     
+    console.log "start minimised = " + @start_minimised
     console.log "Current index = "+ @current_video_index
-    run = ()=>    
+    console.log "Current time = "+ @current_time
+  
+    @minimised = false
+    @player = null
+    
+    # Read media files
+    @videos = []
+    for item in window.media
+      vf = new VideoFile(item.src,0,item.poster,item.title,item.url,item.ad)
+      @videos.push vf
+  
+    # Setup Dom
+    @dom = new DomManager()
+  
+    @dom.getStyle("src/style.css")
+    @dom.getStyle("vjs/video-js.css")
+
+    run_surface = ()=>   
       @set_blur()
+
+      new ScriptLoader "videoJs", @load_UI
     
-      @minimised = false
-      @player = null
-      # Read media files
-      
-      @videos = []
-      for item in window.media
-        vf = new VideoFile(item.src,0,item.poster,item.title,item.url,item.ad)
-        @videos.push vf
-        
-      if @current_video_index is null
-        @current_video_index = 0;  
-    
-      # Setup Dom
-      @dom = new DomManager()
-    
-      @dom.getStyle("src/style.css")
-      @dom.getStyle("vjs/video-js.css")
-    
-      new ScriptLoader "videoJs", @load_UI 
-    setTimeout(run,delay);
-    
+    setTimeout(run_surface,delay);
+          
   current_video:=>
     return @videos[@current_video_index]
   
@@ -230,7 +238,10 @@ class Surface
     if playing
       console.log "it's playing"
       @player.play()
-
+      
+    # update cookie
+    @setCookie("gmcs-surface-minimised",1,10000)
+    
     
   maximise:=>
     if (@minimised==true)
@@ -248,7 +259,10 @@ class Surface
         @player.play() # For some reason player stops after it's moved around
         
         @minimised = false
-
+        
+        @setCookie("gmcs-surface-minimised",0,10000)
+        
+    
   disable_minimise: =>
     if @current_video().isAd()
       $("#cs-close").css("opacity","0.2")
@@ -265,7 +279,7 @@ class Surface
     $("#cs-slug-wrapper").hide()
 
   load_UI:=>
-        
+      
     # Append Surface wrapper OUTSIDE body
     s = document.createElement("div")
     s.id = "cs-wrapper"
@@ -332,7 +346,10 @@ class Surface
     player_container.addClass("smallVideoWrapper")      
     
     @hide_slug()    # Hide slug
-
+    
+    if @start_minimised
+      @minimise()
+      
   set_bindings:=>
     $("#cs-close").click =>
       @minimise()

@@ -295,7 +295,7 @@
 
   Surface = (function() {
     function Surface(site_name, delay) {
-      var run;
+      var item, run_surface, vf, _i, _len, _ref;
       this.site_name = site_name;
       this.remove_overlay = __bind(this.remove_overlay, this);
       this.set_blur = __bind(this.set_blur, this);
@@ -311,31 +311,39 @@
       this.play_next_video = __bind(this.play_next_video, this);
       this.current_video = __bind(this.current_video, this);
       this.current_video_index = this.getCookie("gmcs-surface-current-video-index");
+      if (this.current_video_index === null) {
+        this.current_video_index = 0;
+      }
       this.current_time = this.getCookie("gmcs-surface-current_time");
+      if (this.current_time === null) {
+        this.current_time = 0;
+      }
+      this.start_minimised = this.getCookie("gmcs-surface-minimised");
+      if (this.start_minimised === null) {
+        this.start_minimised = 0;
+      }
+      console.log("start minimised = " + this.start_minimised);
       console.log("Current index = " + this.current_video_index);
-      run = (function(_this) {
+      console.log("Current time = " + this.current_time);
+      this.minimised = false;
+      this.player = null;
+      this.videos = [];
+      _ref = window.media;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        item = _ref[_i];
+        vf = new VideoFile(item.src, 0, item.poster, item.title, item.url, item.ad);
+        this.videos.push(vf);
+      }
+      this.dom = new DomManager();
+      this.dom.getStyle("src/style.css");
+      this.dom.getStyle("vjs/video-js.css");
+      run_surface = (function(_this) {
         return function() {
-          var item, vf, _i, _len, _ref;
           _this.set_blur();
-          _this.minimised = false;
-          _this.player = null;
-          _this.videos = [];
-          _ref = window.media;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            item = _ref[_i];
-            vf = new VideoFile(item.src, 0, item.poster, item.title, item.url, item.ad);
-            _this.videos.push(vf);
-          }
-          if (_this.current_video_index === null) {
-            _this.current_video_index = 0;
-          }
-          _this.dom = new DomManager();
-          _this.dom.getStyle("src/style.css");
-          _this.dom.getStyle("vjs/video-js.css");
           return new ScriptLoader("videoJs", _this.load_UI);
         };
       })(this);
-      setTimeout(run, delay);
+      setTimeout(run_surface, delay);
     }
 
     Surface.prototype.current_video = function() {
@@ -375,8 +383,9 @@
       this.minimised = true;
       if (playing) {
         console.log("it's playing");
-        return this.player.play();
+        this.player.play();
       }
+      return this.setCookie("gmcs-surface-minimised", 1, 10000);
     };
 
     Surface.prototype.maximise = function() {
@@ -387,7 +396,8 @@
         this.player.moveToParentWithId("cs-player-container");
         this.$wrapper.show();
         this.player.play();
-        return this.minimised = false;
+        this.minimised = false;
+        return this.setCookie("gmcs-surface-minimised", 0, 10000);
       }
     };
 
@@ -473,7 +483,10 @@
       this.$slug_wrapper = $("#cs-slug-wrapper");
       player_container = $("#cs-small-player-container");
       player_container.addClass("smallVideoWrapper");
-      return this.hide_slug();
+      this.hide_slug();
+      if (this.start_minimised) {
+        return this.minimise();
+      }
     };
 
     Surface.prototype.set_bindings = function() {
