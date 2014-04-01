@@ -126,6 +126,8 @@
 
   Player = (function() {
     function Player(id, parent_id) {
+      this.showProgressBar = __bind(this.showProgressBar, this);
+      this.hideProgressBar = __bind(this.hideProgressBar, this);
       this.isPlaying = __bind(this.isPlaying, this);
       this.set_fullscreen_action = __bind(this.set_fullscreen_action, this);
       this.disable_fullscreen = __bind(this.disable_fullscreen, this);
@@ -287,6 +289,14 @@
       return this.elem.isPlaying();
     };
 
+    Player.prototype.hideProgressBar = function() {
+      return this.elem.controlBar.progressControl.hide();
+    };
+
+    Player.prototype.showProgressBar = function() {
+      return this.elem.controlBar.progressControl.show();
+    };
+
     return Player;
 
   })();
@@ -357,9 +367,11 @@
         this.setCookie("gmcs-surface-current-video-index", this.current_video_index, 10000);
       }
       if (this.current_video().isAd()) {
-        return this.disable_minimise();
+        this.disable_minimise();
+        return this.player.hideProgressBar();
       } else {
-        return this.enable_minimise();
+        this.enable_minimise();
+        return this.player.showProgressBar();
       }
     };
 
@@ -463,6 +475,7 @@
           _this.player.set_fullscreen_action(_this.maximise);
           if (_this.current_video().isAd()) {
             _this.player.onplay(_this.disable_minimise);
+            _this.player.hideProgressBar();
           }
           _this.player.onplay(function() {
             return _this.$video_title.html(_this.current_video().title());

@@ -155,7 +155,12 @@ class Player
   isPlaying:=>
     return @elem.isPlaying()
     
+  hideProgressBar:=>
+    @elem.controlBar.progressControl.hide()
   
+  showProgressBar:=>
+    @elem.controlBar.progressControl.show()
+
   
 class Surface
   constructor:(@site_name,delay)->
@@ -210,8 +215,10 @@ class Surface
       
     if @current_video().isAd()
       @disable_minimise()
+      @player.hideProgressBar()
     else
       @enable_minimise()
+      @player.showProgressBar()
   
   minimise: =>
     if @player.playing 
@@ -310,7 +317,6 @@ class Surface
     if @current_video().isAd()
       @$video_title.html(@videos[@current_video_index+1].title())
       
-      
     else
       @$video_title.html(@current_video().title())
     
@@ -318,14 +324,17 @@ class Surface
     
     # Video Player
     @player = new Player("cs-video-player","cs-player-container")   
-    @player.ready(=>
+    @player.ready(=>      
       @player.loadFile(@current_video())
       if @current_time > 0
         @player.loadedmetadata(=>@player.setCurrentTime(@current_time))
       @player.ended(@play_next_video)
       @player.set_fullscreen_action(@maximise)
+      
       if @current_video().isAd()
         @player.onplay(@disable_minimise)
+        @player.hideProgressBar()
+        
       @player.onplay(=>@$video_title.html(@current_video().title()))
       @player.timeUpdate(@update_current_time)
     )
