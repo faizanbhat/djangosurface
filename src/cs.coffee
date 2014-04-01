@@ -71,7 +71,10 @@ class Player
     @elem = videojs(id)    
     # Todo: Remove 
     @mute()
-
+    @playing = false
+    @elem.on("play",=>@playing=true)
+    @elem.on("pause",=>@playing=false)
+    
   play:=>
     @elem.play()
     
@@ -119,7 +122,7 @@ class Player
     
   onpause:(func) =>
     @elem.on("pause",func)
-    
+  
   ready:(func)=>
     @elem.ready(func)
       
@@ -142,6 +145,9 @@ class Player
     
   set_fullscreen_action:(func)=>
     $(".vjs-fullscreen-control")[0].onclick = func
+    
+  isPlaying:=>
+    return @elem.isPlaying()
     
   
 class Surface
@@ -180,8 +186,17 @@ class Surface
       @player.loadFile(@current_video())
       @$video_title.html(@current_video().title())
       @player.play()
+    if @current_video().isAd()
+      @disable_minimise()
+    else
+      @enable_minimise()
 
   minimise: =>
+    if @player.playing 
+      playing = true
+    else 
+      playing = false
+      
     @current_video().setPosition(@player.currentTime()) # Update video file current time
     @remove_overlay()
     @$wrapper.hide()
@@ -193,6 +208,11 @@ class Surface
     $("#cs-slug-wrapper").show() # Show slug
     
     @minimised = true
+    
+    if playing
+      console.log "it's playing"
+      @player.play()
+
     
   maximise:=>
     if (@minimised==true)
@@ -280,9 +300,10 @@ class Surface
       @player.loadFile(@current_video())
       @player.ended(@play_next_video)
       @player.set_fullscreen_action(@maximise)
-      @player.onplay(@disable_minimise)
+      if @current_video().isAd()
+        console.log "it's ad"
+        @player.onplay(@disable_minimise)
       @player.onplay(=>@$video_title.html(@current_video().title()))
-      @player.onpause(@enable_minimise)
     )
     
 #   Load elements for slug  

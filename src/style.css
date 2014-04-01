@@ -122,6 +122,7 @@
     right:0px;
     top:30px;
     color:white;
+    display:none;
     z-index:10000000000000001 !important;
     font-family: "HelveticaNeue-Light", "Helvetica Neue", "Helvetica Neue", 
       Helvetica, Arial, "Lucida Grande", sans-serif;  font-weight:"Light" ;

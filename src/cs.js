@@ -127,6 +127,7 @@
 
   Player = (function() {
     function Player(id, parent_id) {
+      this.isPlaying = __bind(this.isPlaying, this);
       this.set_fullscreen_action = __bind(this.set_fullscreen_action, this);
       this.disable_fullscreen = __bind(this.disable_fullscreen, this);
       this.enable_fullscreen = __bind(this.enable_fullscreen, this);
@@ -160,6 +161,17 @@
       document.getElementById(parent_id).appendChild(p);
       this.elem = videojs(id);
       this.mute();
+      this.playing = false;
+      this.elem.on("play", (function(_this) {
+        return function() {
+          return _this.playing = true;
+        };
+      })(this));
+      this.elem.on("pause", (function(_this) {
+        return function() {
+          return _this.playing = false;
+        };
+      })(this));
     }
 
     Player.prototype.play = function() {
@@ -264,6 +276,10 @@
       return $(".vjs-fullscreen-control")[0].onclick = func;
     };
 
+    Player.prototype.isPlaying = function() {
+      return this.elem.isPlaying();
+    };
+
     return Player;
 
   })();
@@ -318,18 +334,33 @@
         this.current_video_index = this.current_video_index + 1;
         this.player.loadFile(this.current_video());
         this.$video_title.html(this.current_video().title());
-        return this.player.play();
+        this.player.play();
+      }
+      if (this.current_video().isAd()) {
+        return this.disable_minimise();
+      } else {
+        return this.enable_minimise();
       }
     };
 
     Surface.prototype.minimise = function() {
+      var playing;
+      if (this.player.playing) {
+        playing = true;
+      } else {
+        playing = false;
+      }
       this.current_video().setPosition(this.player.currentTime());
       this.remove_overlay();
       this.$wrapper.hide();
       this.player.moveToParentWithId("cs-small-player-container");
       this.player.enable_fullscreen();
       $("#cs-slug-wrapper").show();
-      return this.minimised = true;
+      this.minimised = true;
+      if (playing) {
+        console.log("it's playing");
+        return this.player.play();
+      }
     };
 
     Surface.prototype.maximise = function() {
@@ -407,11 +438,13 @@
           _this.player.loadFile(_this.current_video());
           _this.player.ended(_this.play_next_video);
           _this.player.set_fullscreen_action(_this.maximise);
-          _this.player.onplay(_this.disable_minimise);
-          _this.player.onplay(function() {
+          if (_this.current_video().isAd()) {
+            console.log("it's ad");
+            _this.player.onplay(_this.disable_minimise);
+          }
+          return _this.player.onplay(function() {
             return _this.$video_title.html(_this.current_video().title());
           });
-          return _this.player.onpause(_this.enable_minimise);
         };
       })(this));
       this.dom.appendDivToBody("cs-slug-wrapper");
