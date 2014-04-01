@@ -4,7 +4,7 @@ $ ->
   
   # Add stylesheet
   # window.media = [{src:"src/3.mp4",poster:"src/poster.png",title:"Meet the team behind Genesis Media"}]
-  window.media = [{ad:true,src:{mp4:"src/propel.mp4",webm:"src/propel.webm"},poster:"src/poster.png",title:"Advertisement: Propel Fitness Water",url:"https://www.facebook.com/propel"},{ad:true,src:{mp4:"src/miller.mp4",webm:"src/miller.webm"},poster:"src/poster.png",title:"Marissa Miller's Shape Magazine Cover",url:""},{ad:true,src:{mp4:"src/audrina.mp4",webm:"src/audrina.webm"},poster:"src/poster.png",title:"Audrina Patridge",url:""}]
+  window.media = [{ad:true,src:{mp4:"src/propel.mp4",webm:"src/propel.webm"},poster:"src/poster.png",title:"Advertisement",url:"https://www.facebook.com/propel"},{ad:false,src:{mp4:"src/miller.mp4",webm:"src/miller.webm"},poster:"src/poster.png",title:"Marissa Miller's Shape Magazine Cover",url:""},{ad:false,src:{mp4:"src/audrina.mp4",webm:"src/audrina.webm"},poster:"src/poster.png",title:"Audrina Patridge",url:""}]
   surface = new Surface("ShapeTV",0)
 
 class ScriptLoader
@@ -113,6 +113,12 @@ class Player
     
   ended:(func) =>
     @elem.on("ended",func)
+  
+  onplay:(func) =>
+    @elem.on("play",func)
+    
+  onpause:(func) =>
+    @elem.on("pause",func)
     
   ready:(func)=>
     @elem.ready(func)
@@ -174,16 +180,6 @@ class Surface
       @player.loadFile(@current_video())
       @$video_title.html(@current_video().title())
       @player.play()
-  
-  disable_minimise: =>
-    $("#cs-close").css("opacity","0.2")
-    $("#cs-close").attr('onclick','').unbind('click')
-    
-  enable_minimise: =>
-    $("#cs-close").css("opacity","1.0")
-    $("#cs-close").attr('onclick','').unbind('click')    
-    $("#cs-close").click =>
-      @minimise()
 
   minimise: =>
     @current_video().setPosition(@player.currentTime()) # Update video file current time
@@ -215,6 +211,17 @@ class Surface
         
         @minimised = false
 
+  disable_minimise: =>
+    if @current_video().isAd()
+      $("#cs-close").css("opacity","0.2")
+      $("#cs-close").attr('onclick','').unbind('click')
+
+  enable_minimise: =>
+    $("#cs-close").css("opacity","1.0")
+    $("#cs-close").attr('onclick','').unbind('click')    
+    $("#cs-close").click =>
+      @minimise()
+      
   hide_slug:=>    
     @current_video().setPosition(@player.currentTime())
     $("#cs-slug-wrapper").hide()
@@ -266,6 +273,8 @@ class Surface
       @player.loadFile(@current_video())
       @player.ended(@play_next_video)
       @player.set_fullscreen_action(@maximise)
+      @player.onplay(@disable_minimise)
+      @player.onpause(@enable_minimise)
     )
     
 #   Load elements for slug  

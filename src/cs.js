@@ -16,10 +16,10 @@
           webm: "src/propel.webm"
         },
         poster: "src/poster.png",
-        title: "Advertisement: Propel Fitness Water",
+        title: "Advertisement",
         url: "https://www.facebook.com/propel"
       }, {
-        ad: true,
+        ad: false,
         src: {
           mp4: "src/miller.mp4",
           webm: "src/miller.webm"
@@ -28,7 +28,7 @@
         title: "Marissa Miller's Shape Magazine Cover",
         url: ""
       }, {
-        ad: true,
+        ad: false,
         src: {
           mp4: "src/audrina.mp4",
           webm: "src/audrina.webm"
@@ -132,6 +132,8 @@
       this.enable_fullscreen = __bind(this.enable_fullscreen, this);
       this.moveToParentWithId = __bind(this.moveToParentWithId, this);
       this.ready = __bind(this.ready, this);
+      this.onpause = __bind(this.onpause, this);
+      this.onplay = __bind(this.onplay, this);
       this.ended = __bind(this.ended, this);
       this.timeUpdate = __bind(this.timeUpdate, this);
       this.on = __bind(this.on, this);
@@ -225,6 +227,14 @@
       return this.elem.on("ended", func);
     };
 
+    Player.prototype.onplay = function(func) {
+      return this.elem.on("play", func);
+    };
+
+    Player.prototype.onpause = function(func) {
+      return this.elem.on("pause", func);
+    };
+
     Player.prototype.ready = function(func) {
       return this.elem.ready(func);
     };
@@ -269,10 +279,10 @@
       this.set_bindings = __bind(this.set_bindings, this);
       this.load_UI = __bind(this.load_UI, this);
       this.hide_slug = __bind(this.hide_slug, this);
-      this.maximise = __bind(this.maximise, this);
-      this.minimise = __bind(this.minimise, this);
       this.enable_minimise = __bind(this.enable_minimise, this);
       this.disable_minimise = __bind(this.disable_minimise, this);
+      this.maximise = __bind(this.maximise, this);
+      this.minimise = __bind(this.minimise, this);
       this.play_next_video = __bind(this.play_next_video, this);
       this.current_video = __bind(this.current_video, this);
       run = (function(_this) {
@@ -312,21 +322,6 @@
       }
     };
 
-    Surface.prototype.disable_minimise = function() {
-      $("#cs-close").css("opacity", "0.2");
-      return $("#cs-close").attr('onclick', '').unbind('click');
-    };
-
-    Surface.prototype.enable_minimise = function() {
-      $("#cs-close").css("opacity", "1.0");
-      $("#cs-close").attr('onclick', '').unbind('click');
-      return $("#cs-close").click((function(_this) {
-        return function() {
-          return _this.minimise();
-        };
-      })(this));
-    };
-
     Surface.prototype.minimise = function() {
       this.current_video().setPosition(this.player.currentTime());
       this.remove_overlay();
@@ -347,6 +342,23 @@
         this.player.play();
         return this.minimised = false;
       }
+    };
+
+    Surface.prototype.disable_minimise = function() {
+      if (this.current_video().isAd()) {
+        $("#cs-close").css("opacity", "0.2");
+        return $("#cs-close").attr('onclick', '').unbind('click');
+      }
+    };
+
+    Surface.prototype.enable_minimise = function() {
+      $("#cs-close").css("opacity", "1.0");
+      $("#cs-close").attr('onclick', '').unbind('click');
+      return $("#cs-close").click((function(_this) {
+        return function() {
+          return _this.minimise();
+        };
+      })(this));
     };
 
     Surface.prototype.hide_slug = function() {
@@ -390,7 +402,9 @@
           _this.player.timeUpdate(_this.update_time_remaining);
           _this.player.loadFile(_this.current_video());
           _this.player.ended(_this.play_next_video);
-          return _this.player.set_fullscreen_action(_this.maximise);
+          _this.player.set_fullscreen_action(_this.maximise);
+          _this.player.onplay(_this.disable_minimise);
+          return _this.player.onpause(_this.enable_minimise);
         };
       })(this));
       console.log("reached");
