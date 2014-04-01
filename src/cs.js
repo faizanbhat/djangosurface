@@ -160,7 +160,6 @@
       p.setAttribute("controls", "");
       document.getElementById(parent_id).appendChild(p);
       this.elem = videojs(id);
-      this.mute();
       this.playing = false;
       this.elem.on("play", (function(_this) {
         return function() {

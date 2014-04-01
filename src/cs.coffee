@@ -1,3 +1,6 @@
+# Copyright Genesis Media 2014 - All rights reserved.
+# Author: Faizan Bhat 
+
 $ = jQuery
 
 $ ->
@@ -70,7 +73,6 @@ class Player
     document.getElementById(parent_id).appendChild(p)
     @elem = videojs(id)    
     # Todo: Remove 
-    @mute()
     @playing = false
     @elem.on("play",=>@playing=true)
     @elem.on("pause",=>@playing=false)
