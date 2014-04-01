@@ -422,8 +422,8 @@
       var mins, mins_text, secs, secs_text, time_in_secs;
       time_in_secs = this.player.timeRemaining();
       if (typeof time_in_secs === 'number') {
-        mins = Math.floor(time_in_secs / 60);
-        secs = Math.ceil(time_in_secs % 60);
+        mins = Math.floor(time_in_secs / 59);
+        secs = Math.ceil(time_in_secs % 59);
         if (mins > 9) {
           mins_text = '' + mins;
         } else {
