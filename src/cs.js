@@ -334,7 +334,6 @@
       this.player.moveToParentWithId("cs-small-player-container");
       this.player.enable_fullscreen();
       $("#cs-slug-wrapper").show();
-      this.player.play();
       return this.minimised = true;
     };
 

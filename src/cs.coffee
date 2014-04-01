@@ -196,8 +196,6 @@ class Surface
         
     $("#cs-slug-wrapper").show() # Show slug
     
-    @player.play() # For some reason player stops after it's moved around
-    
     @minimised = true
     
   maximise:=>
