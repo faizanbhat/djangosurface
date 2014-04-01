@@ -127,6 +127,9 @@
 
   Player = (function() {
     function Player(id, parent_id) {
+      this.set_fullscreen_action = __bind(this.set_fullscreen_action, this);
+      this.disable_fullscreen = __bind(this.disable_fullscreen, this);
+      this.enable_fullscreen = __bind(this.enable_fullscreen, this);
       this.moveToParentWithId = __bind(this.moveToParentWithId, this);
       this.ready = __bind(this.ready, this);
       this.ended = __bind(this.ended, this);
@@ -239,6 +242,18 @@
       return this.parent_id = new_parent_id;
     };
 
+    Player.prototype.enable_fullscreen = function() {
+      return $(".vjs-fullscreen-control").css("display", "inline");
+    };
+
+    Player.prototype.disable_fullscreen = function() {
+      return $(".vjs-fullscreen-control").css("display", "none");
+    };
+
+    Player.prototype.set_fullscreen_action = function(func) {
+      return $(".vjs-fullscreen-control")[0].onclick = func;
+    };
+
     return Player;
 
   })();
@@ -265,7 +280,6 @@
           var item, vf, _i, _len, _ref;
           _this.set_blur();
           _this.minimised = false;
-          _this.minimisable = false;
           _this.player = null;
           _this.videos = [];
           _ref = window.media;
@@ -299,21 +313,18 @@
     };
 
     Surface.prototype.disable_minimise = function() {
-      this.minimisable = false;
       $("#cs-close").css("opacity", "0.2");
       return $("#cs-close").attr('onclick', '').unbind('click');
     };
 
     Surface.prototype.enable_minimise = function() {
-      if (this.minimisable === false) {
-        $("#cs-close").css("opacity", "1.0");
-        $("#cs-close").click((function(_this) {
-          return function() {
-            return _this.minimise();
-          };
-        })(this));
-        return this.minimisable = true;
-      }
+      $("#cs-close").css("opacity", "1.0");
+      $("#cs-close").attr('onclick', '').unbind('click');
+      return $("#cs-close").click((function(_this) {
+        return function() {
+          return _this.minimise();
+        };
+      })(this));
     };
 
     Surface.prototype.minimise = function() {
@@ -321,17 +332,15 @@
       this.remove_overlay();
       this.$wrapper.hide();
       this.player.moveToParentWithId("cs-small-player-container");
-      $(".vjs-fullscreen-control").css("display", "inline");
-      $(".vjs-fullscreen-control")[0].onclick = this.maximise;
+      this.player.enable_fullscreen();
       $("#cs-slug-wrapper").show();
       this.player.play();
-      this.minimised = true;
-      return this.player.elem.onclick = this.maximise;
+      return this.minimised = true;
     };
 
     Surface.prototype.maximise = function() {
       if (this.minimised === true) {
-        $(".vjs-fullscreen-control").css("display", "none");
+        this.player.disable_fullscreen();
         this.hide_slug();
         this.set_blur();
         this.player.moveToParentWithId("cs-player-container");
@@ -381,7 +390,8 @@
         return function() {
           _this.player.timeUpdate(_this.update_time_remaining);
           _this.player.loadFile(_this.current_video());
-          return _this.player.ended(_this.play_next_video);
+          _this.player.ended(_this.play_next_video);
+          return _this.player.set_fullscreen_action(_this.maximise);
         };
       })(this));
       console.log("reached");

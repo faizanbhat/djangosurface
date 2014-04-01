@@ -68,7 +68,7 @@ class Player
     p.setAttribute("data-setup","{}")
     p.setAttribute("controls","")
     document.getElementById(parent_id).appendChild(p)
-    @elem = videojs(id)
+    @elem = videojs(id)    
     # Todo: Remove 
     @mute()
 
@@ -127,6 +127,15 @@ class Player
     player_div.width = new_parent.width
     player_div.height = new_parent.height
     @parent_id = new_parent_id
+  
+  enable_fullscreen:()=>
+    $(".vjs-fullscreen-control").css("display","inline")
+  
+  disable_fullscreen:()=>
+    $(".vjs-fullscreen-control").css("display","none")
+    
+  set_fullscreen_action:(func)=>
+    $(".vjs-fullscreen-control")[0].onclick = func
     
   
 class Surface
@@ -136,7 +145,6 @@ class Surface
       @set_blur()
     
       @minimised = false
-      @minimisable = false
       @player = null
       # Read media files
       
@@ -168,16 +176,14 @@ class Surface
       @player.play()
   
   disable_minimise: =>
-    @minimisable = false
     $("#cs-close").css("opacity","0.2")
     $("#cs-close").attr('onclick','').unbind('click')
     
   enable_minimise: =>
-    if @minimisable is false
-      $("#cs-close").css("opacity","1.0")
-      $("#cs-close").click =>
-        @minimise()
-      @minimisable = true
+    $("#cs-close").css("opacity","1.0")
+    $("#cs-close").attr('onclick','').unbind('click')    
+    $("#cs-close").click =>
+      @minimise()
 
   minimise: =>
     @current_video().setPosition(@player.currentTime()) # Update video file current time
@@ -186,9 +192,7 @@ class Surface
     
     @player.moveToParentWithId("cs-small-player-container") # Move player
 
-    $(".vjs-fullscreen-control").css("display","inline")
-    
-    $(".vjs-fullscreen-control")[0].onclick = @maximise
+    @player.enable_fullscreen()
         
     $("#cs-slug-wrapper").show() # Show slug
     
@@ -196,13 +200,10 @@ class Surface
     
     @minimised = true
     
-    # TODO: Remove this after implementing proper full screen method
-    @player.elem.onclick = @maximise
-
   maximise:=>
     if (@minimised==true)
         
-        $(".vjs-fullscreen-control").css("display","none")
+        @player.disable_fullscreen()
         
         @hide_slug() # Use twice so this gets its own method
 
@@ -266,6 +267,7 @@ class Surface
       @player.timeUpdate(@update_time_remaining)
       @player.loadFile(@current_video())
       @player.ended(@play_next_video)
+      @player.set_fullscreen_action(@maximise)
     )
     
 #   Load elements for slug  
