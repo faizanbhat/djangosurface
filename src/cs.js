@@ -10,23 +10,32 @@
     var surface;
     window.media = [
       {
-        src: "src/propel.mp4",
+        src: {
+          mp4: "src/propel.mp4",
+          webm: "src/propel.webm"
+        },
         poster: "src/poster.png",
         title: "Advertisement: Propel Fitness Water",
         url: "https://www.facebook.com/propel"
       }, {
-        src: "src/miller.mp4",
+        src: {
+          mp4: "src/miller.mp4",
+          webm: "src/miller.webm"
+        },
         poster: "src/poster.png",
         title: "Marissa Miller's Shape Magazine Cover",
         url: ""
       }, {
-        src: "src/audrina.mp4",
+        src: {
+          mp4: "src/audrina.mp4",
+          webm: "src/audrina.webm"
+        },
         poster: "src/poster.png",
         title: "Audrina Patridge",
         url: ""
       }
     ];
-    return surface = new Surface("ShapeTV", 3000);
+    return surface = new Surface("ShapeTV", 0);
   });
 
   ScriptLoader = (function() {
@@ -162,16 +171,20 @@
     };
 
     Player.prototype.loadFile = function(vf) {
-      this.elem.src(vf.source());
+      var s;
+      s = vf.sources();
+      this.elem.src([
+        {
+          type: "video/mp4",
+          src: s.mp4
+        }, {
+          type: "video/webm",
+          src: s.webm
+        }
+      ]);
       if (vf.poster()) {
-        this.elem.poster(vf.poster());
+        return this.elem.poster(vf.poster());
       }
-      return this.elem.on("loadedmetadata", (function(_this) {
-        return function() {
-          console.log("Loaded meta data");
-          return _this.elem.currentTime(vf.position());
-        };
-      })(this));
     };
 
     Player.prototype.duration = function() {
@@ -394,8 +407,12 @@
     };
 
     Surface.prototype.set_blur = function() {
+      $("body").css("filter", "blur(15px)");
+      $("body").css("filter", "url(src/blur.svg#blur)");
       $("body").css("-webkit-filter", "blur(15px)");
-      $("body").css("filter", "blur(20px)");
+      $("body").css("-moz-filter", "blur(15px)");
+      $("body").css("-o-filter", "blur(15px)");
+      $("body").css("-ms-filter", "blur(15px)");
       return $('html, body').css({
         'overflow': 'hidden',
         'height': '100%'
@@ -405,6 +422,10 @@
     Surface.prototype.remove_overlay = function() {
       $("body").css("-webkit-filter", "blur(0px)");
       $("html").css("filter", "blur(0px)");
+      $("body").css("filter", "url(src/blur.svg#noBlur)");
+      $("body").css("-moz-filter", "blur(0px)");
+      $("body").css("-o-filter", "blur(0px)");
+      $("body").css("-ms-filter", "blur(0px)");
       return $('html, body').css({
         'overflow': 'auto',
         'height': 'auto'
@@ -420,10 +441,9 @@
       this.poster = __bind(this.poster, this);
       this.url = __bind(this.url, this);
       this.title = __bind(this.title, this);
-      this.setSource = __bind(this.setSource, this);
       this.setPosition = __bind(this.setPosition, this);
       this.position = __bind(this.position, this);
-      this.source = __bind(this.source, this);
+      this.sources = __bind(this.sources, this);
       this.file_src = src != null ? src : "";
       this.playback_position = position != null ? position : 0;
       this.video_poster = poster != null ? poster : "";
@@ -431,7 +451,7 @@
       this.video_url = url;
     }
 
-    VideoFile.prototype.source = function() {
+    VideoFile.prototype.sources = function() {
       return this.file_src;
     };
 
@@ -441,10 +461,6 @@
 
     VideoFile.prototype.setPosition = function(pos) {
       return this.playback_position = pos;
-    };
-
-    VideoFile.prototype.setSource = function(src) {
-      return this.playback_position = src;
     };
 
     VideoFile.prototype.title = function() {

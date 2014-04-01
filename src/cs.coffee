@@ -4,8 +4,8 @@ $ ->
   
   # Add stylesheet
   # window.media = [{src:"src/3.mp4",poster:"src/poster.png",title:"Meet the team behind Genesis Media"}]
-  window.media = [{src:"src/propel.mp4",poster:"src/poster.png",title:"Advertisement: Propel Fitness Water",url:"https://www.facebook.com/propel"},{src:"src/miller.mp4",poster:"src/poster.png",title:"Marissa Miller's Shape Magazine Cover",url:""},{src:"src/audrina.mp4",poster:"src/poster.png",title:"Audrina Patridge",url:""}]
-  surface = new Surface("ShapeTV",3000)
+  window.media = [{src:{mp4:"src/propel.mp4",webm:"src/propel.webm"},poster:"src/poster.png",title:"Advertisement: Propel Fitness Water",url:"https://www.facebook.com/propel"},{src:{mp4:"src/miller.mp4",webm:"src/miller.webm"},poster:"src/poster.png",title:"Marissa Miller's Shape Magazine Cover",url:""},{src:{mp4:"src/audrina.mp4",webm:"src/audrina.webm"},poster:"src/poster.png",title:"Audrina Patridge",url:""}]
+  surface = new Surface("ShapeTV",0)
 
 class ScriptLoader
     constructor: (options..., callback) ->
@@ -85,13 +85,10 @@ class Player
     @elem.volume(1)
   
   loadFile:(vf)=>
-    @elem.src(vf.source())
+    s = vf.sources()
+    @elem.src([{type:"video/mp4", src:s.mp4},{type:"video/webm",src:s.webm}])
     if vf.poster()
       @elem.poster(vf.poster())
-    @elem.on("loadedmetadata", =>
-      console.log "Loaded meta data"
-      @elem.currentTime(vf.position())
-      )
        
   duration:=>
     return @elem.duration()
@@ -299,8 +296,12 @@ class Surface
   
   
   set_blur:=>
+    $("body").css("filter","blur(15px)")
+    $("body").css("filter","url(src/blur.svg#blur)")
     $("body").css("-webkit-filter","blur(15px)")
-    $("body").css("filter","blur(20px)")
+    $("body").css("-moz-filter","blur(15px)")
+    $("body").css("-o-filter","blur(15px)")
+    $("body").css("-ms-filter","blur(15px)")
     # disable scroll
     $('html, body').css({
         'overflow': 'hidden',
@@ -310,6 +311,10 @@ class Surface
   remove_overlay:=>
     $("body").css("-webkit-filter","blur(0px)")
     $("html").css("filter","blur(0px)")
+    $("body").css("filter","url(src/blur.svg#noBlur)")
+    $("body").css("-moz-filter","blur(0px)")
+    $("body").css("-o-filter","blur(0px)")
+    $("body").css("-ms-filter","blur(0px)")
     $('html, body').css({
         'overflow': 'auto',
         'height': 'auto'
@@ -323,7 +328,7 @@ class VideoFile
     @video_title = title ? ""
     @video_url = url
     
-  source:=>
+  sources:=>
     return @file_src
 
   position:=>
@@ -331,9 +336,6 @@ class VideoFile
 
   setPosition:(pos)=>
     @playback_position = pos
-
-  setSource:(src)=>
-    @playback_position = src
     
   title:=>
     return @video_title
