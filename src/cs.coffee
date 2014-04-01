@@ -24,7 +24,6 @@ class ScriptLoader
         s = document.createElement 'script'
         s.onload = loadCallback
         s.onreadystatechange = ->
-            console.log "on ready state change"
             loadCallback() if /loaded|complete/.test(s.readyState)
         
         s.src = lib.replace('$version', version)
@@ -138,7 +137,6 @@ class Player
     container = document.getElementById(@parent_id)
     player_div = document.getElementById(@id)
     container.removeChild(player_div)
-    console.log new_parent_id
     new_parent = document.getElementById(new_parent_id)
     new_parent.appendChild(player_div)
     player_div.width = new_parent.width
@@ -202,7 +200,6 @@ class Surface
     return @videos[@current_video_index]
   
   play_next_video:=>
-    console.log "Playing next"
     
     if (@current_video_index+1) < @videos.length
       @current_video_index=@current_video_index+1
@@ -210,7 +207,6 @@ class Surface
       @$video_title.html(@current_video().title())
       @player.play()
       @setCookie("gmcs-surface-current-video-index",@current_video_index,10000)
-      console.log  @getCookie("gmcs-surface-current_video_index")
       
     if @current_video().isAd()
       @disable_minimise()
@@ -236,7 +232,6 @@ class Surface
     @minimised = true
     
     if playing
-      console.log "it's playing"
       @player.play()
       
     # update cookie
@@ -325,13 +320,11 @@ class Surface
     @player = new Player("cs-video-player","cs-player-container")   
     @player.ready(=>
       @player.loadFile(@current_video())
-      console.log "Current time = " + @current_time
       if @current_time > 0
-        @player.loadedmetadata(=>@player.setCurrentTime(@current_time);console.log "Player time set to " + @player.currentTime())
+        @player.loadedmetadata(=>@player.setCurrentTime(@current_time))
       @player.ended(@play_next_video)
       @player.set_fullscreen_action(@maximise)
       if @current_video().isAd()
-        console.log "it's ad"
         @player.onplay(@disable_minimise)
       @player.onplay(=>@$video_title.html(@current_video().title()))
       @player.timeUpdate(@update_current_time)
@@ -347,7 +340,7 @@ class Surface
     
     @hide_slug()    # Hide slug
     
-    if @start_minimised
+    if @start_minimised > 0
       @minimise()
       
   set_bindings:=>
@@ -397,7 +390,6 @@ class Surface
       expires = "; expires=" + date.toGMTString()
     else
       expires = ""
-    console.log  name + "=" + value + expires + "; path=/"
     document.cookie = name + "=" + value + expires + "; path=/"
   
   
