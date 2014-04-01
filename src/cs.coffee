@@ -7,7 +7,7 @@ $ ->
   
   # Add stylesheet
   # window.media = [{src:"src/3.mp4",poster:"src/poster.png",title:"Meet the team behind Genesis Media"}]
-  window.media = [{ad:true,src:{mp4:"src/propel.mp4",webm:"src/propel.webm"},poster:"src/poster.png",title:"Advertisement",url:"https://www.facebook.com/propel"},{ad:false,src:{mp4:"src/miller.mp4",webm:"src/miller.webm"},poster:"src/poster.png",title:"Marissa Miller's Shape Magazine Cover",url:""},{ad:false,src:{mp4:"src/audrina.mp4",webm:"src/audrina.webm"},poster:"src/poster.png",title:"Audrina Patridge",url:""}]
+  window.media = [{ad:true,src:{mp4:"src/propel.mp4",webm:"src/propel.webm"},poster:"src/poster.png",title:"Advertisement",url:"https://www.facebook.com/propel"},{ad:false,src:{mp4:"src/miller.mp4",webm:"src/miller.webm"},poster:"src/poster.png",title:"Marissa Miller's Shape Magazine Cover",url:""},{ad:false,src:{mp4:"src/audrina.mp4",webm:"src/audrina.webm"},poster:"src/audrina.png",title:"Audrina Patridge",url:""}]
   surface = new Surface("ShapeTV",0)
 
 class ScriptLoader
@@ -155,6 +155,8 @@ class Player
 class Surface
   constructor:(@site_name,delay)->
     
+    @current_video_index = @getCookie("gmcs-surface-current-video-index")
+    console.log @current_video_index
     run = ()=>    
       @set_blur()
     
@@ -166,7 +168,9 @@ class Surface
       for item in window.media
         vf = new VideoFile(item.src,0,item.poster,item.title,item.url,item.ad)
         @videos.push vf
-      @current_video_index = 0;  
+        
+      if @current_video_index is null
+        @current_video_index = 0;  
     
       # Setup Dom
       @dom = new DomManager()
@@ -177,22 +181,25 @@ class Surface
       new ScriptLoader "videoJs", @load_UI 
     setTimeout(run,delay);
     
-    
   current_video:=>
     return @videos[@current_video_index]
   
   play_next_video:=>
     console.log "Playing next"
+    
     if (@current_video_index+1) < @videos.length
       @current_video_index=@current_video_index+1
       @player.loadFile(@current_video())
       @$video_title.html(@current_video().title())
       @player.play()
+      @setCookie("gmcs-surface-current-video-index",@current_video_index,10000)
+      console.log  @getCookie("gmcs-surface-current_video_index")
+      
     if @current_video().isAd()
       @disable_minimise()
     else
       @enable_minimise()
-
+  
   minimise: =>
     if @player.playing 
       playing = true
@@ -371,6 +378,32 @@ class Surface
         'height': 'auto'
     })    
     
+  setCookie:(name, value, days) ->
+    if days
+      date = new Date()
+      date.setTime date.getTime() + (days * 24 * 60 * 60 * 1000)
+      expires = "; expires=" + date.toGMTString()
+    else
+      expires = ""
+    console.log  name + "=" + value + expires + "; path=/"
+    document.cookie = name + "=" + value + expires + "; path=/"
+  
+  
+  getCookie:(name) ->
+    nameEQ = name + "="
+    ca = document.cookie.split(";")
+    i = 0
+
+    while i < ca.length
+      c = ca[i]
+      c = c.substring(1, c.length)  while c.charAt(0) is " "
+      return c.substring(nameEQ.length, c.length)  if c.indexOf(nameEQ) is 0
+      i++
+    null
+  
+  deleteCookie:(name) ->
+    setCookie name, "", -1
+
 class VideoFile
   constructor:(src,position,poster,title,@video_url,@ad)->
     @file_src = src ? ""

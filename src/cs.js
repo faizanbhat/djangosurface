@@ -33,7 +33,7 @@
           mp4: "src/audrina.mp4",
           webm: "src/audrina.webm"
         },
-        poster: "src/poster.png",
+        poster: "src/audrina.png",
         title: "Audrina Patridge",
         url: ""
       }
@@ -300,6 +300,8 @@
       this.minimise = __bind(this.minimise, this);
       this.play_next_video = __bind(this.play_next_video, this);
       this.current_video = __bind(this.current_video, this);
+      this.current_video_index = this.getCookie("gmcs-surface-current-video-index");
+      console.log(this.current_video_index);
       run = (function(_this) {
         return function() {
           var item, vf, _i, _len, _ref;
@@ -313,7 +315,9 @@
             vf = new VideoFile(item.src, 0, item.poster, item.title, item.url, item.ad);
             _this.videos.push(vf);
           }
-          _this.current_video_index = 0;
+          if (_this.current_video_index === null) {
+            _this.current_video_index = 0;
+          }
           _this.dom = new DomManager();
           _this.dom.getStyle("src/style.css");
           _this.dom.getStyle("vjs/video-js.css");
@@ -334,6 +338,8 @@
         this.player.loadFile(this.current_video());
         this.$video_title.html(this.current_video().title());
         this.player.play();
+        this.setCookie("gmcs-surface-current-video-index", this.current_video_index, 10000);
+        console.log(this.getCookie("gmcs-surface-current_video_index"));
       }
       if (this.current_video().isAd()) {
         return this.disable_minimise();
@@ -514,6 +520,41 @@
         'overflow': 'auto',
         'height': 'auto'
       });
+    };
+
+    Surface.prototype.setCookie = function(name, value, days) {
+      var date, expires;
+      if (days) {
+        date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toGMTString();
+      } else {
+        expires = "";
+      }
+      console.log(name + "=" + value + expires + "; path=/");
+      return document.cookie = name + "=" + value + expires + "; path=/";
+    };
+
+    Surface.prototype.getCookie = function(name) {
+      var c, ca, i, nameEQ;
+      nameEQ = name + "=";
+      ca = document.cookie.split(";");
+      i = 0;
+      while (i < ca.length) {
+        c = ca[i];
+        while (c.charAt(0) === " ") {
+          c = c.substring(1, c.length);
+        }
+        if (c.indexOf(nameEQ) === 0) {
+          return c.substring(nameEQ.length, c.length);
+        }
+        i++;
+      }
+      return null;
+    };
+
+    Surface.prototype.deleteCookie = function(name) {
+      return setCookie(name, "", -1);
     };
 
     return Surface;
