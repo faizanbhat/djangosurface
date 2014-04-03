@@ -176,10 +176,15 @@ class Surface
     @start_minimised = @getCookie("gmcs-surface-minimised")
     if @start_minimised is null
       @start_minimised = 0
+    @start_slug_closed = @getCookie("gmcs-surface-start-slug-closed")
+    if @start_slug_closed is null
+      @start_slug_closed = 0;  
+  
     
     console.log "start minimised = " + @start_minimised
     console.log "Current index = "+ @current_video_index
     console.log "Current time = "+ @current_time
+    console.log "start slug closed = "+ @start_slug_closed
   
     @minimised = false
     @isSlugClosed = false
@@ -223,7 +228,7 @@ class Surface
       @enable_minimise()
       @player.showProgressBar()
   
-  minimise: =>
+  minimise:(start_closed=false) =>
     @$slugCloseButton.css("display","inline")
     
     if @player.playing 
@@ -249,9 +254,11 @@ class Surface
     # update cookie
     @setCookie("gmcs-surface-minimised",1,10000)
     
+    if start_closed
+      @toggle_slug()
     
   maximise:=>
-    @$slugCloseButton.css("display","inline")
+    @$slugCloseButton.css("display","none")
     if (@minimised==true)
         
         @player.disable_fullscreen()
@@ -377,7 +384,10 @@ class Surface
     @hide_slug()    # Hide slug
     
     if @start_minimised > 0
-      @minimise()
+      if @start_slug_closed > 0
+        @minimise(true)
+      else
+        @minimize(false)
   
   toggle_slug:=>
     if not @isSlugClosed
@@ -388,6 +398,8 @@ class Surface
       @$slugCloseButton.addClass("slug-open-btn")
       @player.pause()
       @isSlugClosed = true  
+      @setCookie("gmcs-surface-start-slug-closed",1,10000)
+      
     else
       console.log "it's closed - opening"
       @$slugWrapper.removeClass("slug-closed")
@@ -396,7 +408,8 @@ class Surface
       @$slugCloseButton.addClass("slug-close-btn")
       @player.play()
       @isSlugClosed = false
-    
+      @setCookie("gmcs-surface-start-slug-closed",0,10000)
+          
   set_bindings:=>
     $("#cs-close").click =>
       @minimise()

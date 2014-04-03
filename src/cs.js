@@ -328,9 +328,14 @@
       if (this.start_minimised === null) {
         this.start_minimised = 0;
       }
+      this.start_slug_closed = this.getCookie("gmcs-surface-start-slug-closed");
+      if (this.start_slug_closed === null) {
+        this.start_slug_closed = 0;
+      }
       console.log("start minimised = " + this.start_minimised);
       console.log("Current index = " + this.current_video_index);
       console.log("Current time = " + this.current_time);
+      console.log("start slug closed = " + this.start_slug_closed);
       this.minimised = false;
       this.isSlugClosed = false;
       this.player = null;
@@ -372,8 +377,11 @@
       }
     };
 
-    Surface.prototype.minimise = function() {
+    Surface.prototype.minimise = function(start_closed) {
       var playing;
+      if (start_closed == null) {
+        start_closed = false;
+      }
       this.$slugCloseButton.css("display", "inline");
       if (this.player.playing) {
         playing = true;
@@ -390,11 +398,14 @@
       if (playing) {
         this.player.play();
       }
-      return this.setCookie("gmcs-surface-minimised", 1, 10000);
+      this.setCookie("gmcs-surface-minimised", 1, 10000);
+      if (start_closed) {
+        return this.toggle_slug();
+      }
     };
 
     Surface.prototype.maximise = function() {
-      this.$slugCloseButton.css("display", "inline");
+      this.$slugCloseButton.css("display", "none");
       if (this.minimised === true) {
         this.player.disable_fullscreen();
         this.hide_slug();
@@ -501,7 +512,11 @@
       player_container.addClass("smallVideoWrapper");
       this.hide_slug();
       if (this.start_minimised > 0) {
-        return this.minimise();
+        if (this.start_slug_closed > 0) {
+          return this.minimise(true);
+        } else {
+          return this.minimize(false);
+        }
       }
     };
 
@@ -513,7 +528,8 @@
         this.$slugCloseButton.removeClass("slug-close-btn");
         this.$slugCloseButton.addClass("slug-open-btn");
         this.player.pause();
-        return this.isSlugClosed = true;
+        this.isSlugClosed = true;
+        return this.setCookie("gmcs-surface-start-slug-closed", 1, 10000);
       } else {
         console.log("it's closed - opening");
         this.$slugWrapper.removeClass("slug-closed");
@@ -521,7 +537,8 @@
         this.$slugCloseButton.removeClass("slug-open-btn");
         this.$slugCloseButton.addClass("slug-close-btn");
         this.player.play();
-        return this.isSlugClosed = false;
+        this.isSlugClosed = false;
+        return this.setCookie("gmcs-surface-start-slug-closed", 0, 10000);
       }
     };
 
