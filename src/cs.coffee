@@ -107,9 +107,6 @@ class Player
     
   isMuted:=>
     return @elem.muted()
-  
-  isMuted:=>
-    return @elem.isPlaying()
           
   on:(callback,func) =>
     @elem.on(callback,func())
@@ -410,9 +407,9 @@ class Surface
       @player.pause()
       @isSlugClosed = true  
       @setCookie("gmcs-surface-start-slug-closed",1,10000)
+      @$slugCloseButton.css("display","inline")
       
     else
-      @$slugCloseButton.css("display","inline")
       console.log "it's closed - opening"
       @$slugWrapper.removeClass("slug-closed")
       @$slugWrapper.addClass("slug-open")

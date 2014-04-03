@@ -141,7 +141,6 @@
       this.timeUpdate = __bind(this.timeUpdate, this);
       this.on = __bind(this.on, this);
       this.isMuted = __bind(this.isMuted, this);
-      this.isMuted = __bind(this.isMuted, this);
       this.timeRemaining = __bind(this.timeRemaining, this);
       this.currentTime = __bind(this.currentTime, this);
       this.duration = __bind(this.duration, this);
@@ -219,10 +218,6 @@
 
     Player.prototype.isMuted = function() {
       return this.elem.muted();
-    };
-
-    Player.prototype.isMuted = function() {
-      return this.elem.isPlaying();
     };
 
     Player.prototype.on = function(callback, func) {
@@ -544,9 +539,9 @@
         this.$slugCloseButton.addClass("slug-open-btn");
         this.player.pause();
         this.isSlugClosed = true;
-        return this.setCookie("gmcs-surface-start-slug-closed", 1, 10000);
+        this.setCookie("gmcs-surface-start-slug-closed", 1, 10000);
+        return this.$slugCloseButton.css("display", "inline");
       } else {
-        this.$slugCloseButton.css("display", "inline");
         console.log("it's closed - opening");
         this.$slugWrapper.removeClass("slug-closed");
         this.$slugWrapper.addClass("slug-open");
