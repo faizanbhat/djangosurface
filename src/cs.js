@@ -303,8 +303,6 @@
       this.toggle_mute = __bind(this.toggle_mute, this);
       this.set_bindings = __bind(this.set_bindings, this);
       this.toggle_slug = __bind(this.toggle_slug, this);
-      this.hideCloseButton = __bind(this.hideCloseButton, this);
-      this.showCloseButton = __bind(this.showCloseButton, this);
       this.load_UI = __bind(this.load_UI, this);
       this.hide_slug = __bind(this.hide_slug, this);
       this.enable_minimise = __bind(this.enable_minimise, this);
@@ -358,14 +356,18 @@
     };
 
     Surface.prototype.play_next_video = function() {
-      if ((this.current_video_index + 1) < this.videos.length) {
+      console.log("Try playing next");
+      if (this.current_video_index < this.videos.length - 1) {
+        console.log("Playing next");
         this.current_video_index = this.current_video_index + 1;
+        console.log(this.current_video_index);
         this.player.loadFile(this.current_video());
         this.$video_title.html(this.current_video().title());
         this.player.play();
         this.setCookie("gmcs-surface-current-video-index", this.current_video_index, 10000);
       }
       if (this.current_video().isAd()) {
+        console.log("..............<<<>>>............................");
         this.disable_minimise();
         return this.player.hideProgressBar();
       } else {
@@ -379,6 +381,7 @@
       if (start_closed == null) {
         start_closed = false;
       }
+      this.$slugCloseButton.css("display", "inline");
       if (this.player.playing) {
         playing = true;
       } else {
@@ -487,8 +490,6 @@
         });
         _this.player.timeUpdate(_this.update_current_time);
         _this.slugCloseButton = _this.player.elem.addChild('button', {});
-        _this.player.elem.on("mouseover", _this.showCloseButton);
-        _this.player.elem.on("mouseout", _this.hideCloseButton);
         if (_this.isSlugClosed) {
           _this.slugCloseButton.addClass("slug-open-btn slug-slide-button");
         } else {
@@ -497,7 +498,6 @@
         _this.slugCloseButton.on("click", _this.toggle_slug);
         return _this.$slugCloseButton = $(".slug-slide-button");
       });
-      this.$slugCloseButton.css("display", "none");
       this.dom.appendDivToBody("cs-slug-wrapper");
       this.$slugWrapper = $("#cs-slug-wrapper");
       if (this.isSlugClosed) {
@@ -518,18 +518,6 @@
       }
     };
 
-    Surface.prototype.showCloseButton = function() {
-      if (this.minimised) {
-        return this.$slugCloseButton.show();
-      }
-    };
-
-    Surface.prototype.hideCloseButton = function() {
-      if (!this.isSlugClosed) {
-        return this.$slugCloseButton.hide();
-      }
-    };
-
     Surface.prototype.toggle_slug = function() {
       if (!this.isSlugClosed) {
         console.log("it's not closed - closing");
@@ -539,8 +527,7 @@
         this.$slugCloseButton.addClass("slug-open-btn");
         this.player.pause();
         this.isSlugClosed = true;
-        this.setCookie("gmcs-surface-start-slug-closed", 1, 10000);
-        return this.$slugCloseButton.css("display", "inline");
+        return this.setCookie("gmcs-surface-start-slug-closed", 1, 10000);
       } else {
         console.log("it's closed - opening");
         this.$slugWrapper.removeClass("slug-closed");

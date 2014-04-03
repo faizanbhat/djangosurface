@@ -210,15 +210,18 @@ class Surface
     return @videos[@current_video_index]
   
   play_next_video:=>
-    
-    if (@current_video_index+1) < @videos.length
+    console.log "Try playing next"
+    if @current_video_index < @videos.length-1
+      console.log "Playing next"
       @current_video_index=@current_video_index+1
+      console.log @current_video_index
       @player.loadFile(@current_video())
       @$video_title.html(@current_video().title())
       @player.play()
       @setCookie("gmcs-surface-current-video-index",@current_video_index,10000)
       
     if @current_video().isAd()
+      console.log "..............<<<>>>............................"
       @disable_minimise()
       @player.hideProgressBar()
     else
@@ -226,6 +229,7 @@ class Surface
       @player.showProgressBar()
   
   minimise:(start_closed=false) =>
+    @$slugCloseButton.css("display","inline")
     
     if @player.playing 
       playing = true
@@ -349,11 +353,7 @@ class Surface
       
       @slugCloseButton = @player.elem.addChild('button', {
         })
-      
-      
-      @player.elem.on("mouseover",@showCloseButton)
-      @player.elem.on("mouseout",@hideCloseButton)
-      
+            
       
       if @isSlugClosed
         @slugCloseButton.addClass("slug-open-btn slug-slide-button")
@@ -365,7 +365,6 @@ class Surface
       @$slugCloseButton = $(".slug-slide-button")
     )
     
-    @$slugCloseButton.css("display","none")
     
 #   Load elements for slug  
     @dom.appendDivToBody("cs-slug-wrapper")
@@ -388,14 +387,6 @@ class Surface
         @minimise(true)
       else
         @minimise(false)
-  
-  showCloseButton:=>
-    if @minimised
-      @$slugCloseButton.show()
-    
-  hideCloseButton:=>
-    if not @isSlugClosed
-      @$slugCloseButton.hide()
     
   toggle_slug:=>
     if not @isSlugClosed
@@ -407,7 +398,6 @@ class Surface
       @player.pause()
       @isSlugClosed = true  
       @setCookie("gmcs-surface-start-slug-closed",1,10000)
-      @$slugCloseButton.css("display","inline")
       
     else
       console.log "it's closed - opening"

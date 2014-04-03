@@ -204,23 +204,27 @@
   height:100% !important;
   width:40px !important;
   z-index:1000000000000000001 !important;
-  opacity:0.7;
+  opacity:0.8;
   
 }
 
 .slug-close-btn{
-  background:url("slug-close-inactive-1.png");
+  background:url("slug-close-inactive.png");
 }
 
 
 .slug-open-btn{
-  background:url("slug-open-inactive-1.png");
+  background:url("slug-open-inactive.png");
 }
 
-/*.slug-open-btn:hover{
-  background:url("slug-open-active-1.png");  
+.slug-open-btn:hover{
+  background:url("slug-open-active.png");  
 }
-*/
+
+.slug-close-btn:hover{
+  background:url("slug-close-active.png");  
+}
+
 /*.wideScreen {
   padding-bottom: 56.25%;
 }
