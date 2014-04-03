@@ -229,7 +229,6 @@ class Surface
       @player.showProgressBar()
   
   minimise:(start_closed=false) =>
-    @$slugCloseButton.css("display","inline")
     
     if @player.playing 
       playing = true
@@ -354,6 +353,11 @@ class Surface
       @slugCloseButton = @player.elem.addChild('button', {
         })
       
+      
+      @player.elem.on("mouseover",@showCloseButton)
+      @player.elem.on("mouseout",@hideCloseButton)
+      
+      
       if @isSlugClosed
         @slugCloseButton.addClass("slug-open-btn slug-slide-button")
       else
@@ -362,7 +366,6 @@ class Surface
       @slugCloseButton.on("click", @toggle_slug)
       
       @$slugCloseButton = $(".slug-slide-button")
-      
     )
     
     @$slugCloseButton.css("display","none")
@@ -389,6 +392,14 @@ class Surface
       else
         @minimise(false)
   
+  showCloseButton:=>
+    if @minimised
+      @$slugCloseButton.show()
+    
+  hideCloseButton:=>
+    if not @isSlugClosed
+      @$slugCloseButton.hide()
+    
   toggle_slug:=>
     if not @isSlugClosed
       console.log "it's not closed - closing"
@@ -401,6 +412,7 @@ class Surface
       @setCookie("gmcs-surface-start-slug-closed",1,10000)
       
     else
+      @$slugCloseButton.css("display","inline")
       console.log "it's closed - opening"
       @$slugWrapper.removeClass("slug-closed")
       @$slugWrapper.addClass("slug-open")
