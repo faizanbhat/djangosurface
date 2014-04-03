@@ -207,19 +207,19 @@
 }
 
 .slug-close-btn{
-  background:url("slug-close-inactive.png");
+  background:url("slug-close-inactive-1.png");
 }
 
 .slug-close-btn:hover{
-  background:url("slug-close-active.png");  
+  background:url("slug-close-active-1.png");  
 }
 
 .slug-open-btn{
-  background:url("slug-open-inactive.png");
+  background:url("slug-open-inactive-1.png");
 }
 
 .slug-open-btn:hover{
-  background:url("slug-open-active.png");  
+  background:url("slug-open-active-1.png");  
 }
 
 /*.wideScreen {

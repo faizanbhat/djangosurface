@@ -387,7 +387,7 @@ class Surface
       if @start_slug_closed > 0
         @minimise(true)
       else
-        @minimize(false)
+        @minimise(false)
   
   toggle_slug:=>
     if not @isSlugClosed

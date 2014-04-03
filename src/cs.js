@@ -515,7 +515,7 @@
         if (this.start_slug_closed > 0) {
           return this.minimise(true);
         } else {
-          return this.minimize(false);
+          return this.minimise(false);
         }
       }
     };
