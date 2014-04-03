@@ -70,7 +70,9 @@ class Player
     p.setAttribute("data-setup","{}")
     p.setAttribute("controls","")
     document.getElementById(parent_id).appendChild(p)
-    @elem = videojs(id)    
+    @elem = videojs(id) 
+
+    
     # Todo: Remove 
     @playing = false
     @elem.on("play",=>@playing=true)
@@ -180,6 +182,7 @@ class Surface
     console.log "Current time = "+ @current_time
   
     @minimised = false
+    @isSlugClosed = false
     @player = null
     
     # Read media files
@@ -221,6 +224,8 @@ class Surface
       @player.showProgressBar()
   
   minimise: =>
+    @$slugCloseButton.css("display","inline")
+    
     if @player.playing 
       playing = true
     else 
@@ -246,6 +251,7 @@ class Surface
     
     
   maximise:=>
+    @$slugCloseButton.css("display","inline")
     if (@minimised==true)
         
         @player.disable_fullscreen()
@@ -337,12 +343,33 @@ class Surface
         
       @player.onplay(=>@$video_title.html(@current_video().title()))
       @player.timeUpdate(@update_current_time)
+      
+      @slugCloseButton = @player.elem.addChild('button', {
+        })
+      
+      if @isSlugClosed
+        @slugCloseButton.addClass("slug-open-btn slug-slide-button")
+      else
+        @slugCloseButton.addClass("slug-close-btn slug-slide-button")
+      
+      @slugCloseButton.on("click", @toggle_slug)
+      
+      @$slugCloseButton = $(".slug-slide-button")
+      
     )
+    
+    @$slugCloseButton.css("display","none")
     
 #   Load elements for slug  
     @dom.appendDivToBody("cs-slug-wrapper")
+    @$slugWrapper =  $("#cs-slug-wrapper")
+    
+    if @isSlugClosed
+      @$slugWrapper.addClass("slug-closed")
+    else
+      @$slugWrapper.addClass("slug-open")
+          
     @dom.appendDivToParent("cs-small-player-container","cs-slug-wrapper")
-    @$slug_wrapper = $("#cs-slug-wrapper")
 
     player_container = $("#cs-small-player-container")
     player_container.addClass("smallVideoWrapper")      
@@ -351,7 +378,25 @@ class Surface
     
     if @start_minimised > 0
       @minimise()
-      
+  
+  toggle_slug:=>
+    if not @isSlugClosed
+      console.log "it's not closed - closing"
+      @$slugWrapper.removeClass("slug-open")
+      @$slugWrapper.addClass("slug-closed")
+      @$slugCloseButton.removeClass("slug-close-btn")
+      @$slugCloseButton.addClass("slug-open-btn")
+      @player.pause()
+      @isSlugClosed = true  
+    else
+      console.log "it's closed - opening"
+      @$slugWrapper.removeClass("slug-closed")
+      @$slugWrapper.addClass("slug-open")
+      @$slugCloseButton.removeClass("slug-open-btn")
+      @$slugCloseButton.addClass("slug-close-btn")
+      @player.play()
+      @isSlugClosed = false
+    
   set_bindings:=>
     $("#cs-close").click =>
       @minimise()
