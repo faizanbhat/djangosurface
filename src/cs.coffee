@@ -7,7 +7,7 @@ $ ->
   
   # Add stylesheet
   # window.media = [{src:"src/3.mp4",poster:"src/poster.png",title:"Meet the team behind Genesis Media"}]
-  window.media = [{ad:true,src:{mp4:"src/propel.mp4",webm:"src/propel.webm"},poster:"src/poster.png",title:"Advertisement",url:"https://www.facebook.com/propel"},{ad:false,src:{mp4:"src/miller.mp4",webm:"src/miller.webm"},poster:"src/poster.png",title:"Marissa Miller's Shape Magazine Cover",url:""},{ad:false,src:{mp4:"src/audrina.mp4",webm:"src/audrina.webm"},poster:"src/audrina.png",title:"Audrina Patridge",url:""}]
+  window.media = [{ad:true,src:{mp4:"src/propel.mp4",webm:"src/propel.webm"},poster:"src/poster.png",title:"Advertisement",url:"https://www.facebook.com/propel"},{ad:false,src:{mp4:"src/audrina.mp4",webm:"src/audrina.webm"},poster:"src/audrina.png",title:"Behind The Scenes With Audrina Patridge",url:""},{ad:false,src:{mp4:"src/miller.mp4",webm:"src/miller.webm"},poster:"src/poster.png",title:"Marissa Miller's Shape Magazine Cover",url:""}]
   surface = new Surface("ShapeTV",0)
 
 class ScriptLoader
@@ -164,18 +164,19 @@ class Player
 class Surface
   constructor:(@site_name,delay)->
     
-    @current_video_index = @getCookie("gmcs-surface-current-video-index")
-    if @current_video_index is null
-      @current_video_index = 0;  
-    @current_time  = @getCookie("gmcs-surface-current_time")
-    if @current_time is null
-      @current_time = 0;  
-    @start_minimised = @getCookie("gmcs-surface-minimised")
-    if @start_minimised is null
+    @current_video_index = parseInt(@getCookie("gmcs-surface-current-video-index"))
+    if isNaN(@current_video_index)
+      @current_video_index = 0
+    @current_time  = parseInt(@getCookie("gmcs-surface-current_time"))
+    console.log @current_time
+    if isNaN(@current_time)
+      @current_time = 0
+    @start_minimised = parseInt(@getCookie("gmcs-surface-minimised"))
+    if isNaN(@start_minimised)
       @start_minimised = 0
-    @start_slug_closed = @getCookie("gmcs-surface-start-slug-closed")
-    if @start_slug_closed is null
-      @start_slug_closed = 0;  
+    @start_slug_closed = parseInt(@getCookie("gmcs-surface-start-slug-closed"))
+    if isNaN(@start_slug_closed)
+      @start_slug_closed = 0
   
     
     console.log "start minimised = " + @start_minimised
@@ -210,9 +211,7 @@ class Surface
     return @videos[@current_video_index]
   
   play_next_video:=>
-    console.log "Try playing next"
     if @current_video_index < @videos.length-1
-      console.log "Playing next"
       @current_video_index=@current_video_index+1
       console.log @current_video_index
       @player.loadFile(@current_video())
@@ -339,6 +338,7 @@ class Surface
     @player = new Player("cs-video-player","cs-player-container")   
     @player.ready(=>      
       @player.loadFile(@current_video())
+      @player.mute()
       if @current_time > 0
         @player.loadedmetadata(=>@player.setCurrentTime(@current_time))
       @player.ended(@play_next_video)
@@ -360,9 +360,10 @@ class Surface
       else
         @slugCloseButton.addClass("slug-close-btn slug-slide-button")
       
-      @slugCloseButton.on("click", @toggle_slug)
-      
+      @slugCloseButton.on("click", @toggle_slug) 
       @$slugCloseButton = $(".slug-slide-button")
+      @$slugCloseButton.css("display","none")
+      
     )
     
     
@@ -422,7 +423,6 @@ class Surface
   update_current_time:=>
     if @player.playing
       @setCookie("gmcs-surface-current_time",@player.currentTime(),10000)
-  
   
   set_blur:=>
     $("body").css("filter","blur(15px)")

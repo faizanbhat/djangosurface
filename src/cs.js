@@ -21,20 +21,20 @@
       }, {
         ad: false,
         src: {
+          mp4: "src/audrina.mp4",
+          webm: "src/audrina.webm"
+        },
+        poster: "src/audrina.png",
+        title: "Behind The Scenes With Audrina Patridge",
+        url: ""
+      }, {
+        ad: false,
+        src: {
           mp4: "src/miller.mp4",
           webm: "src/miller.webm"
         },
         poster: "src/poster.png",
         title: "Marissa Miller's Shape Magazine Cover",
-        url: ""
-      }, {
-        ad: false,
-        src: {
-          mp4: "src/audrina.mp4",
-          webm: "src/audrina.webm"
-        },
-        poster: "src/audrina.png",
-        title: "Audrina Patridge",
         url: ""
       }
     ];
@@ -311,20 +311,21 @@
       this.minimise = __bind(this.minimise, this);
       this.play_next_video = __bind(this.play_next_video, this);
       this.current_video = __bind(this.current_video, this);
-      this.current_video_index = this.getCookie("gmcs-surface-current-video-index");
-      if (this.current_video_index === null) {
+      this.current_video_index = parseInt(this.getCookie("gmcs-surface-current-video-index"));
+      if (isNaN(this.current_video_index)) {
         this.current_video_index = 0;
       }
-      this.current_time = this.getCookie("gmcs-surface-current_time");
-      if (this.current_time === null) {
+      this.current_time = parseInt(this.getCookie("gmcs-surface-current_time"));
+      console.log(this.current_time);
+      if (isNaN(this.current_time)) {
         this.current_time = 0;
       }
-      this.start_minimised = this.getCookie("gmcs-surface-minimised");
-      if (this.start_minimised === null) {
+      this.start_minimised = parseInt(this.getCookie("gmcs-surface-minimised"));
+      if (isNaN(this.start_minimised)) {
         this.start_minimised = 0;
       }
-      this.start_slug_closed = this.getCookie("gmcs-surface-start-slug-closed");
-      if (this.start_slug_closed === null) {
+      this.start_slug_closed = parseInt(this.getCookie("gmcs-surface-start-slug-closed"));
+      if (isNaN(this.start_slug_closed)) {
         this.start_slug_closed = 0;
       }
       console.log("start minimised = " + this.start_minimised);
@@ -356,9 +357,7 @@
     };
 
     Surface.prototype.play_next_video = function() {
-      console.log("Try playing next");
       if (this.current_video_index < this.videos.length - 1) {
-        console.log("Playing next");
         this.current_video_index = this.current_video_index + 1;
         console.log(this.current_video_index);
         this.player.loadFile(this.current_video());
@@ -474,6 +473,7 @@
       this.player = new Player("cs-video-player", "cs-player-container");
       this.player.ready(function() {
         _this.player.loadFile(_this.current_video());
+        _this.player.mute();
         if (_this.current_time > 0) {
           _this.player.loadedmetadata(function() {
             return _this.player.setCurrentTime(_this.current_time);
@@ -496,7 +496,8 @@
           _this.slugCloseButton.addClass("slug-close-btn slug-slide-button");
         }
         _this.slugCloseButton.on("click", _this.toggle_slug);
-        return _this.$slugCloseButton = $(".slug-slide-button");
+        _this.$slugCloseButton = $(".slug-slide-button");
+        return _this.$slugCloseButton.css("display", "none");
       });
       this.dom.appendDivToBody("cs-slug-wrapper");
       this.$slugWrapper = $("#cs-slug-wrapper");
