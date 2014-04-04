@@ -21,6 +21,15 @@
       }, {
         ad: false,
         src: {
+          mp4: "src/miller.mp4",
+          webm: "src/miller.webm"
+        },
+        poster: "src/poster.png",
+        title: "Marissa Miller's Shape Magazine Cover",
+        url: ""
+      }, {
+        ad: false,
+        src: {
           mp4: "src/audrina.mp4",
           webm: "src/audrina.webm"
         },
@@ -28,26 +37,35 @@
         title: "Behind The Scenes With Audrina Patridge",
         url: ""
       }, {
-        ad: true,
+        ad: false,
         src: {
-          mp4: "src/propel.mp4",
-          webm: "src/propel.webm"
+          mp4: "src/brooke.mp4",
+          webm: "src/brooke.webm"
         },
-        poster: "src/poster.png",
-        title: "Advertisement",
-        url: "https://www.facebook.com/propel"
+        poster: "",
+        title: "Brooke Burke's Shape Magazine Cover Shoot",
+        url: ""
       }, {
         ad: false,
         src: {
-          mp4: "src/miller.mp4",
-          webm: "src/miller.webm"
+          mp4: "src/olivia.mp4",
+          webm: "src/olivia.webm"
         },
-        poster: "src/poster.png",
-        title: "Marissa Miller's Shape Magazine Cover",
+        poster: "",
+        title: "Olivia Munn's Shape Magazine Photoshoot",
+        url: ""
+      }, {
+        ad: false,
+        src: {
+          mp4: "src/new.mp4",
+          webm: "src/new.webm"
+        },
+        poster: "",
+        title: "See What's New in Shape Magazine",
         url: ""
       }
     ];
-    return surface = new Surface("ShapeTV", 0);
+    return surface = new Surface("ShapeTV", 3000);
   });
 
   ScriptLoader = (function() {
@@ -371,6 +389,7 @@
     };
 
     Surface.prototype.play_next_video = function() {
+      this.current_time = 0;
       if (this.current_video_index < this.videos.length - 1) {
         this.current_video_index = this.current_video_index + 1;
         console.log(this.current_video_index);
@@ -388,11 +407,7 @@
           console.log("not ad");
           this.enable_minimise();
           this.enable_navigation();
-          this.player.showProgressBar();
-          $("#cs-footer").text("");
-          $("#cs-footer").text(this.next_content_title());
-          $("#cs-footer").click(this.forward);
-          return $("#cs-footer").addClass("footer-enabled");
+          return this.player.showProgressBar();
         }
       }
     };
@@ -520,8 +535,10 @@
       }
       console.log("enabling nav");
       $("#cs-forward").removeClass("cs-forward-disable");
+      $("#cs-forward").attr('onclick', '').unbind('click');
       $("#cs-forward").click(this.forward);
       $("#cs-rewind").removeClass("cs-rewind-disable");
+      $("#cs-rewind").attr('onclick', '').unbind('click');
       return $("#cs-rewind").click(this.rewind);
     };
 
@@ -540,6 +557,7 @@
             $("#cs-footer").removeClass("footer-enabled");
             return "Coming Up: " + this.videos[temp_index].title();
           } else {
+            $("#cs-footer").attr('onclick', '').unbind('click');
             $("#cs-footer").click(this.forward);
             $("#cs-footer").addClass("footer-enabled");
             return "Next: " + this.videos[temp_index].title();

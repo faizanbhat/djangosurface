@@ -294,6 +294,8 @@
 }
 
 #cs-footer{
+  padding-top:10px;
+  border-top:1px solid lightgray;
   position:absolute;
   bottom:-65px;
   right:0px;
