@@ -43,7 +43,7 @@
 #cs-header {
   position:relative;
   top:0px;
-  height:70px;
+  height:120px;
   width:50%;
   background:transparent;
   z-index:10000000000000001 !important;
@@ -54,11 +54,29 @@
  position:absolute;
  top:25px;
  right:0px;
- height:39px;
- width:39px;
- background:url('close.png');;
+ height:40px;
+ width:40px;
+ background:url('close-light.png');;
  z-index:10000000000000001 !important;
- opacity:0.8;
+}
+
+.cs-minimise:hover{
+ background:url('close-light-hover.png') !important;
+
+}
+
+.cs-close-inactive{
+  width:307px !important;
+  right:0px;  
+  background:url('close-light-inactive.png') !important;
+}
+
+.cs-close-inactive:hover{
+  background:url('close-light-inactive-hover-1.png') !important;
+}
+
+#cs-close-inactive:hover{
+ opacity:0.2;
 }
 
 #cs-info-wrapper{
@@ -132,11 +150,61 @@
       Helvetica, Arial, "Lucida Grande", sans-serif;  font-weight:"Light" ;
 }
 
+
 #cs-player-wrapper{
   margin:0 auto;
   position:relative;
   background-color:transparent;
 }
+
+#cs-rewind {
+  
+  position:absolute;
+  top:45%;
+  left:-100px;
+  height:70px;
+  width:70px;
+  background:url("rewind.png");
+  z-index:10000000000000002 !important;
+  
+}
+
+#cs-rewind:hover{
+  background:url("rewind-active.png");
+}
+
+.cs-rewind-disable {
+  opacity:0.3;
+}
+
+.cs-rewind-disable:hover {
+  background:url("rewind.png") !important;
+}
+
+#cs-forward {
+  
+  position:absolute;
+  top:45%;
+  right:-100px;
+  height:70px;
+  width:70px;
+  background:url("forward.png");
+  z-index:10000000000000002 !important;
+  
+}
+
+#cs-forward:hover {
+  background:url("forward-active.png");
+}
+
+.cs-forward-disable {
+  opacity:0.3;
+}
+
+.cs-forward-disable:hover {
+  background:url("forward.png") !important;
+}
+
 
 #cs-video-player {
   z-index:10000000000000001 !important;
@@ -223,6 +291,28 @@
 
 .slug-close-btn:hover{
   background:url("slug-close-active.png");  
+}
+
+#cs-footer{
+  position:absolute;
+  bottom:-65px;
+  right:0px;
+  font-family: "HelveticaNeue", "Helvetica Neue", "Helvetica Neue", 
+    Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-size:0.8em;
+  letter-spacing:1px;
+  color:#AAA;
+  z-index:1000000000000000001 !important;
+}
+
+.footer-enabled{
+  color:white !important;
+  
+}
+
+.footer-enabled:hover{
+  text-decoration:underline;
+  cursor:pointer;
 }
 
 /*.wideScreen {

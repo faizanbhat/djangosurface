@@ -7,7 +7,7 @@ $ ->
   
   # Add stylesheet
   # window.media = [{src:"src/3.mp4",poster:"src/poster.png",title:"Meet the team behind Genesis Media"}]
-  window.media = [{ad:true,src:{mp4:"src/propel.mp4",webm:"src/propel.webm"},poster:"src/poster.png",title:"Advertisement",url:"https://www.facebook.com/propel"},{ad:false,src:{mp4:"src/audrina.mp4",webm:"src/audrina.webm"},poster:"src/audrina.png",title:"Behind The Scenes With Audrina Patridge",url:""},{ad:false,src:{mp4:"src/miller.mp4",webm:"src/miller.webm"},poster:"src/poster.png",title:"Marissa Miller's Shape Magazine Cover",url:""}]
+  window.media = [{ad:true,src:{mp4:"src/propel.mp4",webm:"src/propel.webm"},poster:"src/poster.png",title:"Advertisement",url:"https://www.facebook.com/propel"},{ad:false,src:{mp4:"src/audrina.mp4",webm:"src/audrina.webm"},poster:"src/audrina.png",title:"Behind The Scenes With Audrina Patridge",url:""},{ad:true,src:{mp4:"src/propel.mp4",webm:"src/propel.webm"},poster:"src/poster.png",title:"Advertisement",url:"https://www.facebook.com/propel"},{ad:false,src:{mp4:"src/miller.mp4",webm:"src/miller.webm"},poster:"src/poster.png",title:"Marissa Miller's Shape Magazine Cover",url:""}]
   surface = new Surface("ShapeTV",0)
 
 class ScriptLoader
@@ -218,14 +218,53 @@ class Surface
       @$video_title.html(@current_video().title())
       @player.play()
       @setCookie("gmcs-surface-current-video-index",@current_video_index,10000)
+
+      $("#cs-footer").text(@next_content_title())
       
-    if @current_video().isAd()
-      console.log "..............<<<>>>............................"
-      @disable_minimise()
-      @player.hideProgressBar()
-    else
-      @enable_minimise()
-      @player.showProgressBar()
+      if @current_video().isAd()
+        @disable_minimise()
+        @disable_navigation()
+        console.log "isad"
+        @player.hideProgressBar()
+      else
+        console.log "not ad"
+        @enable_minimise()
+        @enable_navigation()
+        @player.showProgressBar()
+        $("#cs-footer").text("")
+        $("#cs-footer").text(@next_content_title())
+        $("#cs-footer").click(@forward)
+        $("#cs-footer").addClass("footer-enabled")
+      
+  
+
+  play_previous_video:=>
+  
+    console.log "play previous reached"
+    temp_index = @current_video_index-1
+    
+    while temp_index >= 0
+      console.log "temp index is " + temp_index
+      if not @videos[temp_index].isAd()  
+        console.log "Index is not ad"    
+        @current_video_index=temp_index
+        console.log "Changed index to " + @current_video_index
+        @player.loadFile(@current_video())
+        @$video_title.html(@current_video().title())
+        @player.play()
+        @setCookie("gmcs-surface-current-video-index",@current_video_index,10000)
+
+        @enable_minimise()
+        @enable_navigation()
+        @player.showProgressBar()
+        $("#cs-footer").text(@next_content_title())
+        
+        break
+        
+      else console.log "Index is ad"
+        
+      temp_index = temp_index - 1
+  
   
   minimise:(start_closed=false) =>
     @$slugCloseButton.css("display","inline")
@@ -279,19 +318,76 @@ class Surface
     
   disable_minimise: =>
     if @current_video().isAd()
-      $("#cs-close").css("opacity","0.2")
+      $("#cs-close").addClass("cs-close-inactive")
       $("#cs-close").attr('onclick','').unbind('click')
 
   enable_minimise: =>
-    $("#cs-close").css("opacity","0.8")
+    $("#cs-close").removeClass("cs-close-inactive")
     $("#cs-close").attr('onclick','').unbind('click')    
     $("#cs-close").click =>
       @minimise()
       
+  disable_navigation:=>
+    console.log "disabling nav"
+    $("#cs-forward").addClass("cs-forward-disable")
+    $("#cs-forward").attr('onclick','').unbind('click')
+    $("#cs-rewind").addClass("cs-rewind-disable")
+    $("#cs-rewind").attr('onclick','').unbind('click')
+    
+  enable_navigation:=>
+    
+    temp_index = @current_video_index-1
+    prior_content = false
+    while temp_index >= 0
+      if not @videos[temp_index].isAd()  
+        prior_content = true
+      temp_index = temp_index - 1
+      
+    if prior_content
+      $("#cs-rewind").show()
+    else $("#cs-rewind").hide()
+          
+    temp_index = @current_video_index+1
+    post_content = false
+    while temp_index < @videos.length
+      if not @videos[temp_index].isAd()  
+        post_content = true
+      temp_index = temp_index + 1
+
+    if post_content
+      $("#cs-forward").show()
+    else $("#cs-forward").hide()
+        
+    console.log "enabling nav"
+    $("#cs-forward").removeClass("cs-forward-disable")
+    $("#cs-forward").click(@forward)
+    $("#cs-rewind").removeClass("cs-rewind-disable")
+    $("#cs-rewind").click(@rewind)    
+      
   hide_slug:=>    
     @current_video().setPosition(@player.currentTime())
     $("#cs-slug-wrapper").hide()
-
+  
+  
+  next_content_title:=>
+    
+    temp_index = @current_video_index+1
+    
+    
+    while temp_index < @videos.length
+      if not @videos[temp_index].isAd()
+        if @videos[@current_video_index].isAd()
+          $("#cs-footer").attr('onclick','').unbind('click')
+          $("#cs-footer").removeClass("footer-enabled")
+          return "Coming Up: " + @videos[temp_index].title()
+        else
+          $("#cs-footer").click(@forward)
+          $("#cs-footer").addClass("footer-enabled")        
+          return "Next: " + @videos[temp_index].title()
+      temp_index = temp_index + 1
+    
+    return ""
+      
   load_UI:=>
       
     # Append Surface wrapper OUTSIDE body
@@ -313,14 +409,19 @@ class Surface
     @dom.appendDivToParent("cs-video-title","cs-bottom-line")
     @dom.appendDivToParent("cs-video-time-remaining","cs-bottom-line")
     @dom.appendDivToParent("cs-player-wrapper","cs-main")
+    @dom.appendDivToParent("cs-rewind","cs-player-wrapper")
+    @dom.appendDivToParent("cs-forward","cs-player-wrapper")
     @dom.appendDivToParent("cs-player-container","cs-player-wrapper")
-    @dom.appendDivToParent("cs-footer","cs-wrapper")
+    @dom.appendDivToParent("cs-footer","cs-player-wrapper")
      
     @$wrapper = $("#cs-wrapper")
     @$video_title = $("#cs-video-title")
     label = $("#cs-label")
     player_container = $("#cs-player-container")
     
+    $("#cs-close").addClass("cs-minimise")
+    $("#cs-rewind").hide()
+        
     # Player style
     player_container.addClass("largeVideoWrapper")      
     
@@ -344,10 +445,19 @@ class Surface
       @player.ended(@play_next_video)
       @player.set_fullscreen_action(@maximise)
       
+      $("#cs-footer").text(@next_content_title())
+      
       if @current_video().isAd()
-        @player.onplay(@disable_minimise)
+        @disable_navigation()
+        @player.onplay(=>
+          @disable_minimise()
+        )
         @player.hideProgressBar()
         
+      else
+        @enable_navigation()
+    
+      
       @player.onplay(=>@$video_title.html(@current_video().title()))
       @player.timeUpdate(@update_current_time)
       
@@ -365,8 +475,7 @@ class Surface
       @$slugCloseButton.css("display","none")
       
     )
-    
-    
+        
 #   Load elements for slug  
     @dom.appendDivToBody("cs-slug-wrapper")
     @$slugWrapper =  $("#cs-slug-wrapper")
@@ -389,6 +498,14 @@ class Surface
       else
         @minimise(false)
     
+  forward:=>  
+    console.log  "forward"
+    if not @current_video().isAd()
+      @play_next_video()
+      
+  rewind:=>
+    @play_previous_video()
+  
   toggle_slug:=>
     if not @isSlugClosed
       console.log "it's not closed - closing"
@@ -410,10 +527,6 @@ class Surface
       @isSlugClosed = false
       @setCookie("gmcs-surface-start-slug-closed",0,10000)
           
-  set_bindings:=>
-    $("#cs-close").click =>
-      @minimise()
-
   toggle_mute:=>
     if @player.isMuted()
       @player.unmute()

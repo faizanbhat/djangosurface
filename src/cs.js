@@ -28,6 +28,15 @@
         title: "Behind The Scenes With Audrina Patridge",
         url: ""
       }, {
+        ad: true,
+        src: {
+          mp4: "src/propel.mp4",
+          webm: "src/propel.webm"
+        },
+        poster: "src/poster.png",
+        title: "Advertisement",
+        url: "https://www.facebook.com/propel"
+      }, {
         ad: false,
         src: {
           mp4: "src/miller.mp4",
@@ -301,14 +310,19 @@
       this.set_blur = __bind(this.set_blur, this);
       this.update_current_time = __bind(this.update_current_time, this);
       this.toggle_mute = __bind(this.toggle_mute, this);
-      this.set_bindings = __bind(this.set_bindings, this);
       this.toggle_slug = __bind(this.toggle_slug, this);
+      this.rewind = __bind(this.rewind, this);
+      this.forward = __bind(this.forward, this);
       this.load_UI = __bind(this.load_UI, this);
+      this.next_content_title = __bind(this.next_content_title, this);
       this.hide_slug = __bind(this.hide_slug, this);
+      this.enable_navigation = __bind(this.enable_navigation, this);
+      this.disable_navigation = __bind(this.disable_navigation, this);
       this.enable_minimise = __bind(this.enable_minimise, this);
       this.disable_minimise = __bind(this.disable_minimise, this);
       this.maximise = __bind(this.maximise, this);
       this.minimise = __bind(this.minimise, this);
+      this.play_previous_video = __bind(this.play_previous_video, this);
       this.play_next_video = __bind(this.play_next_video, this);
       this.current_video = __bind(this.current_video, this);
       this.current_video_index = parseInt(this.getCookie("gmcs-surface-current-video-index"));
@@ -364,15 +378,51 @@
         this.$video_title.html(this.current_video().title());
         this.player.play();
         this.setCookie("gmcs-surface-current-video-index", this.current_video_index, 10000);
+        $("#cs-footer").text(this.next_content_title());
+        if (this.current_video().isAd()) {
+          this.disable_minimise();
+          this.disable_navigation();
+          console.log("isad");
+          return this.player.hideProgressBar();
+        } else {
+          console.log("not ad");
+          this.enable_minimise();
+          this.enable_navigation();
+          this.player.showProgressBar();
+          $("#cs-footer").text("");
+          $("#cs-footer").text(this.next_content_title());
+          $("#cs-footer").click(this.forward);
+          return $("#cs-footer").addClass("footer-enabled");
+        }
       }
-      if (this.current_video().isAd()) {
-        console.log("..............<<<>>>............................");
-        this.disable_minimise();
-        return this.player.hideProgressBar();
-      } else {
-        this.enable_minimise();
-        return this.player.showProgressBar();
+    };
+
+    Surface.prototype.play_previous_video = function() {
+      var temp_index, _results;
+      console.log("play previous reached");
+      temp_index = this.current_video_index - 1;
+      _results = [];
+      while (temp_index >= 0) {
+        console.log("temp index is " + temp_index);
+        if (!this.videos[temp_index].isAd()) {
+          console.log("Index is not ad");
+          this.current_video_index = temp_index;
+          console.log("Changed index to " + this.current_video_index);
+          this.player.loadFile(this.current_video());
+          this.$video_title.html(this.current_video().title());
+          this.player.play();
+          this.setCookie("gmcs-surface-current-video-index", this.current_video_index, 10000);
+          this.enable_minimise();
+          this.enable_navigation();
+          this.player.showProgressBar();
+          $("#cs-footer").text(this.next_content_title());
+          break;
+        } else {
+          console.log("Index is ad");
+        }
+        _results.push(temp_index = temp_index - 1);
       }
+      return _results;
     };
 
     Surface.prototype.minimise = function(start_closed) {
@@ -418,23 +468,86 @@
 
     Surface.prototype.disable_minimise = function() {
       if (this.current_video().isAd()) {
-        $("#cs-close").css("opacity", "0.2");
+        $("#cs-close").addClass("cs-close-inactive");
         return $("#cs-close").attr('onclick', '').unbind('click');
       }
     };
 
     Surface.prototype.enable_minimise = function() {
       var _this = this;
-      $("#cs-close").css("opacity", "0.8");
+      $("#cs-close").removeClass("cs-close-inactive");
       $("#cs-close").attr('onclick', '').unbind('click');
       return $("#cs-close").click(function() {
         return _this.minimise();
       });
     };
 
+    Surface.prototype.disable_navigation = function() {
+      console.log("disabling nav");
+      $("#cs-forward").addClass("cs-forward-disable");
+      $("#cs-forward").attr('onclick', '').unbind('click');
+      $("#cs-rewind").addClass("cs-rewind-disable");
+      return $("#cs-rewind").attr('onclick', '').unbind('click');
+    };
+
+    Surface.prototype.enable_navigation = function() {
+      var post_content, prior_content, temp_index;
+      temp_index = this.current_video_index - 1;
+      prior_content = false;
+      while (temp_index >= 0) {
+        if (!this.videos[temp_index].isAd()) {
+          prior_content = true;
+        }
+        temp_index = temp_index - 1;
+      }
+      if (prior_content) {
+        $("#cs-rewind").show();
+      } else {
+        $("#cs-rewind").hide();
+      }
+      temp_index = this.current_video_index + 1;
+      post_content = false;
+      while (temp_index < this.videos.length) {
+        if (!this.videos[temp_index].isAd()) {
+          post_content = true;
+        }
+        temp_index = temp_index + 1;
+      }
+      if (post_content) {
+        $("#cs-forward").show();
+      } else {
+        $("#cs-forward").hide();
+      }
+      console.log("enabling nav");
+      $("#cs-forward").removeClass("cs-forward-disable");
+      $("#cs-forward").click(this.forward);
+      $("#cs-rewind").removeClass("cs-rewind-disable");
+      return $("#cs-rewind").click(this.rewind);
+    };
+
     Surface.prototype.hide_slug = function() {
       this.current_video().setPosition(this.player.currentTime());
       return $("#cs-slug-wrapper").hide();
+    };
+
+    Surface.prototype.next_content_title = function() {
+      var temp_index;
+      temp_index = this.current_video_index + 1;
+      while (temp_index < this.videos.length) {
+        if (!this.videos[temp_index].isAd()) {
+          if (this.videos[this.current_video_index].isAd()) {
+            $("#cs-footer").attr('onclick', '').unbind('click');
+            $("#cs-footer").removeClass("footer-enabled");
+            return "Coming Up: " + this.videos[temp_index].title();
+          } else {
+            $("#cs-footer").click(this.forward);
+            $("#cs-footer").addClass("footer-enabled");
+            return "Next: " + this.videos[temp_index].title();
+          }
+        }
+        temp_index = temp_index + 1;
+      }
+      return "";
     };
 
     Surface.prototype.load_UI = function() {
@@ -456,12 +569,16 @@
       this.dom.appendDivToParent("cs-video-title", "cs-bottom-line");
       this.dom.appendDivToParent("cs-video-time-remaining", "cs-bottom-line");
       this.dom.appendDivToParent("cs-player-wrapper", "cs-main");
+      this.dom.appendDivToParent("cs-rewind", "cs-player-wrapper");
+      this.dom.appendDivToParent("cs-forward", "cs-player-wrapper");
       this.dom.appendDivToParent("cs-player-container", "cs-player-wrapper");
-      this.dom.appendDivToParent("cs-footer", "cs-wrapper");
+      this.dom.appendDivToParent("cs-footer", "cs-player-wrapper");
       this.$wrapper = $("#cs-wrapper");
       this.$video_title = $("#cs-video-title");
       label = $("#cs-label");
       player_container = $("#cs-player-container");
+      $("#cs-close").addClass("cs-minimise");
+      $("#cs-rewind").hide();
       player_container.addClass("largeVideoWrapper");
       label.html(this.site_name);
       if (this.current_video().isAd()) {
@@ -481,9 +598,15 @@
         }
         _this.player.ended(_this.play_next_video);
         _this.player.set_fullscreen_action(_this.maximise);
+        $("#cs-footer").text(_this.next_content_title());
         if (_this.current_video().isAd()) {
-          _this.player.onplay(_this.disable_minimise);
+          _this.disable_navigation();
+          _this.player.onplay(function() {
+            return _this.disable_minimise();
+          });
           _this.player.hideProgressBar();
+        } else {
+          _this.enable_navigation();
         }
         _this.player.onplay(function() {
           return _this.$video_title.html(_this.current_video().title());
@@ -519,6 +642,17 @@
       }
     };
 
+    Surface.prototype.forward = function() {
+      console.log("forward");
+      if (!this.current_video().isAd()) {
+        return this.play_next_video();
+      }
+    };
+
+    Surface.prototype.rewind = function() {
+      return this.play_previous_video();
+    };
+
     Surface.prototype.toggle_slug = function() {
       if (!this.isSlugClosed) {
         console.log("it's not closed - closing");
@@ -539,13 +673,6 @@
         this.isSlugClosed = false;
         return this.setCookie("gmcs-surface-start-slug-closed", 0, 10000);
       }
-    };
-
-    Surface.prototype.set_bindings = function() {
-      var _this = this;
-      return $("#cs-close").click(function() {
-        return _this.minimise();
-      });
     };
 
     Surface.prototype.toggle_mute = function() {
