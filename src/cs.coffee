@@ -7,8 +7,8 @@ $ ->
   
   # Add stylesheet
   # window.media = [{src:"src/3.mp4",poster:"src/poster.png",title:"Meet the team behind Genesis Media"}]
-  window.media = [{ad:true,src:{mp4:"src/propel.mp4",webm:"src/propel.webm"},poster:"src/poster.png",title:"Advertisement",url:"https://www.facebook.com/propel"},{ad:false,src:{mp4:"src/miller.mp4",webm:"src/miller.webm"},poster:"src/poster.png",title:"Marissa Miller's Shape Magazine Cover",url:""},{ad:false,src:{mp4:"src/audrina.mp4",webm:"src/audrina.webm"},poster:"src/audrina.png",title:"Behind The Scenes With Audrina Patridge",url:""},{ad:false,src:{mp4:"src/brooke.mp4",webm:"src/brooke.webm"},poster:"",title:"Brooke Burke's Shape Magazine Cover Shoot",url:""},{ad:false,src:{mp4:"src/olivia.mp4",webm:"src/olivia.webm"},poster:"",title:"Olivia Munn's Shape Magazine Photoshoot",url:""},{ad:false,src:{mp4:"src/new.mp4",webm:"src/new.webm"},poster:"",title:"See What's New in Shape Magazine",url:""}]
-  surface = new Surface("ShapeTV",3000)
+  window.media = [{ad:true,src:{mp4:"src/propel.mp4",webm:"src/propel.webm"},poster:"src/poster.png",title:"Advertisement",url:"https://www.facebook.com/propel"},{ad:false,src:{mp4:"src/new.mp4",webm:"src/new.webm"},poster:"",title:"See What's New in Shape Magazine",url:""},{ad:false,src:{mp4:"src/miller.mp4",webm:"src/miller.webm"},poster:"src/poster.png",title:"Marissa Miller's Shape Magazine Cover",url:""},{ad:false,src:{mp4:"src/audrina.mp4",webm:"src/audrina.webm"},poster:"src/audrina.png",title:"Behind The Scenes With Audrina Patridge",url:""},{ad:false,src:{mp4:"src/brooke.mp4",webm:"src/brooke.webm"},poster:"",title:"Brooke Burke's Shape Magazine Cover Shoot",url:""},{ad:false,src:{mp4:"src/olivia.mp4",webm:"src/olivia.webm"},poster:"",title:"Olivia Munn's Shape Magazine Photoshoot",url:""}]
+  surface = new Surface("ShapeTV",1500)
 
 class ScriptLoader
     constructor: (options..., callback) ->
