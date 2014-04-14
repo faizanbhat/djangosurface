@@ -278,7 +278,7 @@ class Surface
 
     @player.enable_fullscreen()
         
-    $("#cs-slug-wrapper").show() # Show slug
+    $("#cs-slug-wrapper").show("100") # Show slug
     
     @minimised = true
     
