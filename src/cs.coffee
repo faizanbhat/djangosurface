@@ -7,7 +7,14 @@ $ ->
   
   # Add stylesheet
   # window.media = [{src:"src/3.mp4",poster:"src/poster.png",title:"Meet the team behind Genesis Media"}]
-  window.media = [{ad:true,src:{mp4:"src/propel.mp4",webm:"src/propel.webm"},poster:"src/poster.png",title:"Advertisement",url:"https://www.facebook.com/propel"},{ad:false,src:{mp4:"src/new.mp4",webm:"src/new.webm"},poster:"",title:"See What's New in Shape Magazine",url:""},{ad:false,src:{mp4:"src/miller.mp4",webm:"src/miller.webm"},poster:"",title:"Marissa Miller's Shape Magazine Cover",url:""},{ad:false,src:{mp4:"src/audrina.mp4",webm:"src/audrina.webm"},poster:"src/audrina.png",title:"Behind The Scenes With Audrina Patridge",url:""},{ad:false,src:{mp4:"src/brooke.mp4",webm:"src/brooke.webm"},poster:"",title:"Brooke Burke's Shape Magazine Cover Shoot",url:""},{ad:false,src:{mp4:"src/olivia.mp4",webm:"src/olivia.webm"},poster:"",title:"Olivia Munn's Shape Magazine Photoshoot",url:""}]
+  window.media = [
+      {ad:true,src:{mp4:"src/propel.mp4",webm:"src/propel.webm"},thumb:"",poster:"src/poster.png",title:"Advertisement",url:"https://www.facebook.com/propel"},
+      {ad:false,src:{mp4:"src/new.mp4",webm:"src/new.webm"},thumb:"thumb-new.png",poster:"",title:"See What's New in Shape Magazine",url:""},
+      {ad:false,src:{mp4:"src/miller.mp4",webm:"src/miller.webm"},thumb:"thumb-miller.png",poster:"",title:"Marissa Miller's Shape Magazine Cover",url:""},
+      {ad:false,src:{mp4:"src/audrina.mp4",webm:"src/audrina.webm"},thumb:"thumb-audrina.png",poster:"src/audrina.png",title:"Behind The Scenes With Audrina Patridge",url:""},
+      {ad:false,src:{mp4:"src/brooke.mp4",webm:"src/brooke.webm"},thumb:"thumb-brooke.png",poster:"",title:"Brooke Burke's Shape Magazine Cover Shoot",url:""},
+      {ad:false,src:{mp4:"src/olivia.mp4",webm:"src/olivia.webm"},thumb:"thumb-olivia.png",poster:"",title:"Olivia Munn's Shape Magazine Photoshoot",url:""}]
+      
   surface = new Surface("ShapeTV",1500)
 
 class ScriptLoader
@@ -191,7 +198,7 @@ class Surface
     # Read media files
     @videos = []
     for item in window.media
-      vf = new VideoFile(item.src,0,item.poster,item.title,item.url,item.ad)
+      vf = new VideoFile(item.src,0,item.poster,item.title,item.url,item.ad,item.thumb)
       @videos.push vf
   
     # Setup Dom
@@ -220,7 +227,7 @@ class Surface
       @player.play()
       @setCookie("gmcs-surface-current-video-index",@current_video_index,10000)
 
-      $("#cs-footer").text(@next_content_title())
+      $("#cs-footer-text").text(@next_content_title())
       
       if @current_video().isAd()
         @disable_minimise()
@@ -253,7 +260,7 @@ class Surface
         @enable_minimise()
         @enable_navigation()
         @player.showProgressBar()
-        $("#cs-footer").text(@next_content_title())
+        $("#cs-footer-text").text(@next_content_title())
         
         break
         
@@ -412,18 +419,19 @@ class Surface
     @dom.appendDivToParent("cs-forward","cs-player-wrapper")
     @dom.appendDivToParent("cs-player-container","cs-player-wrapper")
     @dom.appendDivToParent("cs-footer","cs-player-wrapper")
-     
+    @dom.appendDivToParent("cs-footer-text","cs-footer")
+    
     @$wrapper = $("#cs-wrapper")
     @$video_title = $("#cs-video-title")
     label = $("#cs-label")
     player_container = $("#cs-player-container")
-    
+
     $("#cs-close").addClass("cs-minimise")
     $("#cs-rewind").hide()
-        
+    
     # Player style
     player_container.addClass("largeVideoWrapper")      
-    
+
     # Messaging
     label.html(@site_name)
     if @current_video().isAd()
@@ -444,7 +452,7 @@ class Surface
       @player.ended(@play_next_video)
       @player.set_fullscreen_action(@maximise)
       
-      $("#cs-footer").text(@next_content_title())
+      $("#cs-footer-text").text(@next_content_title())
       
       if @current_video().isAd()
         @disable_navigation()
@@ -587,7 +595,7 @@ class Surface
     setCookie name, "", -1
 
 class VideoFile
-  constructor:(src,position,poster,title,@video_url,@ad)->
+  constructor:(src,position,poster,title,@video_url,@ad,@thumb)->
     @file_src = src ? ""
     @playback_position = position ? 0
     @video_poster = poster ? ""
@@ -615,3 +623,6 @@ class VideoFile
     
   isAd:=>
     return @ad
+  
+  thumbnail:=>
+    return @thumb

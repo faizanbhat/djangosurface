@@ -72,7 +72,7 @@
 }
 
 .cs-close-inactive:hover{
-  background:url('close-light-inactive-hover-1.png') !important;
+  background:url('close-light-inactive-hover.png') !important;
 }
 
 #cs-close-inactive:hover{
@@ -294,10 +294,10 @@
 }
 
 #cs-footer{
+  position:relative;
   padding-top:10px;
   border-top:1px solid lightgray;
-  position:absolute;
-  bottom:-65px;
+  bottom:-54px;
   right:0px;
   font-family: "HelveticaNeue", "Helvetica Neue", "Helvetica Neue", 
     Helvetica, Arial, "Lucida Grande", sans-serif; 
