@@ -71,7 +71,7 @@
         url: ""
       }
     ];
-    return surface = new Surface("ShapeTV", 1500);
+    return surface = new Surface("Nat Geo TV", 1500);
   });
 
   ScriptLoader = (function() {
@@ -229,11 +229,8 @@
       s = vf.sources();
       this.elem.src([
         {
-          type: "video/mp4",
-          src: s.mp4
-        }, {
-          type: "video/webm",
-          src: s.webm
+          type: "video/flv",
+          src: s
         }
       ]);
       if (vf.poster()) {
@@ -331,7 +328,7 @@
 
   Surface = (function() {
     function Surface(site_name, delay) {
-      var item, run_surface, vf, _i, _len, _ref;
+      var c, item, run_surface, s, url, urls, v, v_tag, vf, vs, xmlDoc, xmlhttp, _i, _j, _len, _len1;
       this.site_name = site_name;
       this.remove_overlay = __bind(this.remove_overlay, this);
       this.set_blur = __bind(this.set_blur, this);
@@ -376,11 +373,38 @@
       this.minimised = false;
       this.isSlugClosed = false;
       this.player = null;
+      console.log("-----");
+      if (window.XMLHttpRequest) {
+        xmlhttp = new XMLHttpRequest();
+      } else {
+        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+      }
+      xmlhttp.open("GET", "src/sitemap3.xml", false);
+      xmlhttp.send();
+      xmlDoc = xmlhttp.responseXML;
+      urls = xmlDoc.getElementsByTagName("url");
+      vs = [];
+      for (_i = 0, _len = urls.length; _i < _len; _i++) {
+        url = urls[_i];
+        v = {};
+        v_tag = url.getElementsByTagName("video");
+        v = v_tag[0];
+        c = v.children;
+        v.thumb = c[0].innerHTML;
+        s = c[1].innerHTML;
+        s = s.replace("<![CDATA[", "", s);
+        v.title = s.replace("]]>", "", s);
+        s = c[2].innerHTML;
+        s = s.replace("<![CDATA[", "", s);
+        v.desc = s.replace("]]>", "", s);
+        v.src = c[3].innerHTML;
+        vs.push(v);
+      }
       this.videos = [];
-      _ref = window.media;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        item = _ref[_i];
-        vf = new VideoFile(item.src, 0, item.poster, item.title, item.url, item.ad, item.thumb);
+      for (_j = 0, _len1 = vs.length; _j < _len1; _j++) {
+        item = vs[_j];
+        console.log(typeof item.title);
+        vf = new VideoFile(item.src, item.title);
         this.videos.push(vf);
       }
       this.dom = new DomManager();
@@ -481,12 +505,11 @@
     Surface.prototype.maximise = function() {
       this.$slugCloseButton.css("display", "none");
       if (this.minimised === true) {
-        this.player.disable_fullscreen();
         this.hide_slug();
         this.set_blur();
         this.player.moveToParentWithId("cs-player-container");
         this.$wrapper.show();
-        this.player.play();
+        this.player.ready(this.player.play());
         this.minimised = false;
         return this.setCookie("gmcs-surface-minimised", 0, 10000);
       }
@@ -598,8 +621,6 @@
       this.dom.appendDivToParent("cs-video-title", "cs-bottom-line");
       this.dom.appendDivToParent("cs-video-time-remaining", "cs-bottom-line");
       this.dom.appendDivToParent("cs-player-wrapper", "cs-main");
-      this.dom.appendDivToParent("cs-rewind", "cs-player-wrapper");
-      this.dom.appendDivToParent("cs-forward", "cs-player-wrapper");
       this.dom.appendDivToParent("cs-player-container", "cs-player-wrapper");
       this.dom.appendDivToParent("cs-footer", "cs-player-wrapper");
       this.dom.appendDivToParent("cs-footer-text", "cs-footer");
@@ -620,6 +641,7 @@
       this.player = new Player("cs-video-player", "cs-player-container");
       this.player.ready((function(_this) {
         return function() {
+          _this.player.enable_fullscreen();
           _this.player.loadFile(_this.current_video());
           _this.player.mute();
           if (_this.current_time > 0) {
@@ -786,10 +808,8 @@
   })();
 
   VideoFile = (function() {
-    function VideoFile(src, position, poster, title, video_url, ad, thumb) {
-      this.video_url = video_url;
-      this.ad = ad;
-      this.thumb = thumb;
+    function VideoFile(src, t) {
+      this.t = t;
       this.thumbnail = __bind(this.thumbnail, this);
       this.isAd = __bind(this.isAd, this);
       this.poster = __bind(this.poster, this);
@@ -798,10 +818,11 @@
       this.setPosition = __bind(this.setPosition, this);
       this.position = __bind(this.position, this);
       this.sources = __bind(this.sources, this);
+      console.log(this.t);
+      console.log(src);
       this.file_src = src != null ? src : "";
-      this.playback_position = position != null ? position : 0;
-      this.video_poster = poster != null ? poster : "";
-      this.video_title = title != null ? title : "";
+      this.playback_position = 0;
+      this.video_poster = "";
     }
 
     VideoFile.prototype.sources = function() {
@@ -817,7 +838,7 @@
     };
 
     VideoFile.prototype.title = function() {
-      return this.video_title;
+      return this.t;
     };
 
     VideoFile.prototype.url = function() {

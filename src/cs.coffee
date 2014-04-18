@@ -15,7 +15,7 @@ $ ->
       {ad:false,src:{mp4:"src/brooke.mp4",webm:"src/brooke.webm"},thumb:"thumb-brooke.png",poster:"",title:"Brooke Burke's Shape Magazine Cover Shoot",url:""},
       {ad:false,src:{mp4:"src/olivia.mp4",webm:"src/olivia.webm"},thumb:"thumb-olivia.png",poster:"",title:"Olivia Munn's Shape Magazine Photoshoot",url:""}]
       
-  surface = new Surface("ShapeTV",1500)
+  surface = new Surface("Nat Geo TV",1500)
 
 class ScriptLoader
     constructor: (options..., callback) ->
@@ -99,7 +99,7 @@ class Player
   
   loadFile:(vf)=>
     s = vf.sources()
-    @elem.src([{type:"video/mp4", src:s.mp4},{type:"video/webm",src:s.webm}])
+    @elem.src([{type:"video/flv", src:s}])
     if vf.poster()
       @elem.poster(vf.poster())
        
@@ -170,7 +170,6 @@ class Player
   
 class Surface
   constructor:(@site_name,delay)->
-    
     @current_video_index = parseInt(@getCookie("gmcs-surface-current-video-index"))
     if isNaN(@current_video_index)
       @current_video_index = 0
@@ -185,7 +184,6 @@ class Surface
     if isNaN(@start_slug_closed)
       @start_slug_closed = 0
   
-    
     console.log "start minimised = " + @start_minimised
     console.log "Current index = "+ @current_video_index
     console.log "Current time = "+ @current_time
@@ -195,12 +193,42 @@ class Surface
     @isSlugClosed = false
     @player = null
     
+    console.log "-----"
     # Read media files
+    
+    if window.XMLHttpRequest
+      xmlhttp=new XMLHttpRequest()
+    else
+      xmlhttp=new ActiveXObject("Microsoft.XMLHTTP")
+    xmlhttp.open("GET","src/sitemap3.xml",false);
+    xmlhttp.send();
+    xmlDoc=xmlhttp.responseXML
+    urls = xmlDoc.getElementsByTagName("url")
+    
+    vs = []
+    
+    for url in urls
+      v = {}
+      v_tag = url.getElementsByTagName("video")
+      v = v_tag[0]
+      c = v.children
+      v.thumb = c[0].innerHTML
+      s = c[1].innerHTML
+      s = s.replace("<![CDATA[","",s)
+      v.title = s.replace("]]>","",s)
+      s = c[2].innerHTML
+      s = s.replace("<![CDATA[","",s)
+      v.desc = s.replace("]]>","",s)
+      v.src = c[3].innerHTML
+      vs.push v
+    
+    
     @videos = []
-    for item in window.media
-      vf = new VideoFile(item.src,0,item.poster,item.title,item.url,item.ad,item.thumb)
+    for item in vs
+      console.log typeof item.title
+      vf = new VideoFile(item.src,item.title)
       @videos.push vf
-  
+    
     # Setup Dom
     @dom = new DomManager()
   
@@ -301,9 +329,7 @@ class Surface
   maximise:=>
     @$slugCloseButton.css("display","none")
     if (@minimised==true)
-        
-        @player.disable_fullscreen()
-        
+                
         @hide_slug() # Use twice so this gets its own method
 
         @set_blur() # Add overlay + blur again
@@ -312,7 +338,7 @@ class Surface
     
         @$wrapper.show() # Show wrapper
     
-        @player.play() # For some reason player stops after it's moved around
+        @player.ready(@player.play()) # For some reason player stops after it's moved around
         
         @minimised = false
         
@@ -415,8 +441,6 @@ class Surface
     @dom.appendDivToParent("cs-video-title","cs-bottom-line")
     @dom.appendDivToParent("cs-video-time-remaining","cs-bottom-line")
     @dom.appendDivToParent("cs-player-wrapper","cs-main")
-    @dom.appendDivToParent("cs-rewind","cs-player-wrapper")
-    @dom.appendDivToParent("cs-forward","cs-player-wrapper")
     @dom.appendDivToParent("cs-player-container","cs-player-wrapper")
     @dom.appendDivToParent("cs-footer","cs-player-wrapper")
     @dom.appendDivToParent("cs-footer-text","cs-footer")
@@ -445,6 +469,7 @@ class Surface
     # Video Player
     @player = new Player("cs-video-player","cs-player-container")   
     @player.ready(=>      
+      @player.enable_fullscreen()
       @player.loadFile(@current_video())
       @player.mute()
       if @current_time > 0
@@ -595,11 +620,12 @@ class Surface
     setCookie name, "", -1
 
 class VideoFile
-  constructor:(src,position,poster,title,@video_url,@ad,@thumb)->
+  constructor:(src,@t)->
+    console.log @t
+    console.log src
     @file_src = src ? ""
-    @playback_position = position ? 0
-    @video_poster = poster ? ""
-    @video_title = title ? ""
+    @playback_position = 0
+    @video_poster = ""
 
   sources:=>
     return @file_src
@@ -611,7 +637,7 @@ class VideoFile
     @playback_position = pos
     
   title:=>
-    return @video_title
+    return @t
   
   url:=>  
     return @video_url
@@ -626,3 +652,4 @@ class VideoFile
   
   thumbnail:=>
     return @thumb
+    
