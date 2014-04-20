@@ -1,5 +1,5 @@
 from videos.models import Video, Site
-from csusers.models import CSUser
+from csusers.models import CSUser, CSUserPlaylist
 from rest_framework import serializers
 
 class SiteSerializer(serializers.HyperlinkedModelSerializer):
@@ -19,3 +19,8 @@ class CSUserSerializer(serializers.ModelSerializer):
         model = CSUser
         depth = 2
         fields = ('id','playlist','last_played')
+        
+class CSUserPlaylistSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CSUserPlaylist
+        fields = ('id','videos')

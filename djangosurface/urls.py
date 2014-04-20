@@ -2,12 +2,14 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from rest_framework import routers
 from videos.views import SiteViewSet, VideoViewSet
-from csusers.views import CSUserViewSet
+from csusers.views import CSUserViewSet, CSUserPlaylistViewSet
 
 router = routers.DefaultRouter()
 router.register(r'sites', SiteViewSet)
 router.register(r'videos', VideoViewSet)
 router.register(r'users', CSUserViewSet)
+router.register(r'playlists', CSUserPlaylistViewSet)
+
 
 
 admin.autodiscover()

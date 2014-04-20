@@ -6,12 +6,12 @@ from taggit.managers import TaggableManager
 
            
 class CSUserPlaylist(models.Model):
-    plist = models.ManyToManyField(Video, related_name="queued_for", through='Order')
+    videos = models.ManyToManyField(Video, related_name="playlists", through='PlaylistVideo')
 
-class Order(models.Model):
+class PlaylistVideo(models.Model):
     similarity = models.FloatField()
-    pl = models.ForeignKey(CSUserPlaylist)
-    v = models.ForeignKey(Video)
+    playlist = models.ForeignKey(CSUserPlaylist)
+    video = models.ForeignKey(Video)
 
 class CSUser(models.Model):
     site = models.ForeignKey(Site)

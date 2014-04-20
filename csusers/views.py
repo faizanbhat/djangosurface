@@ -3,7 +3,7 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.core.context_processors import csrf
 from django.shortcuts import render
-from csusers.models import CSUser, Order, CSUserPlaylist
+from csusers.models import CSUser, PlaylistVideo, CSUserPlaylist
 from videos.models import Site, Video
 from django.shortcuts import get_object_or_404
 from recommender.managers import RecommenderManager as RM
@@ -12,11 +12,15 @@ import pdb
 # Create your views here.
 
 from rest_framework import viewsets
-from djangosurface.serializers import CSUserSerializer
+from djangosurface.serializers import CSUserSerializer, CSUserPlaylistSerializer
 
 class CSUserViewSet(viewsets.ModelViewSet):
     queryset = CSUser.objects.all()
     serializer_class = CSUserSerializer    
+
+class CSUserPlaylistViewSet(viewsets.ModelViewSet):
+    queryset = CSUserPlaylist.objects.all()
+    serializer_class = CSUserPlaylistSerializer    
 
 def create_user(request,site_id):
     # pdb.set_trace()
@@ -26,7 +30,7 @@ def create_user(request,site_id):
     pl = CSUserPlaylist()
     pl.save()
     for v in initial_videos:
-        Order.objects.create(pl=pl,v=v,similarity=0.0)
+        PlaylistVideo.objects.create(playlist=pl,video=v,similarity=0.0)
     u.playlist = pl
     u.save()
     
