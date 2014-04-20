@@ -7,11 +7,36 @@ $ ->
   window.gmcs = {}
   window.gmcs.site_id = "1"
   window.gmcs.host = "http://localhost:8080"    
-    
-  surface = new Surface("Nat Geo TV")
+  window.gmcs.utils = {}
+  window.gmcs.utils.cookieHandler = new CookieHandler()
+  window.gmcs.utils.surface = new Surface("Nat Geo TV")
 
 
-
+class CookieHandler
+  setCookie:(name, value, days) ->
+    if days
+      date = new Date()
+      date.setTime date.getTime() + (days * 24 * 60 * 60 * 1000)
+      expires = "; expires=" + date.toGMTString()
+    else
+      expires = ""
+    document.cookie = name + "=" + value + expires + "; path=/"
+  
+  
+  getCookie:(name) ->
+    nameEQ = name + "="
+    ca = document.cookie.split(";")
+    i = 0
+    while i < ca.length
+      c = ca[i]
+      c = c.substring(1, c.length)  while c.charAt(0) is " "
+      return c.substring(nameEQ.length, c.length)  if c.indexOf(nameEQ) is 0
+      i++
+    null
+  
+  deleteCookie:(name) ->
+    setCookie name, "", -1
+  
 class ScriptLoader
     constructor: (options..., callback) ->
         @libraries = {jQuery: "http://ajax.googleapis.com/ajax/libs/jquery/$version/jquery.js",videoJs: "vjs/video.dev.js"}
@@ -90,11 +115,8 @@ class Player
     @elem.volume(1)
   
   loadFile:(vf)=>
-    console.log "load file called"
-    s = vf.sources()
+    s = vf.src()
     @elem.src([{type:"video/flv", src:s}])
-    if vf.poster()
-      @elem.poster(vf.poster())
        
   duration:=>
     return @elem.duration()
@@ -150,52 +172,33 @@ class Player
 class Surface
   constructor:(@site_name,delay)->
     @hostname = window.gmcs.host
-    user = @set_or_create_user()
+    @cookieHandler = window.gmcs.utils.cookieHandler
     
-    @current_video_index = parseInt(@getCookie("gmcs-surface-current-video-index"))
-    if isNaN(@current_video_index)
-      @current_video_index = 1
-    @current_time  = parseInt(@getCookie("gmcs-surface-current_time"))
+    @callbacks = {
+      'playlist_loaded':@load_UI
+    }
+    
+    @user = new User(@callbacks['playlist_loaded'])
+    
+    @current_time  = parseInt(@cookieHandler.getCookie("gmcs-surface-current_time"))
     if isNaN(@current_time)
       @current_time = 0
-    @start_minimised = parseInt(@getCookie("gmcs-surface-minimised"))
+    @start_minimised = parseInt(@cookieHandler.getCookie("gmcs-surface-minimised"))
     if isNaN(@start_minimised)
       @start_minimised = 0
     
     @minimised = false
     @player = null
-    @video = null
-    @next_video = null
-    
+        
     # Setup Dom
     @dom = new DomManager()
     @dom.getStyle("src/style.css")
     @dom.getStyle("vjs/video-js.css")
     @set_blur()
 
-    new ScriptLoader "videoJs", @load_UI
-      
-  set_or_create_user:=>
-    user_id= @getCookie("gmcs-surface-current-user-id")
-    if user_id is null
-      requestURI = @hostname+"/csuser/create/" + window.gmcs.site_id
-      $.getJSON(requestURI, (data)=>
-        console.log data
-        @user_id = data.id.toString()
-        @setCookie("gmcs-surface-current-user-id",@user_id,10000)
-        console.log @user_id
-        )
-    else
-      @user_id = user_id
-      console.log @user_id
-    
-
-      
-
-      
+    new ScriptLoader "videoJs", ->
     
   load_UI:=>
-      
     # Append Surface wrapper OUTSIDE body
     s = document.createElement("div")
     s.id = "cs-wrapper"
@@ -218,11 +221,21 @@ class Surface
     @dom.appendDivToParent("cs-footer","cs-player-wrapper")
     @dom.appendDivToParent("cs-footer-skip","cs-footer")
     @dom.appendDivToParent("cs-footer-like","cs-footer")
+    @dom.appendDivToBody("cs-slug-wrapper")
     
-    @$wrapper = $("#cs-wrapper")
+    @$wrapper = $("#cs-wrapper")    
+    @$slugWrapper = $("#cs-slug-wrapper")
+    @$slugWrapper.click(@maximise)
+    @hide_slug()
+    
+    $("#cs-player-container").addClass("largeVideoWrapper")      
+    
+    @video = @user.playlist.next()    
+
     @$video_title = $("#cs-video-title")
-    label = $("#cs-label")
-    player_container = $("#cs-player-container")
+    @$video_title.html(@video.title())
+    
+    $("#cs-label").html(@site_name)
 
     $("#cs-close").addClass("cs-close")
     $("#cs-close").click(@minimise)
@@ -235,56 +248,36 @@ class Surface
     $("#cs-footer-like").click(@like_video)
     $("#cs-footer-like").addClass("footer-enabled")
     
-    # Player style
-    player_container.addClass("largeVideoWrapper")      
-
-    # Messaging
-    label.html(@site_name)
+    @player = @create_player(@video,false,true)
         
-    # Video Player
-    @create_player(false,true)
-        
-    @dom.appendDivToBody("cs-slug-wrapper")
-    @$slugWrapper =  $("#cs-slug-wrapper")
-    @$slugWrapper.click(@maximise)
-    
-    @hide_slug()    # Hide slug
-    
     if @start_minimised > 0
         @minimise()
-    
+        
     undefined
     
-  create_player:(autoplay,resume)=>
-    @player = new Player("cs-video-player","cs-player-container")   
-    @player.ready(=>
-      $.getJSON(@hostname+"/videos/"+@current_video_index+"/", (data)=>
-        @video = new VideoFile(data.src,data.title)
-        @$video_title.html(data.title)
-        @player.loadFile(@video)        
-        @player.ended(@play_next_video)
-        if autoplay
-          @player.play()
-        if resume
-          @player.one("loadedmetadata",=>
-            @player.setCurrentTime(@current_time)
-        )
-        @player.timeUpdate(@update_current_time)
-        undefined    
-        )
-    undefined  
+  create_player:(video,autoplay,resume)=>
+    
+    player = new Player("cs-video-player","cs-player-container")   
+    player.ready(=>
+      player.loadFile(video)        
+      player.ended(@play_next_video)
+      if autoplay
+        player.play()
+      if resume
+        player.one("loadedmetadata",=>
+          player.setCurrentTime(@current_time)
+      )
+      player.timeUpdate(@update_current_time)
     )
+    player
     
   play_next_video:=>
-    @current_video_index = @current_video_index + 1
-    @setCookie("gmcs-surface-current-video-index",@current_video_index,10000)
-    json  = $.getJSON("http://localhost:8080/videos/"+@current_video_index+"/", (data)=>
-      @video = new VideoFile(data.src,data.title)
-      @$video_title.html(data.title)
-      @player.pause()
-      @player.loadFile(@video)
-      @player.play()
-      )
+    @video = @user.playlist.next()
+    console.log "Surface: Play next video: " + @video.title()
+    @$video_title.html(@video.title())
+    @player.pause()
+    @player.loadFile(@video)
+    @player.play()
       
   like_video:=>
     $("#cs-footer-like").unbind("click")
@@ -298,16 +291,16 @@ class Surface
     @$wrapper.hide()
     $("#cs-slug-wrapper").show("100") # Show slug
     @minimised = true
-    @setCookie("gmcs-surface-minimised",1,10000)
+    @cookieHandler.setCookie("gmcs-surface-minimised",1,10000)
         
   maximise:=>
     if (@minimised==true)
         @hide_slug() # Use twice so this gets its own method
         @set_blur() # Add overlay + blur again
         @$wrapper.show() # Show wrapper
-        @create_player(true,true)
+        @player = @create_player(@video,true,true)
         @minimised = false        
-        @setCookie("gmcs-surface-minimised",0,10000)
+        @cookieHandler.setCookie("gmcs-surface-minimised",0,10000)
                       
   hide_slug:=>    
     $("#cs-slug-wrapper").hide()
@@ -315,7 +308,7 @@ class Surface
   update_current_time:=>
     if @player.playing
       @current_time = @player.currentTime()
-      @setCookie("gmcs-surface-current_time",@current_time,10000)
+      @cookieHandler.setCookie("gmcs-surface-current_time",@current_time,10000)
   
   set_blur:=>
     $("body").css("filter","blur(15px)")
@@ -341,41 +334,15 @@ class Surface
         'overflow': 'auto',
         'height': 'auto'
     })    
-    
-  # START COOKIE HANDLING
-  setCookie:(name, value, days) ->
-    if days
-      date = new Date()
-      date.setTime date.getTime() + (days * 24 * 60 * 60 * 1000)
-      expires = "; expires=" + date.toGMTString()
-    else
-      expires = ""
-    document.cookie = name + "=" + value + expires + "; path=/"
-  
-  
-  getCookie:(name) ->
-    nameEQ = name + "="
-    ca = document.cookie.split(";")
-    i = 0
-    while i < ca.length
-      c = ca[i]
-      c = c.substring(1, c.length)  while c.charAt(0) is " "
-      return c.substring(nameEQ.length, c.length)  if c.indexOf(nameEQ) is 0
-      i++
-    null
-  
-  deleteCookie:(name) ->
-    setCookie name, "", -1
-    
-  # END COOKIE HANDLING
 
 class VideoFile
-  constructor:(src,@t)->
-    @file_src = src ? ""
+  constructor:(@video_id,@file_src,@video_title,@thumb_href)->
     @playback_position = 0
-    @video_poster = ""
 
-  sources:=>
+  id:=>
+    return @video_id
+
+  src:=>
     return @file_src
 
   position:=>
@@ -385,19 +352,55 @@ class VideoFile
     @playback_position = pos
     
   title:=>
-    return @t
+    return @video_title
   
   url:=>  
     return @video_url
-
-  poster:=>
-    if @video_poster.length > 0
-      return @video_poster
-    return null
     
   isAd:=>
     return @ad
   
-  thumbnail:=>
-    return @thumb
+  thumb:=>
+    return @thumb_href
+
+class User
+  constructor:(callback)->
+    @cookie_handler =  window.gmcs.utils.cookieHandler
+
+    user_id= @cookie_handler.getCookie("gmcs-surface-current-user-id")
+    if user_id is null
+      requestURI = window.gmcs.host + "/create-user/" + window.gmcs.site_id
+      $.getJSON(requestURI, (data)=>
+        @user_id = data.id.toString()
+        console.log "User: Model: New Surface User "+@user_id    
+        @cookie_handler.setCookie("gmcs-surface-current-user-id",@user_id,10000)
+        @playlist = new Playlist(data.playlist)
+        callback()
+        )
+        
+    else
+      @user_id = user_id
+      requestURI = window.gmcs.host + "/users/" + @user_id
+      $.getJSON(requestURI, (data)=>
+        @playlist = new Playlist(data.playlist)
+        callback()
+        )
+      console.log "Surface: User: Existing Surface User "+@user_id    
     
+
+class Playlist
+  constructor:(playlist)->
+    @videos = []
+    for item in playlist
+      vf = new VideoFile(item.id,item.src,item.title,item.thumb)
+      @add(vf)
+  
+  add:(vf)=>
+    @videos.push vf
+    console.log "Surface: User: Playlist: Add: " + vf.title()
+  
+  current:=>
+    @videos[0]
+    
+  next:=>
+    @videos.shift()
