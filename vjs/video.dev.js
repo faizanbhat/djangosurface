@@ -25,7 +25,6 @@ document.createElement('track');
  */
 var vjs = function(id, options, ready){
   var tag; // Element of ID
-
   // Allow for element or ID to be passed in
   // String ID
   if (typeof id === 'string') {
@@ -1412,7 +1411,7 @@ vjs.Component = vjs.CoreObject.extend({
 
     // Add any child components in options
     this.initChildren();
-
+    
     this.ready(ready);
     // Don't want to trigger ready here or it will before init is actually
     // finished for all children that run this constructor
@@ -3086,7 +3085,7 @@ vjs.Player.prototype.loadTech = function(techName, source){
     if (source.src == this.cache_.src && this.cache_.currentTime > 0) {
       techOptions['startTime'] = this.cache_.currentTime;
     }
-
+    
     this.cache_.src = source.src;
   }
 
@@ -3352,6 +3351,7 @@ vjs.Player.prototype.getCache = function(){
 // Pass values to the playback tech
 vjs.Player.prototype.techCall = function(method, arg){
   // If it's not ready yet, call method when it is
+  // debugger;
   if (this.tech && !this.tech.isReady_) {
     this.tech.ready(function(){
       this[method](arg);
@@ -3662,43 +3662,43 @@ vjs.Player.prototype.isFullScreen = function(isFS){
  */
 vjs.Player.prototype.requestFullScreen = function(){
   
-  //     var requestFullScreen = vjs.support.requestFullScreen;
-  //     this.isFullScreen(true);
-  // 
-  //     if (requestFullScreen) {
-  //       // the browser supports going fullscreen at the element level so we can
-  //       // take the controls fullscreen as well as the video
-  // 
-  //       // Trigger fullscreenchange event after change
-  //       // We have to specifically add this each time, and remove
-  //       // when cancelling fullscreen. Otherwise if there's multiple
-  //       // players on a page, they would all be reacting to the same fullscreen
-  //       // events
-  //       vjs.on(document, requestFullScreen.eventName, vjs.bind(this, function(e){
-  //         this.isFullScreen(document[requestFullScreen.isFullScreen]);
-  // 
-  //         // If cancelling fullscreen, remove event listener.
-  //         if (this.isFullScreen() === false) {
-  //           vjs.off(document, requestFullScreen.eventName, arguments.callee);
-  //         }
-  // 
-  //         this.trigger('fullscreenchange');
-  //       }));
-  // 
-  //       this.el_[requestFullScreen.requestFn]();
-  // 
-  //     } else if (this.tech.supportsFullScreen()) {
-  //       // we can't take the video.js controls fullscreen but we can go fullscreen
-  //       // with native controls
-  //       this.techCall('enterFullScreen');
-  //     } else {
-  //       // fullscreen isn't supported so we'll just stretch the video element to
-  //       // fill the viewport
-  //       this.enterFullWindow();
-  //       this.trigger('fullscreenchange');
-  //     }
-  // 
-  //     return this;
+      var requestFullScreen = vjs.support.requestFullScreen;
+      this.isFullScreen(true);
+  
+      if (requestFullScreen) {
+        // the browser supports going fullscreen at the element level so we can
+        // take the controls fullscreen as well as the video
+  
+        // Trigger fullscreenchange event after change
+        // We have to specifically add this each time, and remove
+        // when cancelling fullscreen. Otherwise if there's multiple
+        // players on a page, they would all be reacting to the same fullscreen
+        // events
+        vjs.on(document, requestFullScreen.eventName, vjs.bind(this, function(e){
+          this.isFullScreen(document[requestFullScreen.isFullScreen]);
+  
+          // If cancelling fullscreen, remove event listener.
+          if (this.isFullScreen() === false) {
+            vjs.off(document, requestFullScreen.eventName, arguments.callee);
+          }
+  
+          this.trigger('fullscreenchange');
+        }));
+  
+        this.el_[requestFullScreen.requestFn]();
+  
+      } else if (this.tech.supportsFullScreen()) {
+        // we can't take the video.js controls fullscreen but we can go fullscreen
+        // with native controls
+        this.techCall('enterFullScreen');
+      } else {
+        // fullscreen isn't supported so we'll just stretch the video element to
+        // fill the viewport
+        this.enterFullWindow();
+        this.trigger('fullscreenchange');
+      }
+  
+      return this;
 };
 
 /**
@@ -3825,6 +3825,7 @@ vjs.Player.prototype.selectSource = function(sources){
  */
 vjs.Player.prototype.src = function(source){
   // Case: Array of source objects to choose from and pick the best to play
+  // debugger;
   if (source instanceof Array) {
 
     var sourceTech = this.selectSource(source),
@@ -5948,7 +5949,7 @@ vjs.Flash.streamingFormats = {
 
 vjs.Flash['onReady'] = function(currSwf){
   var el = vjs.el(currSwf);
-
+  // FB -1
   // Get player from box
   // On firefox reloads, el might already have a player
   var player = el['player'] || el.parentNode['player'],
@@ -5967,6 +5968,7 @@ vjs.Flash['onReady'] = function(currSwf){
 // If it's not ready, we set a timeout to check again shortly.
 vjs.Flash.checkReady = function(tech){
 
+  // FB
   // Check if API property exists
   if (tech.el().vjs_getProperty) {
 

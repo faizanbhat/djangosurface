@@ -4,18 +4,8 @@
 $ = jQuery
 
 $ ->
-  
-  # Add stylesheet
-  # window.media = [{src:"src/3.mp4",poster:"src/poster.png",title:"Meet the team behind Genesis Media"}]
-  window.media = [
-      {ad:true,src:{mp4:"src/propel.mp4",webm:"src/propel.webm"},thumb:"",poster:"src/poster.png",title:"Advertisement",url:"https://www.facebook.com/propel"},
-      {ad:false,src:{mp4:"src/new.mp4",webm:"src/new.webm"},thumb:"thumb-new.png",poster:"",title:"See What's New in Shape Magazine",url:""},
-      {ad:false,src:{mp4:"src/miller.mp4",webm:"src/miller.webm"},thumb:"thumb-miller.png",poster:"",title:"Marissa Miller's Shape Magazine Cover",url:""},
-      {ad:false,src:{mp4:"src/audrina.mp4",webm:"src/audrina.webm"},thumb:"thumb-audrina.png",poster:"src/audrina.png",title:"Behind The Scenes With Audrina Patridge",url:""},
-      {ad:false,src:{mp4:"src/brooke.mp4",webm:"src/brooke.webm"},thumb:"thumb-brooke.png",poster:"",title:"Brooke Burke's Shape Magazine Cover Shoot",url:""},
-      {ad:false,src:{mp4:"src/olivia.mp4",webm:"src/olivia.webm"},thumb:"thumb-olivia.png",poster:"",title:"Olivia Munn's Shape Magazine Photoshoot",url:""}]
-      
-  surface = new Surface("Nat Geo TV",1500)
+        
+  surface = new Surface("Nat Geo TV")
 
 class ScriptLoader
     constructor: (options..., callback) ->
@@ -78,9 +68,6 @@ class Player
     p.setAttribute("controls","")
     document.getElementById(parent_id).appendChild(p)
     @elem = videojs(id) 
-
-    
-    # Todo: Remove 
     @playing = false
     @elem.on("play",=>@playing=true)
     @elem.on("pause",=>@playing=false)
@@ -98,6 +85,7 @@ class Player
     @elem.volume(1)
   
   loadFile:(vf)=>
+    console.log "load file called"
     s = vf.sources()
     @elem.src([{type:"video/flv", src:s}])
     if vf.poster()
@@ -116,7 +104,10 @@ class Player
     return @elem.muted()
           
   on:(callback,func) =>
-    @elem.on(callback,func())
+    @elem.on(callback,func)
+    
+  one:(callback,func) =>
+    @elem.one(callback,func)
   
   timeUpdate:(func)=>
     @elem.on("timeupdate",func)
@@ -138,287 +129,43 @@ class Player
     
   setCurrentTime:(time)=>
     @elem.currentTime(time)
-      
-  moveToParentWithId:(new_parent_id)=>
-    container = document.getElementById(@parent_id)
-    player_div = document.getElementById(@id)
-    container.removeChild(player_div)
-    new_parent = document.getElementById(new_parent_id)
-    new_parent.appendChild(player_div)
-    player_div.width = new_parent.width
-    player_div.height = new_parent.height
-    @parent_id = new_parent_id
-  
-  enable_fullscreen:()=>
-    $(".vjs-fullscreen-control").css("display","inline")
-  
-  disable_fullscreen:()=>
-    $(".vjs-fullscreen-control").css("display","none")
-    
-  set_fullscreen_action:(func)=>
-    $(".vjs-fullscreen-control")[0].onclick = func
     
   isPlaying:=>
-    return @elem.isPlaying()
+    return @playing
     
   hideProgressBar:=>
     @elem.controlBar.progressControl.hide()
   
   showProgressBar:=>
     @elem.controlBar.progressControl.show()
-
+    
+  dispose:=>
+    @elem.dispose()
   
 class Surface
   constructor:(@site_name,delay)->
     @current_video_index = parseInt(@getCookie("gmcs-surface-current-video-index"))
     if isNaN(@current_video_index)
-      @current_video_index = 0
+      @current_video_index = 1
     @current_time  = parseInt(@getCookie("gmcs-surface-current_time"))
-    console.log @current_time
     if isNaN(@current_time)
       @current_time = 0
     @start_minimised = parseInt(@getCookie("gmcs-surface-minimised"))
     if isNaN(@start_minimised)
       @start_minimised = 0
-    @start_slug_closed = parseInt(@getCookie("gmcs-surface-start-slug-closed"))
-    if isNaN(@start_slug_closed)
-      @start_slug_closed = 0
-  
-    console.log "start minimised = " + @start_minimised
-    console.log "Current index = "+ @current_video_index
-    console.log "Current time = "+ @current_time
-    console.log "start slug closed = "+ @start_slug_closed
-  
+    
     @minimised = false
-    @isSlugClosed = false
     @player = null
-    
-    console.log "-----"
-    # Read media files
-    
-    if window.XMLHttpRequest
-      xmlhttp=new XMLHttpRequest()
-    else
-      xmlhttp=new ActiveXObject("Microsoft.XMLHTTP")
-    xmlhttp.open("GET","src/sitemap3.xml",false);
-    xmlhttp.send();
-    xmlDoc=xmlhttp.responseXML
-    urls = xmlDoc.getElementsByTagName("url")
-    
-    vs = []
-    
-    for url in urls
-      v = {}
-      v_tag = url.getElementsByTagName("video")
-      v = v_tag[0]
-      c = v.children
-      v.thumb = c[0].innerHTML
-      s = c[1].innerHTML
-      s = s.replace("<![CDATA[","",s)
-      v.title = s.replace("]]>","",s)
-      s = c[2].innerHTML
-      s = s.replace("<![CDATA[","",s)
-      v.desc = s.replace("]]>","",s)
-      v.src = c[3].innerHTML
-      vs.push v
-    
-    
-    @videos = []
-    for item in vs
-      console.log typeof item.title
-      vf = new VideoFile(item.src,item.title)
-      @videos.push vf
+    @video = null
+    @next_video = null
     
     # Setup Dom
     @dom = new DomManager()
-  
     @dom.getStyle("src/style.css")
     @dom.getStyle("vjs/video-js.css")
+    @set_blur()
 
-    run_surface = ()=>   
-      @set_blur()
-
-      new ScriptLoader "videoJs", @load_UI
-    
-    setTimeout(run_surface,delay);
-          
-  current_video:=>
-    return @videos[@current_video_index]
-  
-  play_next_video:=>
-    @current_time = 0
-    if @current_video_index < @videos.length-1
-      @current_video_index=@current_video_index+1
-      console.log @current_video_index
-      @player.loadFile(@current_video())
-      @$video_title.html(@current_video().title())
-      @player.play()
-      @setCookie("gmcs-surface-current-video-index",@current_video_index,10000)
-
-      $("#cs-footer-text").text(@next_content_title())
-      
-      if @current_video().isAd()
-        @disable_minimise()
-        @disable_navigation()
-        console.log "isad"
-        @player.hideProgressBar()
-      else
-        console.log "not ad"
-        @enable_minimise()
-        @enable_navigation()
-        @player.showProgressBar()      
-  
-
-  play_previous_video:=>
-  
-    console.log "play previous reached"
-    temp_index = @current_video_index-1
-    
-    while temp_index >= 0
-      console.log "temp index is " + temp_index
-      if not @videos[temp_index].isAd()  
-        console.log "Index is not ad"    
-        @current_video_index=temp_index
-        console.log "Changed index to " + @current_video_index
-        @player.loadFile(@current_video())
-        @$video_title.html(@current_video().title())
-        @player.play()
-        @setCookie("gmcs-surface-current-video-index",@current_video_index,10000)
-
-        @enable_minimise()
-        @enable_navigation()
-        @player.showProgressBar()
-        $("#cs-footer-text").text(@next_content_title())
-        
-        break
-        
-      else console.log "Index is ad"
-        
-      temp_index = temp_index - 1
-  
-  
-  minimise:(start_closed=false) =>
-    @$slugCloseButton.css("display","inline")
-    
-    if @player.playing 
-      playing = true
-    else 
-      playing = false
-      
-    @current_video().setPosition(@player.currentTime()) # Update video file current time
-    @remove_overlay()
-    @$wrapper.hide()
-    
-    @player.moveToParentWithId("cs-small-player-container") # Move player
-
-    @player.enable_fullscreen()
-        
-    $("#cs-slug-wrapper").show("100") # Show slug
-    
-    @minimised = true
-    
-    if playing
-      @player.play()
-      
-    # update cookie
-    @setCookie("gmcs-surface-minimised",1,10000)
-    
-    if start_closed
-      @toggle_slug()
-    
-  maximise:=>
-    @$slugCloseButton.css("display","none")
-    if (@minimised==true)
-                
-        @hide_slug() # Use twice so this gets its own method
-
-        @set_blur() # Add overlay + blur again
-    
-        @player.moveToParentWithId("cs-player-container") # Move player
-    
-        @$wrapper.show() # Show wrapper
-    
-        @player.ready(@player.play()) # For some reason player stops after it's moved around
-        
-        @minimised = false
-        
-        @setCookie("gmcs-surface-minimised",0,10000)
-        
-    
-  disable_minimise: =>
-    if @current_video().isAd()
-      $("#cs-close").addClass("cs-close-inactive")
-      $("#cs-close").attr('onclick','').unbind('click')
-
-  enable_minimise: =>
-    $("#cs-close").removeClass("cs-close-inactive")
-    $("#cs-close").attr('onclick','').unbind('click')    
-    $("#cs-close").click =>
-      @minimise()
-      
-  disable_navigation:=>
-    console.log "disabling nav"
-    $("#cs-forward").addClass("cs-forward-disable")
-    $("#cs-forward").attr('onclick','').unbind('click')
-    $("#cs-rewind").addClass("cs-rewind-disable")
-    $("#cs-rewind").attr('onclick','').unbind('click')
-    
-  enable_navigation:=>
-    
-    temp_index = @current_video_index-1
-    prior_content = false
-    while temp_index >= 0
-      if not @videos[temp_index].isAd()  
-        prior_content = true
-      temp_index = temp_index - 1
-      
-    if prior_content
-      $("#cs-rewind").show()
-    else $("#cs-rewind").hide()
-          
-    temp_index = @current_video_index+1
-    post_content = false
-    while temp_index < @videos.length
-      if not @videos[temp_index].isAd()  
-        post_content = true
-      temp_index = temp_index + 1
-
-    if post_content
-      $("#cs-forward").show()
-    else $("#cs-forward").hide()
-        
-    console.log "enabling nav"
-    $("#cs-forward").removeClass("cs-forward-disable")
-    $("#cs-forward").attr('onclick','').unbind('click')
-    $("#cs-forward").click(@forward)
-    $("#cs-rewind").removeClass("cs-rewind-disable")
-    $("#cs-rewind").attr('onclick','').unbind('click')
-    $("#cs-rewind").click(@rewind)    
-      
-  hide_slug:=>    
-    @current_video().setPosition(@player.currentTime())
-    $("#cs-slug-wrapper").hide()
-  
-  
-  next_content_title:=>
-    
-    temp_index = @current_video_index+1
-    
-    
-    while temp_index < @videos.length
-      if not @videos[temp_index].isAd()
-        if @videos[@current_video_index].isAd()
-          $("#cs-footer").attr('onclick','').unbind('click')
-          $("#cs-footer").removeClass("footer-enabled")
-          return "Coming Up: " + @videos[temp_index].title()
-        else
-          $("#cs-footer").attr('onclick','').unbind('click')
-          $("#cs-footer").click(@forward)
-          $("#cs-footer").addClass("footer-enabled")        
-          return "Next: " + @videos[temp_index].title()
-      temp_index = temp_index + 1
-    
-    return ""
+    new ScriptLoader "videoJs", @load_UI
       
   load_UI:=>
       
@@ -439,7 +186,6 @@ class Surface
     @dom.appendDivToParent("cs-bottom-line","cs-info-wrapper")
     @dom.appendDivToParent("cs-label","cs-top-line")
     @dom.appendDivToParent("cs-video-title","cs-bottom-line")
-    @dom.appendDivToParent("cs-video-time-remaining","cs-bottom-line")
     @dom.appendDivToParent("cs-player-wrapper","cs-main")
     @dom.appendDivToParent("cs-player-container","cs-player-wrapper")
     @dom.appendDivToParent("cs-footer","cs-player-wrapper")
@@ -450,124 +196,89 @@ class Surface
     label = $("#cs-label")
     player_container = $("#cs-player-container")
 
-    $("#cs-close").addClass("cs-minimise")
-    $("#cs-rewind").hide()
+    $("#cs-close").addClass("cs-close")
+    $("#cs-close").click(@minimise)
+    
+    $("#cs-footer-text").text("Skip")
+    $("#cs-footer").click(@play_next_video)
+    $("#cs-footer").addClass("footer-enabled")
     
     # Player style
     player_container.addClass("largeVideoWrapper")      
 
     # Messaging
     label.html(@site_name)
-    if @current_video().isAd()
-      @$video_title.html(@videos[@current_video_index+1].title())
-      
-    else
-      @$video_title.html(@current_video().title())
-    
-    @enable_minimise()
-    
+        
     # Video Player
-    @player = new Player("cs-video-player","cs-player-container")   
-    @player.ready(=>      
-      @player.enable_fullscreen()
-      @player.loadFile(@current_video())
-      @player.mute()
-      if @current_time > 0
-        @player.loadedmetadata(=>@player.setCurrentTime(@current_time))
-      @player.ended(@play_next_video)
-      @player.set_fullscreen_action(@maximise)
-      
-      $("#cs-footer-text").text(@next_content_title())
-      
-      if @current_video().isAd()
-        @disable_navigation()
-        @player.onplay(=>
-          @disable_minimise()
-        )
-        @player.hideProgressBar()
+    @create_player(false,true)
         
-      else
-        @enable_navigation()
-    
-      
-      @player.onplay(=>@$video_title.html(@current_video().title()))
-      @player.timeUpdate(@update_current_time)
-      
-      @slugCloseButton = @player.elem.addChild('button', {
-        })
-            
-      
-      if @isSlugClosed
-        @slugCloseButton.addClass("slug-open-btn slug-slide-button")
-      else
-        @slugCloseButton.addClass("slug-close-btn slug-slide-button")
-      
-      @slugCloseButton.on("click", @toggle_slug) 
-      @$slugCloseButton = $(".slug-slide-button")
-      @$slugCloseButton.css("display","none")
-      
-    )
-        
-#   Load elements for slug  
     @dom.appendDivToBody("cs-slug-wrapper")
     @$slugWrapper =  $("#cs-slug-wrapper")
-    
-    if @isSlugClosed
-      @$slugWrapper.addClass("slug-closed")
-    else
-      @$slugWrapper.addClass("slug-open")
-          
-    @dom.appendDivToParent("cs-small-player-container","cs-slug-wrapper")
-
-    player_container = $("#cs-small-player-container")
-    player_container.addClass("smallVideoWrapper")      
+    @$slugWrapper.hover(@maximise)
     
     @hide_slug()    # Hide slug
     
     if @start_minimised > 0
-      if @start_slug_closed > 0
-        @minimise(true)
-      else
-        @minimise(false)
+        @minimise()
     
-  forward:=>  
-    console.log  "forward"
-    if not @current_video().isAd()
-      @play_next_video()
-      
-  rewind:=>
-    @play_previous_video()
-  
-  toggle_slug:=>
-    if not @isSlugClosed
-      console.log "it's not closed - closing"
-      @$slugWrapper.removeClass("slug-open")
-      @$slugWrapper.addClass("slug-closed")
-      @$slugCloseButton.removeClass("slug-close-btn")
-      @$slugCloseButton.addClass("slug-open-btn")
+    undefined
+    
+  create_player:(autoplay,resume)=>
+    @player = new Player("cs-video-player","cs-player-container")   
+    @player.ready(=>
+      json  = $.getJSON("http://localhost:8080/videos/"+@current_video_index, (data)=>
+        @video = new VideoFile(data.src,data.title)
+        @$video_title.html(data.title)
+        @player.mute()
+        @player.loadFile(@video)        
+        @player.ended(@play_next_video)
+        if autoplay
+          @player.play()
+        if resume
+          @player.one("loadedmetadata",=>
+            @player.setCurrentTime(@current_time)
+        )
+        @player.timeUpdate(@update_current_time)
+        undefined    
+        )
+    undefined  
+    )
+    
+  play_next_video:=>
+    @current_video_index = @current_video_index + 1
+    @setCookie("gmcs-surface-current-video-index",@current_video_index,10000)
+    json  = $.getJSON("http://localhost:8080/videos/"+@current_video_index, (data)=>
+      @video = new VideoFile(data.src,data.title)
+      @$video_title.html(data.title)
       @player.pause()
-      @isSlugClosed = true  
-      @setCookie("gmcs-surface-start-slug-closed",1,10000)
-      
-    else
-      console.log "it's closed - opening"
-      @$slugWrapper.removeClass("slug-closed")
-      @$slugWrapper.addClass("slug-open")
-      @$slugCloseButton.removeClass("slug-open-btn")
-      @$slugCloseButton.addClass("slug-close-btn")
+      @player.loadFile(@video)
       @player.play()
-      @isSlugClosed = false
-      @setCookie("gmcs-surface-start-slug-closed",0,10000)
-          
-  toggle_mute:=>
-    if @player.isMuted()
-      @player.unmute()
-    else
-      @player.mute()
-
+      )
+  
+  minimise:() =>      
+    @player.dispose()
+    @remove_overlay()
+    @$wrapper.hide()
+    $("#cs-slug-wrapper").show("100") # Show slug
+    @minimised = true
+    @setCookie("gmcs-surface-minimised",1,10000)
+        
+  maximise:=>
+    if (@minimised==true)
+        @hide_slug() # Use twice so this gets its own method
+        @set_blur() # Add overlay + blur again
+        @$wrapper.show() # Show wrapper
+        @create_player(true,true)
+        @minimised = false        
+        @setCookie("gmcs-surface-minimised",0,10000)
+                      
+  hide_slug:=>    
+    $("#cs-slug-wrapper").hide()
+            
   update_current_time:=>
     if @player.playing
-      @setCookie("gmcs-surface-current_time",@player.currentTime(),10000)
+      @current_time = @player.currentTime()
+      @setCookie("gmcs-surface-current_time",@current_time,10000)
   
   set_blur:=>
     $("body").css("filter","blur(15px)")
@@ -594,6 +305,7 @@ class Surface
         'height': 'auto'
     })    
     
+  # START COOKIE HANDLING
   setCookie:(name, value, days) ->
     if days
       date = new Date()
@@ -608,7 +320,6 @@ class Surface
     nameEQ = name + "="
     ca = document.cookie.split(";")
     i = 0
-
     while i < ca.length
       c = ca[i]
       c = c.substring(1, c.length)  while c.charAt(0) is " "
@@ -618,11 +329,11 @@ class Surface
   
   deleteCookie:(name) ->
     setCookie name, "", -1
+    
+  # END COOKIE HANDLING
 
 class VideoFile
   constructor:(src,@t)->
-    console.log @t
-    console.log src
     @file_src = src ? ""
     @playback_position = 0
     @video_poster = ""

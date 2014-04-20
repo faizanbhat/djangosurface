@@ -60,7 +60,7 @@
  z-index:10000000000000001 !important;
 }
 
-.cs-minimise:hover{
+.cs-close:hover{
  background:url('close-light-hover.png') !important;
 
 }
@@ -139,17 +139,6 @@
     Helvetica, Arial, "Lucida Grande", sans-serif;  font-weight:"Light" ;
 }
 
-#cs-video-time-remaining {
-    position: absolute;
-    right:0px;
-    top:30px;
-    color:white;
-    display:none;
-    z-index:10000000000000001 !important;
-    font-family: "HelveticaNeue-Light", "Helvetica Neue", "Helvetica Neue", 
-      Helvetica, Arial, "Lucida Grande", sans-serif;  font-weight:"Light" ;
-}
-
 
 #cs-player-wrapper{
   margin:0 auto;
@@ -157,53 +146,6 @@
   background-color:transparent;
 }
 
-#cs-rewind {
-  
-  position:absolute;
-  top:45%;
-  left:-100px;
-  height:70px;
-  width:70px;
-  background:url("rewind.png");
-  z-index:10000000000000002 !important;
-  
-}
-
-#cs-rewind:hover{
-  background:url("rewind-active.png");
-}
-
-.cs-rewind-disable {
-  opacity:0.3;
-}
-
-.cs-rewind-disable:hover {
-  background:url("rewind.png") !important;
-}
-
-#cs-forward {
-  
-  position:absolute;
-  top:45%;
-  right:-100px;
-  height:70px;
-  width:70px;
-  background:url("forward.png");
-  z-index:10000000000000002 !important;
-  
-}
-
-#cs-forward:hover {
-  background:url("forward-active.png");
-}
-
-.cs-forward-disable {
-  opacity:0.3;
-}
-
-.cs-forward-disable:hover {
-  background:url("forward.png") !important;
-}
 
 
 #cs-video-player {
@@ -225,45 +167,16 @@
 }
 
 #cs-slug-wrapper{
-}
-
-.slug-open{
-  position:fixed;
-  bottom:35px;
-  right:5px;
-  width:320px;
-  height:250px;
-  background:transparent;
-  z-index:10000000000000001 !important;
-}
-
-.slug-closed{
-  position:fixed;
-  bottom:35px;
-  right:-310px;
-  width:320px;
-  height:250px;
-  background:transparent;
-  z-index:10000000000000001 !important;
-}
-
-.smallVideoWrapper {
-	position: relative;
-	padding-bottom: 56.25%;
-	height: 0;
-	margin-bottom: 0px;	
-}
-
-.smallVideoWrapper .video-js,
-.smallVideoWrapper embed, 
-.smallVideoWrapper object,
-.smallVideoWrapper video {
-  position: absolute;
-  left: 0;
-  top: 0;
   background:black;
-  border:0px solid black;
+  position:fixed;
+  bottom:35px;
+  right:0px;
+  width:40px;
+  height:250px;
+  background:transparent;
+  z-index:10000000000000001 !important;
 }
+
 
 .slug-slide-button{
   position:absolute;
@@ -272,12 +185,7 @@
   height:100% !important;
   width:40px !important;
   z-index:1000000000000000001 !important;
-  opacity:0.8;
-  
-}
-
-.slug-close-btn{
-  background:url("slug-close-inactive.png");
+  opacity:0.8;  
 }
 
 
@@ -289,9 +197,6 @@
   background:url("slug-open-active.png");  
 }
 
-.slug-close-btn:hover{
-  background:url("slug-close-active.png");  
-}
 
 #cs-footer{
   position:relative;
@@ -316,20 +221,4 @@
   text-decoration:underline;
   cursor:pointer;
 }
-
-/*.wideScreen {
-  padding-bottom: 56.25%;
-}
-*/
-/*.fourBYthree {
-  padding-bottom: 75%;
-}
-
-.chrome_25 {
-  padding-top: 25px;
-}
-
-.chrome_35 {
-  padding-top: 35px;
-}*/
 

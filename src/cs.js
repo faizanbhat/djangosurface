@@ -8,70 +8,7 @@
 
   $(function() {
     var surface;
-    window.media = [
-      {
-        ad: true,
-        src: {
-          mp4: "src/propel.mp4",
-          webm: "src/propel.webm"
-        },
-        thumb: "",
-        poster: "src/poster.png",
-        title: "Advertisement",
-        url: "https://www.facebook.com/propel"
-      }, {
-        ad: false,
-        src: {
-          mp4: "src/new.mp4",
-          webm: "src/new.webm"
-        },
-        thumb: "thumb-new.png",
-        poster: "",
-        title: "See What's New in Shape Magazine",
-        url: ""
-      }, {
-        ad: false,
-        src: {
-          mp4: "src/miller.mp4",
-          webm: "src/miller.webm"
-        },
-        thumb: "thumb-miller.png",
-        poster: "",
-        title: "Marissa Miller's Shape Magazine Cover",
-        url: ""
-      }, {
-        ad: false,
-        src: {
-          mp4: "src/audrina.mp4",
-          webm: "src/audrina.webm"
-        },
-        thumb: "thumb-audrina.png",
-        poster: "src/audrina.png",
-        title: "Behind The Scenes With Audrina Patridge",
-        url: ""
-      }, {
-        ad: false,
-        src: {
-          mp4: "src/brooke.mp4",
-          webm: "src/brooke.webm"
-        },
-        thumb: "thumb-brooke.png",
-        poster: "",
-        title: "Brooke Burke's Shape Magazine Cover Shoot",
-        url: ""
-      }, {
-        ad: false,
-        src: {
-          mp4: "src/olivia.mp4",
-          webm: "src/olivia.webm"
-        },
-        thumb: "thumb-olivia.png",
-        poster: "",
-        title: "Olivia Munn's Shape Magazine Photoshoot",
-        url: ""
-      }
-    ];
-    return surface = new Surface("Nat Geo TV", 1500);
+    return surface = new Surface("Nat Geo TV");
   });
 
   ScriptLoader = (function() {
@@ -159,13 +96,10 @@
 
   Player = (function() {
     function Player(id, parent_id) {
+      this.dispose = __bind(this.dispose, this);
       this.showProgressBar = __bind(this.showProgressBar, this);
       this.hideProgressBar = __bind(this.hideProgressBar, this);
       this.isPlaying = __bind(this.isPlaying, this);
-      this.set_fullscreen_action = __bind(this.set_fullscreen_action, this);
-      this.disable_fullscreen = __bind(this.disable_fullscreen, this);
-      this.enable_fullscreen = __bind(this.enable_fullscreen, this);
-      this.moveToParentWithId = __bind(this.moveToParentWithId, this);
       this.setCurrentTime = __bind(this.setCurrentTime, this);
       this.loadedmetadata = __bind(this.loadedmetadata, this);
       this.ready = __bind(this.ready, this);
@@ -173,6 +107,7 @@
       this.onplay = __bind(this.onplay, this);
       this.ended = __bind(this.ended, this);
       this.timeUpdate = __bind(this.timeUpdate, this);
+      this.one = __bind(this.one, this);
       this.on = __bind(this.on, this);
       this.isMuted = __bind(this.isMuted, this);
       this.timeRemaining = __bind(this.timeRemaining, this);
@@ -226,6 +161,7 @@
 
     Player.prototype.loadFile = function(vf) {
       var s;
+      console.log("load file called");
       s = vf.sources();
       this.elem.src([
         {
@@ -255,7 +191,11 @@
     };
 
     Player.prototype.on = function(callback, func) {
-      return this.elem.on(callback, func());
+      return this.elem.on(callback, func);
+    };
+
+    Player.prototype.one = function(callback, func) {
+      return this.elem.one(callback, func);
     };
 
     Player.prototype.timeUpdate = function(func) {
@@ -286,32 +226,8 @@
       return this.elem.currentTime(time);
     };
 
-    Player.prototype.moveToParentWithId = function(new_parent_id) {
-      var container, new_parent, player_div;
-      container = document.getElementById(this.parent_id);
-      player_div = document.getElementById(this.id);
-      container.removeChild(player_div);
-      new_parent = document.getElementById(new_parent_id);
-      new_parent.appendChild(player_div);
-      player_div.width = new_parent.width;
-      player_div.height = new_parent.height;
-      return this.parent_id = new_parent_id;
-    };
-
-    Player.prototype.enable_fullscreen = function() {
-      return $(".vjs-fullscreen-control").css("display", "inline");
-    };
-
-    Player.prototype.disable_fullscreen = function() {
-      return $(".vjs-fullscreen-control").css("display", "none");
-    };
-
-    Player.prototype.set_fullscreen_action = function(func) {
-      return $(".vjs-fullscreen-control")[0].onclick = func;
-    };
-
     Player.prototype.isPlaying = function() {
-      return this.elem.isPlaying();
+      return this.playing;
     };
 
     Player.prototype.hideProgressBar = function() {
@@ -322,39 +238,31 @@
       return this.elem.controlBar.progressControl.show();
     };
 
+    Player.prototype.dispose = function() {
+      return this.elem.dispose();
+    };
+
     return Player;
 
   })();
 
   Surface = (function() {
     function Surface(site_name, delay) {
-      var c, item, run_surface, s, url, urls, v, v_tag, vf, vs, xmlDoc, xmlhttp, _i, _j, _len, _len1;
       this.site_name = site_name;
       this.remove_overlay = __bind(this.remove_overlay, this);
       this.set_blur = __bind(this.set_blur, this);
       this.update_current_time = __bind(this.update_current_time, this);
-      this.toggle_mute = __bind(this.toggle_mute, this);
-      this.toggle_slug = __bind(this.toggle_slug, this);
-      this.rewind = __bind(this.rewind, this);
-      this.forward = __bind(this.forward, this);
-      this.load_UI = __bind(this.load_UI, this);
-      this.next_content_title = __bind(this.next_content_title, this);
       this.hide_slug = __bind(this.hide_slug, this);
-      this.enable_navigation = __bind(this.enable_navigation, this);
-      this.disable_navigation = __bind(this.disable_navigation, this);
-      this.enable_minimise = __bind(this.enable_minimise, this);
-      this.disable_minimise = __bind(this.disable_minimise, this);
       this.maximise = __bind(this.maximise, this);
       this.minimise = __bind(this.minimise, this);
-      this.play_previous_video = __bind(this.play_previous_video, this);
       this.play_next_video = __bind(this.play_next_video, this);
-      this.current_video = __bind(this.current_video, this);
+      this.create_player = __bind(this.create_player, this);
+      this.load_UI = __bind(this.load_UI, this);
       this.current_video_index = parseInt(this.getCookie("gmcs-surface-current-video-index"));
       if (isNaN(this.current_video_index)) {
-        this.current_video_index = 0;
+        this.current_video_index = 1;
       }
       this.current_time = parseInt(this.getCookie("gmcs-surface-current_time"));
-      console.log(this.current_time);
       if (isNaN(this.current_time)) {
         this.current_time = 0;
       }
@@ -362,246 +270,16 @@
       if (isNaN(this.start_minimised)) {
         this.start_minimised = 0;
       }
-      this.start_slug_closed = parseInt(this.getCookie("gmcs-surface-start-slug-closed"));
-      if (isNaN(this.start_slug_closed)) {
-        this.start_slug_closed = 0;
-      }
-      console.log("start minimised = " + this.start_minimised);
-      console.log("Current index = " + this.current_video_index);
-      console.log("Current time = " + this.current_time);
-      console.log("start slug closed = " + this.start_slug_closed);
       this.minimised = false;
-      this.isSlugClosed = false;
       this.player = null;
-      console.log("-----");
-      if (window.XMLHttpRequest) {
-        xmlhttp = new XMLHttpRequest();
-      } else {
-        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-      }
-      xmlhttp.open("GET", "src/sitemap3.xml", false);
-      xmlhttp.send();
-      xmlDoc = xmlhttp.responseXML;
-      urls = xmlDoc.getElementsByTagName("url");
-      vs = [];
-      for (_i = 0, _len = urls.length; _i < _len; _i++) {
-        url = urls[_i];
-        v = {};
-        v_tag = url.getElementsByTagName("video");
-        v = v_tag[0];
-        c = v.children;
-        v.thumb = c[0].innerHTML;
-        s = c[1].innerHTML;
-        s = s.replace("<![CDATA[", "", s);
-        v.title = s.replace("]]>", "", s);
-        s = c[2].innerHTML;
-        s = s.replace("<![CDATA[", "", s);
-        v.desc = s.replace("]]>", "", s);
-        v.src = c[3].innerHTML;
-        vs.push(v);
-      }
-      this.videos = [];
-      for (_j = 0, _len1 = vs.length; _j < _len1; _j++) {
-        item = vs[_j];
-        console.log(typeof item.title);
-        vf = new VideoFile(item.src, item.title);
-        this.videos.push(vf);
-      }
+      this.video = null;
+      this.next_video = null;
       this.dom = new DomManager();
       this.dom.getStyle("src/style.css");
       this.dom.getStyle("vjs/video-js.css");
-      run_surface = (function(_this) {
-        return function() {
-          _this.set_blur();
-          return new ScriptLoader("videoJs", _this.load_UI);
-        };
-      })(this);
-      setTimeout(run_surface, delay);
+      this.set_blur();
+      new ScriptLoader("videoJs", this.load_UI);
     }
-
-    Surface.prototype.current_video = function() {
-      return this.videos[this.current_video_index];
-    };
-
-    Surface.prototype.play_next_video = function() {
-      this.current_time = 0;
-      if (this.current_video_index < this.videos.length - 1) {
-        this.current_video_index = this.current_video_index + 1;
-        console.log(this.current_video_index);
-        this.player.loadFile(this.current_video());
-        this.$video_title.html(this.current_video().title());
-        this.player.play();
-        this.setCookie("gmcs-surface-current-video-index", this.current_video_index, 10000);
-        $("#cs-footer-text").text(this.next_content_title());
-        if (this.current_video().isAd()) {
-          this.disable_minimise();
-          this.disable_navigation();
-          console.log("isad");
-          return this.player.hideProgressBar();
-        } else {
-          console.log("not ad");
-          this.enable_minimise();
-          this.enable_navigation();
-          return this.player.showProgressBar();
-        }
-      }
-    };
-
-    Surface.prototype.play_previous_video = function() {
-      var temp_index, _results;
-      console.log("play previous reached");
-      temp_index = this.current_video_index - 1;
-      _results = [];
-      while (temp_index >= 0) {
-        console.log("temp index is " + temp_index);
-        if (!this.videos[temp_index].isAd()) {
-          console.log("Index is not ad");
-          this.current_video_index = temp_index;
-          console.log("Changed index to " + this.current_video_index);
-          this.player.loadFile(this.current_video());
-          this.$video_title.html(this.current_video().title());
-          this.player.play();
-          this.setCookie("gmcs-surface-current-video-index", this.current_video_index, 10000);
-          this.enable_minimise();
-          this.enable_navigation();
-          this.player.showProgressBar();
-          $("#cs-footer-text").text(this.next_content_title());
-          break;
-        } else {
-          console.log("Index is ad");
-        }
-        _results.push(temp_index = temp_index - 1);
-      }
-      return _results;
-    };
-
-    Surface.prototype.minimise = function(start_closed) {
-      var playing;
-      if (start_closed == null) {
-        start_closed = false;
-      }
-      this.$slugCloseButton.css("display", "inline");
-      if (this.player.playing) {
-        playing = true;
-      } else {
-        playing = false;
-      }
-      this.current_video().setPosition(this.player.currentTime());
-      this.remove_overlay();
-      this.$wrapper.hide();
-      this.player.moveToParentWithId("cs-small-player-container");
-      this.player.enable_fullscreen();
-      $("#cs-slug-wrapper").show("100");
-      this.minimised = true;
-      if (playing) {
-        this.player.play();
-      }
-      this.setCookie("gmcs-surface-minimised", 1, 10000);
-      if (start_closed) {
-        return this.toggle_slug();
-      }
-    };
-
-    Surface.prototype.maximise = function() {
-      this.$slugCloseButton.css("display", "none");
-      if (this.minimised === true) {
-        this.hide_slug();
-        this.set_blur();
-        this.player.moveToParentWithId("cs-player-container");
-        this.$wrapper.show();
-        this.player.ready(this.player.play());
-        this.minimised = false;
-        return this.setCookie("gmcs-surface-minimised", 0, 10000);
-      }
-    };
-
-    Surface.prototype.disable_minimise = function() {
-      if (this.current_video().isAd()) {
-        $("#cs-close").addClass("cs-close-inactive");
-        return $("#cs-close").attr('onclick', '').unbind('click');
-      }
-    };
-
-    Surface.prototype.enable_minimise = function() {
-      $("#cs-close").removeClass("cs-close-inactive");
-      $("#cs-close").attr('onclick', '').unbind('click');
-      return $("#cs-close").click((function(_this) {
-        return function() {
-          return _this.minimise();
-        };
-      })(this));
-    };
-
-    Surface.prototype.disable_navigation = function() {
-      console.log("disabling nav");
-      $("#cs-forward").addClass("cs-forward-disable");
-      $("#cs-forward").attr('onclick', '').unbind('click');
-      $("#cs-rewind").addClass("cs-rewind-disable");
-      return $("#cs-rewind").attr('onclick', '').unbind('click');
-    };
-
-    Surface.prototype.enable_navigation = function() {
-      var post_content, prior_content, temp_index;
-      temp_index = this.current_video_index - 1;
-      prior_content = false;
-      while (temp_index >= 0) {
-        if (!this.videos[temp_index].isAd()) {
-          prior_content = true;
-        }
-        temp_index = temp_index - 1;
-      }
-      if (prior_content) {
-        $("#cs-rewind").show();
-      } else {
-        $("#cs-rewind").hide();
-      }
-      temp_index = this.current_video_index + 1;
-      post_content = false;
-      while (temp_index < this.videos.length) {
-        if (!this.videos[temp_index].isAd()) {
-          post_content = true;
-        }
-        temp_index = temp_index + 1;
-      }
-      if (post_content) {
-        $("#cs-forward").show();
-      } else {
-        $("#cs-forward").hide();
-      }
-      console.log("enabling nav");
-      $("#cs-forward").removeClass("cs-forward-disable");
-      $("#cs-forward").attr('onclick', '').unbind('click');
-      $("#cs-forward").click(this.forward);
-      $("#cs-rewind").removeClass("cs-rewind-disable");
-      $("#cs-rewind").attr('onclick', '').unbind('click');
-      return $("#cs-rewind").click(this.rewind);
-    };
-
-    Surface.prototype.hide_slug = function() {
-      this.current_video().setPosition(this.player.currentTime());
-      return $("#cs-slug-wrapper").hide();
-    };
-
-    Surface.prototype.next_content_title = function() {
-      var temp_index;
-      temp_index = this.current_video_index + 1;
-      while (temp_index < this.videos.length) {
-        if (!this.videos[temp_index].isAd()) {
-          if (this.videos[this.current_video_index].isAd()) {
-            $("#cs-footer").attr('onclick', '').unbind('click');
-            $("#cs-footer").removeClass("footer-enabled");
-            return "Coming Up: " + this.videos[temp_index].title();
-          } else {
-            $("#cs-footer").attr('onclick', '').unbind('click');
-            $("#cs-footer").click(this.forward);
-            $("#cs-footer").addClass("footer-enabled");
-            return "Next: " + this.videos[temp_index].title();
-          }
-        }
-        temp_index = temp_index + 1;
-      }
-      return "";
-    };
 
     Surface.prototype.load_UI = function() {
       var html, label, player_container, s;
@@ -619,7 +297,6 @@
       this.dom.appendDivToParent("cs-bottom-line", "cs-info-wrapper");
       this.dom.appendDivToParent("cs-label", "cs-top-line");
       this.dom.appendDivToParent("cs-video-title", "cs-bottom-line");
-      this.dom.appendDivToParent("cs-video-time-remaining", "cs-bottom-line");
       this.dom.appendDivToParent("cs-player-wrapper", "cs-main");
       this.dom.appendDivToParent("cs-player-container", "cs-player-wrapper");
       this.dom.appendDivToParent("cs-footer", "cs-player-wrapper");
@@ -628,118 +305,93 @@
       this.$video_title = $("#cs-video-title");
       label = $("#cs-label");
       player_container = $("#cs-player-container");
-      $("#cs-close").addClass("cs-minimise");
-      $("#cs-rewind").hide();
+      $("#cs-close").addClass("cs-close");
+      $("#cs-close").click(this.minimise);
+      $("#cs-footer-text").text("Skip");
+      $("#cs-footer").click(this.play_next_video);
+      $("#cs-footer").addClass("footer-enabled");
       player_container.addClass("largeVideoWrapper");
       label.html(this.site_name);
-      if (this.current_video().isAd()) {
-        this.$video_title.html(this.videos[this.current_video_index + 1].title());
-      } else {
-        this.$video_title.html(this.current_video().title());
-      }
-      this.enable_minimise();
-      this.player = new Player("cs-video-player", "cs-player-container");
-      this.player.ready((function(_this) {
-        return function() {
-          _this.player.enable_fullscreen();
-          _this.player.loadFile(_this.current_video());
-          _this.player.mute();
-          if (_this.current_time > 0) {
-            _this.player.loadedmetadata(function() {
-              return _this.player.setCurrentTime(_this.current_time);
-            });
-          }
-          _this.player.ended(_this.play_next_video);
-          _this.player.set_fullscreen_action(_this.maximise);
-          $("#cs-footer-text").text(_this.next_content_title());
-          if (_this.current_video().isAd()) {
-            _this.disable_navigation();
-            _this.player.onplay(function() {
-              return _this.disable_minimise();
-            });
-            _this.player.hideProgressBar();
-          } else {
-            _this.enable_navigation();
-          }
-          _this.player.onplay(function() {
-            return _this.$video_title.html(_this.current_video().title());
-          });
-          _this.player.timeUpdate(_this.update_current_time);
-          _this.slugCloseButton = _this.player.elem.addChild('button', {});
-          if (_this.isSlugClosed) {
-            _this.slugCloseButton.addClass("slug-open-btn slug-slide-button");
-          } else {
-            _this.slugCloseButton.addClass("slug-close-btn slug-slide-button");
-          }
-          _this.slugCloseButton.on("click", _this.toggle_slug);
-          _this.$slugCloseButton = $(".slug-slide-button");
-          return _this.$slugCloseButton.css("display", "none");
-        };
-      })(this));
+      this.create_player(false, true);
       this.dom.appendDivToBody("cs-slug-wrapper");
       this.$slugWrapper = $("#cs-slug-wrapper");
-      if (this.isSlugClosed) {
-        this.$slugWrapper.addClass("slug-closed");
-      } else {
-        this.$slugWrapper.addClass("slug-open");
-      }
-      this.dom.appendDivToParent("cs-small-player-container", "cs-slug-wrapper");
-      player_container = $("#cs-small-player-container");
-      player_container.addClass("smallVideoWrapper");
+      this.$slugWrapper.hover(this.maximise);
       this.hide_slug();
       if (this.start_minimised > 0) {
-        if (this.start_slug_closed > 0) {
-          return this.minimise(true);
-        } else {
-          return this.minimise(false);
-        }
+        this.minimise();
+      }
+      return void 0;
+    };
+
+    Surface.prototype.create_player = function(autoplay, resume) {
+      this.player = new Player("cs-video-player", "cs-player-container");
+      return this.player.ready((function(_this) {
+        return function() {
+          var json;
+          return json = $.getJSON("http://localhost:8080/videos/" + _this.current_video_index, function(data) {
+            _this.video = new VideoFile(data.src, data.title);
+            _this.$video_title.html(data.title);
+            _this.player.mute();
+            _this.player.loadFile(_this.video);
+            _this.player.ended(_this.play_next_video);
+            if (autoplay) {
+              _this.player.play();
+            }
+            if (resume) {
+              _this.player.one("loadedmetadata", function() {
+                return _this.player.setCurrentTime(_this.current_time);
+              });
+            }
+            _this.player.timeUpdate(_this.update_current_time);
+            return void 0;
+          });
+        };
+      })(this), void 0);
+    };
+
+    Surface.prototype.play_next_video = function() {
+      var json;
+      this.current_video_index = this.current_video_index + 1;
+      this.setCookie("gmcs-surface-current-video-index", this.current_video_index, 10000);
+      return json = $.getJSON("http://localhost:8080/videos/" + this.current_video_index, (function(_this) {
+        return function(data) {
+          _this.video = new VideoFile(data.src, data.title);
+          _this.$video_title.html(data.title);
+          _this.player.pause();
+          _this.player.loadFile(_this.video);
+          return _this.player.play();
+        };
+      })(this));
+    };
+
+    Surface.prototype.minimise = function() {
+      this.player.dispose();
+      this.remove_overlay();
+      this.$wrapper.hide();
+      $("#cs-slug-wrapper").show("100");
+      this.minimised = true;
+      return this.setCookie("gmcs-surface-minimised", 1, 10000);
+    };
+
+    Surface.prototype.maximise = function() {
+      if (this.minimised === true) {
+        this.hide_slug();
+        this.set_blur();
+        this.$wrapper.show();
+        this.create_player(true, true);
+        this.minimised = false;
+        return this.setCookie("gmcs-surface-minimised", 0, 10000);
       }
     };
 
-    Surface.prototype.forward = function() {
-      console.log("forward");
-      if (!this.current_video().isAd()) {
-        return this.play_next_video();
-      }
-    };
-
-    Surface.prototype.rewind = function() {
-      return this.play_previous_video();
-    };
-
-    Surface.prototype.toggle_slug = function() {
-      if (!this.isSlugClosed) {
-        console.log("it's not closed - closing");
-        this.$slugWrapper.removeClass("slug-open");
-        this.$slugWrapper.addClass("slug-closed");
-        this.$slugCloseButton.removeClass("slug-close-btn");
-        this.$slugCloseButton.addClass("slug-open-btn");
-        this.player.pause();
-        this.isSlugClosed = true;
-        return this.setCookie("gmcs-surface-start-slug-closed", 1, 10000);
-      } else {
-        console.log("it's closed - opening");
-        this.$slugWrapper.removeClass("slug-closed");
-        this.$slugWrapper.addClass("slug-open");
-        this.$slugCloseButton.removeClass("slug-open-btn");
-        this.$slugCloseButton.addClass("slug-close-btn");
-        this.player.play();
-        this.isSlugClosed = false;
-        return this.setCookie("gmcs-surface-start-slug-closed", 0, 10000);
-      }
-    };
-
-    Surface.prototype.toggle_mute = function() {
-      if (this.player.isMuted()) {
-        return this.player.unmute();
-      } else {
-        return this.player.mute();
-      }
+    Surface.prototype.hide_slug = function() {
+      return $("#cs-slug-wrapper").hide();
     };
 
     Surface.prototype.update_current_time = function() {
       if (this.player.playing) {
-        return this.setCookie("gmcs-surface-current_time", this.player.currentTime(), 10000);
+        this.current_time = this.player.currentTime();
+        return this.setCookie("gmcs-surface-current_time", this.current_time, 10000);
       }
     };
 
@@ -818,8 +470,6 @@
       this.setPosition = __bind(this.setPosition, this);
       this.position = __bind(this.position, this);
       this.sources = __bind(this.sources, this);
-      console.log(this.t);
-      console.log(src);
       this.file_src = src != null ? src : "";
       this.playback_position = 0;
       this.video_poster = "";
