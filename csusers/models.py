@@ -4,7 +4,6 @@ from videos.models import Video, Site
 # Create your models here.
 
 class CSUser(models.Model):
-    guid = models.CharField(max_length=30,unique=True)
     site = models.ForeignKey(Site)
     last_played = models.ForeignKey(Video,blank=True,null=True)
     likes = models.ManyToManyField(Video, related_name="liked_by", blank=True, null=True)

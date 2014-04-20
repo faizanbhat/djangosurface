@@ -17,4 +17,4 @@ class VideoSerializer(serializers.HyperlinkedModelSerializer):
 class CSUserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = CSUser
-        fields = ('guid','likes','last_played')
+        fields = ('id','likes','last_played')
