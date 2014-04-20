@@ -13,4 +13,4 @@ class CSUser(models.Model):
     playlist = models.ManyToManyField(Video, related_name="queued_for", blank=True, null=True)
     
     def __str__(self):
-       return self.guid
+       return str(self.site.id)

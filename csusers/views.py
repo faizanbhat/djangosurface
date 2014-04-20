@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.core.context_processors import csrf
 from django.shortcuts import render
 from csusers.models import CSUser
-from videos.models import Site
+from videos.models import Site, Video
 from django.shortcuts import get_object_or_404
 
 
@@ -22,8 +22,16 @@ class CSUserViewSet(viewsets.ModelViewSet):
     
 
 def create_user(request,site_id):
-        site = get_object_or_404(Site, pk=int(site_id))        
-        u = CSUser(site=site)
-        u.save()
-        return HttpResponseRedirect("/users/"+str(u.id))
+    site = get_object_or_404(Site, pk=int(site_id))        
+    u = CSUser(site=site)
+    v = Video.objects.filter(site=site)[:5]
+    u.save()
+    u.playlist = v
+    u.save()
+    return HttpResponseRedirect("/users/"+str(u.id))
+        
+def get_user(user_id):
+    u  = get_object_or_404(CSUser,pk=user_id)
+    return HttpResponseRedirect("/users/"+str(u.id))
+    
     

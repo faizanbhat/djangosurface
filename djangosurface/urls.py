@@ -21,5 +21,5 @@ urlpatterns = patterns('',
     url(r'^sitemap/add/', 'videos.views.add'),
     url(r'^', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^csuser/create/(?P<site_id>[0-9])/', 'csusers.views.create_user'),
+    url(r'^create-user/(?P<site_id>[0-9])/', 'csusers.views.create_user'),
 )
