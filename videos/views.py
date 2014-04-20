@@ -59,7 +59,7 @@ def add(request):
                         v = Video(src=video["content_loc"],thumb_src=video["thumbnail_loc"],title=video["title"],description=video["description"],site=sitemap.site)
                         try:
                             v.save()
-                            tokens = word_tokenize(video["description"])
+                            tokens = word_tokenize(video["title"])
                             filtered_words = [w for w in tokens if not w in stopwords]
                             for w in filtered_words:
                                 v.tags.add(w)
@@ -69,7 +69,6 @@ def add(request):
 
             except Exception as e:
                 return render_to_response('../templates/error.html', {'error':e.message})
-                
             
             return render_to_response('../templates/complete.html', {'videos':videos})
         else:

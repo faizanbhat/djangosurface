@@ -41,7 +41,8 @@ INSTALLED_APPS = (
     'rest_framework',
     'corsheaders',
     'csusers',
-    'taggit',    
+    'taggit',
+    'recommender',
 )
 
 MIDDLEWARE_CLASSES = (
