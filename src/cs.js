@@ -255,6 +255,7 @@
       this.hide_slug = __bind(this.hide_slug, this);
       this.maximise = __bind(this.maximise, this);
       this.minimise = __bind(this.minimise, this);
+      this.like_video = __bind(this.like_video, this);
       this.play_next_video = __bind(this.play_next_video, this);
       this.create_player = __bind(this.create_player, this);
       this.load_UI = __bind(this.load_UI, this);
@@ -300,16 +301,20 @@
       this.dom.appendDivToParent("cs-player-wrapper", "cs-main");
       this.dom.appendDivToParent("cs-player-container", "cs-player-wrapper");
       this.dom.appendDivToParent("cs-footer", "cs-player-wrapper");
-      this.dom.appendDivToParent("cs-footer-text", "cs-footer");
+      this.dom.appendDivToParent("cs-footer-skip", "cs-footer");
+      this.dom.appendDivToParent("cs-footer-like", "cs-footer");
       this.$wrapper = $("#cs-wrapper");
       this.$video_title = $("#cs-video-title");
       label = $("#cs-label");
       player_container = $("#cs-player-container");
       $("#cs-close").addClass("cs-close");
       $("#cs-close").click(this.minimise);
-      $("#cs-footer-text").text("Skip");
-      $("#cs-footer").click(this.play_next_video);
-      $("#cs-footer").addClass("footer-enabled");
+      $("#cs-footer-skip").text("Skip");
+      $("#cs-footer-skip").click(this.play_next_video);
+      $("#cs-footer-skip").addClass("footer-enabled");
+      $("#cs-footer-like").text("Like");
+      $("#cs-footer-like").click(this.like_video);
+      $("#cs-footer-like").addClass("footer-enabled");
       player_container.addClass("largeVideoWrapper");
       label.html(this.site_name);
       this.create_player(false, true);
@@ -327,8 +332,7 @@
       this.player = new Player("cs-video-player", "cs-player-container");
       return this.player.ready((function(_this) {
         return function() {
-          var json;
-          return json = $.getJSON("http://localhost:8080/videos/" + _this.current_video_index, function(data) {
+          return $.getJSON("http://localhost:8080/videos/" + _this.current_video_index, function(data) {
             _this.video = new VideoFile(data.src, data.title);
             _this.$video_title.html(data.title);
             _this.player.mute();
@@ -362,6 +366,12 @@
           return _this.player.play();
         };
       })(this));
+    };
+
+    Surface.prototype.like_video = function() {
+      $("#cs-footer-like").unbind("click");
+      $("#cs-footer-like").removeClass("footer-enabled");
+      return $("#cs-footer-like").removeClass("footer-enabled");
     };
 
     Surface.prototype.minimise = function() {

@@ -20,6 +20,11 @@
     top:0;
     background-color:transparent;
     min-width:320px;
+    -webkit-user-select: none;  
+    -moz-user-select: none;    
+    -ms-user-select: none;      
+    user-select: none;
+    
 }
 
 #cs-main {
@@ -187,12 +192,27 @@
   border-top:1px solid lightgray;
   bottom:-54px;
   right:0px;
+  z-index:1000000000000000001 !important;
+}
+
+#cs-footer-skip {
+  position:absolute;
+  right:0;
   font-family: "HelveticaNeue", "Helvetica Neue", "Helvetica Neue", 
     Helvetica, Arial, "Lucida Grande", sans-serif; 
   font-size:0.8em;
   letter-spacing:1px;
-  color:#AAA;
-  z-index:1000000000000000001 !important;
+  color:#AAA;  
+}
+
+#cs-footer-like {
+  position:absolute;
+  left:0;
+  font-family: "HelveticaNeue", "Helvetica Neue", "Helvetica Neue", 
+    Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-size:0.8em;
+  letter-spacing:1px;
+  color:#AAA;  
 }
 
 .footer-enabled{
@@ -201,7 +221,8 @@
 }
 
 .footer-enabled:hover{
-  text-decoration:underline;
   cursor:pointer;
+  text-decoration:underline !important;
+  
 }
 

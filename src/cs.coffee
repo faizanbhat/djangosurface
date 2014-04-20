@@ -189,7 +189,8 @@ class Surface
     @dom.appendDivToParent("cs-player-wrapper","cs-main")
     @dom.appendDivToParent("cs-player-container","cs-player-wrapper")
     @dom.appendDivToParent("cs-footer","cs-player-wrapper")
-    @dom.appendDivToParent("cs-footer-text","cs-footer")
+    @dom.appendDivToParent("cs-footer-skip","cs-footer")
+    @dom.appendDivToParent("cs-footer-like","cs-footer")
     
     @$wrapper = $("#cs-wrapper")
     @$video_title = $("#cs-video-title")
@@ -199,9 +200,13 @@ class Surface
     $("#cs-close").addClass("cs-close")
     $("#cs-close").click(@minimise)
     
-    $("#cs-footer-text").text("Skip")
-    $("#cs-footer").click(@play_next_video)
-    $("#cs-footer").addClass("footer-enabled")
+    $("#cs-footer-skip").text("Skip")
+    $("#cs-footer-skip").click(@play_next_video)
+    $("#cs-footer-skip").addClass("footer-enabled")
+    
+    $("#cs-footer-like").text("Like")
+    $("#cs-footer-like").click(@like_video)
+    $("#cs-footer-like").addClass("footer-enabled")
     
     # Player style
     player_container.addClass("largeVideoWrapper")      
@@ -226,7 +231,7 @@ class Surface
   create_player:(autoplay,resume)=>
     @player = new Player("cs-video-player","cs-player-container")   
     @player.ready(=>
-      json  = $.getJSON("http://localhost:8080/videos/"+@current_video_index, (data)=>
+      $.getJSON("http://localhost:8080/videos/"+@current_video_index, (data)=>
         @video = new VideoFile(data.src,data.title)
         @$video_title.html(data.title)
         @player.mute()
@@ -254,6 +259,12 @@ class Surface
       @player.loadFile(@video)
       @player.play()
       )
+      
+  like_video:=>
+    $("#cs-footer-like").unbind("click")
+    $("#cs-footer-like").removeClass("footer-enabled")
+    $("#cs-footer-like").removeClass("footer-enabled")
+    
   
   minimise:() =>      
     @player.dispose()
