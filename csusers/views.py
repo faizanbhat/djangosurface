@@ -14,12 +14,8 @@ from rest_framework import viewsets
 from djangosurface.serializers import CSUserSerializer
 
 class CSUserViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows users to be viewed or edited.
-    """
     queryset = CSUser.objects.all()
-    serializer_class = CSUserSerializer
-    
+    serializer_class = CSUserSerializer    
 
 def create_user(request,site_id):
     site = get_object_or_404(Site, pk=int(site_id))        
@@ -28,10 +24,26 @@ def create_user(request,site_id):
     u.save()
     u.playlist = v
     u.save()
-    return HttpResponseRedirect("/users/"+str(u.id))
-        
-def get_user(user_id):
-    u  = get_object_or_404(CSUser,pk=user_id)
-    return HttpResponseRedirect("/users/"+str(u.id))
+    return HttpResponseRedirect("/users/"+str(u.id))    
     
+def played(request,user_id,video_id):
+    user = get_object_or_404(CSUser, pk=int(user_id))
+    video = get_object_or_404(Video, pk=int(video_id))
+    user.last_played = video
+    user.plays.add(video)
+    user.save()
+    return HttpResponse("200 OK")
     
+def liked(request,user_id,video_id):
+    user = get_object_or_404(CSUser, pk=int(user_id))
+    video = get_object_or_404(Video, pk=int(video_id))
+    user.likes.add(video)
+    user.save()
+    return HttpResponse("200 OK")
+    
+def skipped(request,user_id,video_id):
+    user = get_object_or_404(CSUser, pk=int(user_id))
+    video = get_object_or_404(Video, pk=int(video_id))
+    user.skips.add(video)
+    user.save()
+    return HttpResponse("200 OK")

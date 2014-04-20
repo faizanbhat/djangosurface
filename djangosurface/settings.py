@@ -40,7 +40,8 @@ INSTALLED_APPS = (
     'videos',
     'rest_framework',
     'corsheaders',
-    'csusers'
+    'csusers',
+    'taggit',    
 )
 
 MIDDLEWARE_CLASSES = (

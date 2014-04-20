@@ -6,6 +6,9 @@ from django.forms import ModelForm
 from videos.models import Sitemap, Video, Site
 import urllib2
 import xml.etree.ElementTree as ET
+from nltk.corpus import stopwords
+from nltk import word_tokenize
+stopwords = set(stopwords.words('english'))
 
 from rest_framework import viewsets
 from djangosurface.serializers import VideoSerializer, SiteSerializer
@@ -55,6 +58,11 @@ def add(request):
                     for video in videos:
                         v = Video(src=video["content_loc"],thumb_src=video["thumbnail_loc"],title=video["title"],description=video["description"],site=sitemap.site)
                         try:
+                            v.save()
+                            tokens = word_tokenize(video["description"])
+                            filtered_words = [w for w in tokens if not w in stopwords]
+                            for w in filtered_words:
+                                v.tags.add(w)
                             v.save()
                         except Exception as e:
                             pass
