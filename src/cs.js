@@ -8,6 +8,9 @@
 
   $(function() {
     var surface;
+    window.gmcs = {};
+    window.gmcs.site_id = "1";
+    window.gmcs.host = "http://localhost:8080";
     return surface = new Surface("Nat Geo TV");
   });
 
@@ -248,6 +251,7 @@
 
   Surface = (function() {
     function Surface(site_name, delay) {
+      var user;
       this.site_name = site_name;
       this.remove_overlay = __bind(this.remove_overlay, this);
       this.set_blur = __bind(this.set_blur, this);
@@ -259,6 +263,9 @@
       this.play_next_video = __bind(this.play_next_video, this);
       this.create_player = __bind(this.create_player, this);
       this.load_UI = __bind(this.load_UI, this);
+      this.set_or_create_user = __bind(this.set_or_create_user, this);
+      this.hostname = window.gmcs.host;
+      user = this.set_or_create_user();
       this.current_video_index = parseInt(this.getCookie("gmcs-surface-current-video-index"));
       if (isNaN(this.current_video_index)) {
         this.current_video_index = 1;
@@ -281,6 +288,25 @@
       this.set_blur();
       new ScriptLoader("videoJs", this.load_UI);
     }
+
+    Surface.prototype.set_or_create_user = function() {
+      var requestURI, user_id;
+      user_id = this.getCookie("gmcs-surface-current-user-id");
+      if (user_id === null) {
+        requestURI = this.hostname + "/csuser/create/" + window.gmcs.site_id;
+        return $.getJSON(requestURI, (function(_this) {
+          return function(data) {
+            console.log(data);
+            _this.user_id = data.id.toString();
+            _this.setCookie("gmcs-surface-current-user-id", _this.user_id, 10000);
+            return console.log(_this.user_id);
+          };
+        })(this));
+      } else {
+        this.user_id = user_id;
+        return console.log(this.user_id);
+      }
+    };
 
     Surface.prototype.load_UI = function() {
       var html, label, player_container, s;
@@ -332,10 +358,9 @@
       this.player = new Player("cs-video-player", "cs-player-container");
       return this.player.ready((function(_this) {
         return function() {
-          return $.getJSON("http://localhost:8080/videos/" + _this.current_video_index, function(data) {
+          return $.getJSON(_this.hostname + "/videos/" + _this.current_video_index + "/", function(data) {
             _this.video = new VideoFile(data.src, data.title);
             _this.$video_title.html(data.title);
-            _this.player.mute();
             _this.player.loadFile(_this.video);
             _this.player.ended(_this.play_next_video);
             if (autoplay) {
@@ -357,7 +382,7 @@
       var json;
       this.current_video_index = this.current_video_index + 1;
       this.setCookie("gmcs-surface-current-video-index", this.current_video_index, 10000);
-      return json = $.getJSON("http://localhost:8080/videos/" + this.current_video_index, (function(_this) {
+      return json = $.getJSON("http://localhost:8080/videos/" + this.current_video_index + "/", (function(_this) {
         return function(data) {
           _this.video = new VideoFile(data.src, data.title);
           _this.$video_title.html(data.title);

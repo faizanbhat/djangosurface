@@ -4,8 +4,13 @@
 $ = jQuery
 
 $ ->
-        
+  window.gmcs = {}
+  window.gmcs.site_id = "1"
+  window.gmcs.host = "http://localhost:8080"    
+    
   surface = new Surface("Nat Geo TV")
+
+
 
 class ScriptLoader
     constructor: (options..., callback) ->
@@ -144,6 +149,9 @@ class Player
   
 class Surface
   constructor:(@site_name,delay)->
+    @hostname = window.gmcs.host
+    user = @set_or_create_user()
+    
     @current_video_index = parseInt(@getCookie("gmcs-surface-current-video-index"))
     if isNaN(@current_video_index)
       @current_video_index = 1
@@ -167,6 +175,25 @@ class Surface
 
     new ScriptLoader "videoJs", @load_UI
       
+  set_or_create_user:=>
+    user_id= @getCookie("gmcs-surface-current-user-id")
+    if user_id is null
+      requestURI = @hostname+"/csuser/create/" + window.gmcs.site_id
+      $.getJSON(requestURI, (data)=>
+        console.log data
+        @user_id = data.id.toString()
+        @setCookie("gmcs-surface-current-user-id",@user_id,10000)
+        console.log @user_id
+        )
+    else
+      @user_id = user_id
+      console.log @user_id
+    
+
+      
+
+      
+    
   load_UI:=>
       
     # Append Surface wrapper OUTSIDE body
@@ -231,10 +258,9 @@ class Surface
   create_player:(autoplay,resume)=>
     @player = new Player("cs-video-player","cs-player-container")   
     @player.ready(=>
-      $.getJSON("http://localhost:8080/videos/"+@current_video_index, (data)=>
+      $.getJSON(@hostname+"/videos/"+@current_video_index+"/", (data)=>
         @video = new VideoFile(data.src,data.title)
         @$video_title.html(data.title)
-        @player.mute()
         @player.loadFile(@video)        
         @player.ended(@play_next_video)
         if autoplay
@@ -252,7 +278,7 @@ class Surface
   play_next_video:=>
     @current_video_index = @current_video_index + 1
     @setCookie("gmcs-surface-current-video-index",@current_video_index,10000)
-    json  = $.getJSON("http://localhost:8080/videos/"+@current_video_index, (data)=>
+    json  = $.getJSON("http://localhost:8080/videos/"+@current_video_index+"/", (data)=>
       @video = new VideoFile(data.src,data.title)
       @$video_title.html(data.title)
       @player.pause()
