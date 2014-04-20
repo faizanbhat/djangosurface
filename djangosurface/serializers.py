@@ -1,4 +1,5 @@
 from videos.models import Video, Site
+from csusers.models import CSUser
 from rest_framework import serializers
 
 class SiteSerializer(serializers.HyperlinkedModelSerializer):
@@ -11,3 +12,9 @@ class VideoSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Video
         fields = ('id','src',"title","description","thumb_src","site")
+
+
+class CSUserSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = CSUser
+        fields = ('guid','likes','last_played')

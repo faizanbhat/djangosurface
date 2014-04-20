@@ -1,12 +1,13 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from rest_framework import routers
-from videos import views
-
+from videos.views import SiteViewSet, VideoViewSet
+from csusers.views import CSUserViewSet
 
 router = routers.DefaultRouter()
-router.register(r'sites', views.SiteViewSet)
-router.register(r'videos', views.VideoViewSet)
+router.register(r'sites', SiteViewSet)
+router.register(r'videos', VideoViewSet)
+router.register(r'users', CSUserViewSet)
 
 
 admin.autodiscover()
@@ -17,8 +18,8 @@ urlpatterns = patterns('',
     # url(r'^blog/', include('blog.urls')),
 
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^add/', 'videos.views.add'),
+    url(r'^sitemap/add/', 'videos.views.add'),
     url(r'^', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    
+    url(r'^csuser/create/', 'csusers.views.create_user'),
 )

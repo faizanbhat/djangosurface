@@ -22,6 +22,3 @@ class Video(models.Model):
 class Sitemap(models.Model):
      url = models.URLField(max_length=200,unique=True)
      site = models.ForeignKey(Site)
-     
-    
-    
