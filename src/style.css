@@ -167,33 +167,16 @@
 }
 
 #cs-slug-wrapper{
-  background:black;
+  background:url("slug-open-inactive.png");
   position:fixed;
   bottom:35px;
   right:0px;
-  width:40px;
-  height:250px;
-  background:transparent;
+  width:50px;
+  height:200px;
   z-index:10000000000000001 !important;
 }
 
-
-.slug-slide-button{
-  position:absolute;
-  top:0px;
-  left:-40px !important;
-  height:100% !important;
-  width:40px !important;
-  z-index:1000000000000000001 !important;
-  opacity:0.8;  
-}
-
-
-.slug-open-btn{
-  background:url("slug-open-inactive.png");
-}
-
-.slug-open-btn:hover{
+#cs-slug-wrapper:hover{
   background:url("slug-open-active.png");  
 }
 

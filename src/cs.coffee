@@ -214,7 +214,7 @@ class Surface
         
     @dom.appendDivToBody("cs-slug-wrapper")
     @$slugWrapper =  $("#cs-slug-wrapper")
-    @$slugWrapper.hover(@maximise)
+    @$slugWrapper.click(@maximise)
     
     @hide_slug()    # Hide slug
     

@@ -315,7 +315,7 @@
       this.create_player(false, true);
       this.dom.appendDivToBody("cs-slug-wrapper");
       this.$slugWrapper = $("#cs-slug-wrapper");
-      this.$slugWrapper.hover(this.maximise);
+      this.$slugWrapper.click(this.maximise);
       this.hide_slug();
       if (this.start_minimised > 0) {
         this.minimise();
