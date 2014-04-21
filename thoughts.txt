@@ -1,0 +1,15 @@
+We need to build smart playlists. Currently we have a UserPlaylist model that connects a User to a playlist of PlaylistVideos, where each PlaylistVideo contains a) a video, b) a similarity score. 
+
+When the user likes a video, we are able to tag them with the tags from the video. 
+
+Arbitrary requirement here is to always return 5 videos to the front-end when it requests a playlist. This means the client can work under the assumption that it only needs to refresh the playlist every 5 videos.
+
+We might need a generate playlist function, that performs some computations creates a fresh playlist based on known similarities. Few things we need to keep in mind:
+1) We need a way to return to the front end the last video that the user was watching but did not complete. Each new session of surface should begin with the last incomplete video. One way to do this is to use the last_viewed property of the user which points to the video that the last person is watching. Add this video to the top of the playlist.
+2) Find out which videos are similar to the user, order them by similarity, and take the subset that hasn't been viewed. Insert these next into the playlist.
+3) Fill in any remaining spots with the complete site video list in order.
+
+When the client requests a new user, it receives the user id, and a freshly initialised playlist (along with the playlist id on the server). It should then display that entire playlist to the user, keep recording likes, views, skips, completes, etc. Only when it reaches the last video should it request the generation of a new playlist. 
+
+We might also need a video model manager that returns:
+a) Items that are similar to a user

@@ -6,8 +6,10 @@ from django.shortcuts import render
 from csusers.models import CSUser, PlaylistVideo, CSUserPlaylist
 from videos.models import Site, Video
 from django.shortcuts import get_object_or_404
-from recommender.managers import RecommenderManager as RM
+from recommender.managers import RecommenderManager
 import pdb
+from django.db.models import Q
+
 
 # Create your views here.
 
@@ -35,6 +37,57 @@ def create_user(request,site_id):
     u.save()
     
     return HttpResponseRedirect("/users/"+str(u.id))    
+
+def generate_playlist(request,user_id):
+    # pdb.set_trace()
+    u = get_object_or_404(CSUser, pk=user_id)
+    
+    try: 
+        p = CSUserPlaylist.objects.get(id=u.playlist.id)
+        p.delete()
+    except:
+        pass
+    
+    pl = CSUserPlaylist()
+    pl.save()
+    u.playlist = pl
+    u.save()
+    new_videos = Video.objects.all()
+    new_videos = new_videos.filter(~Q(completed_by=u))
+    new_videos = new_videos.filter(~Q(skipped_by=u))
+    count = 0
+
+    if u.last_played:
+        PlaylistVideo.objects.create(playlist=pl,video=u.last_played,similarity=1.1)
+        count = 1
+        new_videos = new_videos.filter(~Q(id=u.last_played.id))
+    
+    rm = RecommenderManager()
+    recs = rm.get_content_based_recs(u,new_videos)
+
+    added = []
+    try:
+        for item in recs:
+            v = item[1]
+            s = item[0]
+            PlaylistVideo.objects.create(playlist=pl,video=v,similarity=s)
+            added.append(v)
+            count = count+1
+            if count is 5:
+                break
+    except:
+        pass
+                
+    for v in new_videos:
+        if count < 5:
+            if v not in added:
+                PlaylistVideo.objects.create(playlist=pl,video=v,similarity=0)
+                count = count + 1
+        else:
+            break
+        
+    return HttpResponseRedirect("/playlists/"+str(pl.id)) 
+        
     
 def played(request,user_id,video_id):
     user = get_object_or_404(CSUser, pk=int(user_id))
@@ -52,7 +105,7 @@ def liked(request,user_id,video_id):
         user.tags.add(tag)
     user.save()
     
-    rm = RM()
+    rm = RecommenderManager()
     recs = rm.get_content_based_recs(user,Video.objects.all())
     
     return HttpResponse(recs)
@@ -62,7 +115,6 @@ def skipped(request,user_id,video_id):
     video = get_object_or_404(Video, pk=int(video_id))
     user.skips.add(video)
     user.save()
-    user.playlist.remove(video)
     # for tag in video.tags.all()
     #     user.tags.remove(tag)
     return HttpResponse("200 OK")
@@ -70,7 +122,6 @@ def skipped(request,user_id,video_id):
 def completed(request,user_id,video_id):
     user = get_object_or_404(CSUser, pk=int(user_id))
     video = get_object_or_404(Video, pk=int(video_id))
-    user.skips.add(video)
+    user.completes.add(video)
     user.save()
-    user.playlist.remove(video)
     return HttpResponse("200 OK")

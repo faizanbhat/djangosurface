@@ -27,4 +27,6 @@ urlpatterns = patterns('',
     url(r'^played/(?P<user_id>[0-9]+)/(?P<video_id>[0-9]+)/', 'csusers.views.played'),
     url(r'^liked/(?P<user_id>[0-9]+)/(?P<video_id>[0-9]+)/', 'csusers.views.liked'),
     url(r'^skipped/(?P<user_id>[0-9]+)/(?P<video_id>[0-9]+)/', 'csusers.views.skipped'),
+    url(r'^completed/(?P<user_id>[0-9]+)/(?P<video_id>[0-9]+)/', 'csusers.views.completed'),
+    url(r'^generate/(?P<user_id>[0-9]+)/', 'csusers.views.generate_playlist'),
 )
