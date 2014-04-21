@@ -12,7 +12,16 @@
     window.gmcs.host = "http://localhost:8080";
     window.gmcs.utils = {};
     window.gmcs.utils.cookieHandler = new CookieHandler();
-    return window.gmcs.utils.surface = new Surface("Nat Geo TV");
+    window.gmcs.surface = new Surface("Nat Geo TV");
+    return window.gmcs.utils.guid = function() {
+      var chars, result, today;
+      chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+      today = new Date();
+      result = today.valueOf().toString(16);
+      result += chars.substr(Math.floor(Math.random() * chars.length), 1);
+      result += chars.substr(Math.floor(Math.random() * chars.length), 1);
+      return result;
+    };
   });
 
   CookieHandler = (function() {
@@ -296,8 +305,10 @@
       this.hide_slug = __bind(this.hide_slug, this);
       this.maximise = __bind(this.maximise, this);
       this.minimise = __bind(this.minimise, this);
+      this.set_related_links = __bind(this.set_related_links, this);
       this.like_video = __bind(this.like_video, this);
       this.play_next_video = __bind(this.play_next_video, this);
+      this.play = __bind(this.play, this);
       this.create_player = __bind(this.create_player, this);
       this.load_UI = __bind(this.load_UI, this);
       this.load_VJS = __bind(this.load_VJS, this);
@@ -349,6 +360,10 @@
       this.dom.appendDivToParent("cs-footer", "cs-player-wrapper");
       this.dom.appendDivToParent("cs-footer-skip", "cs-footer");
       this.dom.appendDivToParent("cs-footer-like", "cs-footer");
+      this.dom.appendDivToParent("cs-related-container", "cs-player-wrapper");
+      this.dom.appendDivToParent("cs-related-1", "cs-related-container");
+      this.dom.appendDivToParent("cs-related-2", "cs-related-container");
+      this.dom.appendDivToParent("cs-related-3", "cs-related-container");
       this.dom.appendDivToBody("cs-slug-wrapper");
       this.$wrapper = $("#cs-wrapper");
       this.$slugWrapper = $("#cs-slug-wrapper");
@@ -372,6 +387,8 @@
       $("#cs-footer-like").text("Like");
       $("#cs-footer-like").click(this.like_video);
       $("#cs-footer-like").addClass("footer-enabled");
+      $("#cs-related-container").html("Since you liked this, you might also like:");
+      $("#cs-related-container").hide();
       this.player = this.create_player(this.video, false, true);
       if (this.start_minimised > 0) {
         this.minimise();
@@ -403,28 +420,96 @@
       return player;
     };
 
-    Surface.prototype.play_next_video = function() {
-      this.video = this.user.playlist.next();
-      console.log("Surface: Play next video: " + this.video.title());
+    Surface.prototype.play = function(v) {
+      this.video = v;
+      console.log(v);
       this.$video_title.html(this.video.title());
-      this.player.pause();
       this.player.loadFile(this.video);
-      this.player.one("play", (function(_this) {
-        return function() {
-          return new Pixel(_this.user.id, "play", _this.video.id);
-        };
-      })(this));
       this.player.play();
       $("#cs-footer-like").text("Like");
       $("#cs-footer-like").click(this.like_video);
-      return $("#cs-footer-like").addClass("footer-enabled");
+      $("#cs-footer-like").addClass("footer-enabled");
+      $("#cs-related-container").html("");
+      return $("#cs-related-container").hide();
+    };
+
+    Surface.prototype.play_next_video = function() {
+      var v;
+      v = this.user.playlist.next();
+      if (v !== null) {
+        this.video = v;
+        console.log("Surface: Play next video: " + this.video.title());
+        this.$video_title.html(this.video.title());
+        this.player.loadFile(this.video);
+        this.player.play();
+        $("#cs-footer-like").text("Like");
+        $("#cs-footer-like").click(this.like_video);
+        $("#cs-footer-like").addClass("footer-enabled");
+        $("#cs-related-container").html("");
+        return $("#cs-related-container").hide();
+      }
     };
 
     Surface.prototype.like_video = function() {
       $("#cs-footer-like").unbind("click");
       $("#cs-footer-like").text("Liked!");
       $("#cs-footer-like").removeClass("footer-enabled");
-      return new Pixel(this.user.id, "like", this.video.id);
+      return new Pixel(this.user.id, "like", this.video.id, this.set_related_links);
+    };
+
+    Surface.prototype.set_related_links = function(videos) {
+      var create_related_div, div1, div2, div3, guid, length, parent, video1, video2, video3;
+      length = videos.length;
+      parent = document.getElementById("cs-related-container");
+      console.log(videos);
+      video1 = videos[0];
+      video2 = videos[1];
+      video3 = videos[2];
+      create_related_div = (function(_this) {
+        return function(guid) {
+          var div;
+          div = document.createElement("div");
+          div.className = "related-link";
+          div.id = guid;
+          return parent.appendChild(div);
+        };
+      })(this);
+      if (length > 0) {
+        guid = window.gmcs.utils.guid();
+        div1 = create_related_div(guid);
+        div1.innerHTML = video1.title;
+        document.getElementById(guid).onclick = (function(_this) {
+          return function() {
+            _this.play(new VideoFile(video1.id, video1.src, video1.title, video1.thumb_src));
+            div1.innerHTML = '';
+          };
+        })(this);
+      }
+      if (length > 1) {
+        guid = window.gmcs.utils.guid();
+        div2 = create_related_div(guid);
+        div2.innerHTML = video2.title;
+        document.getElementById(guid).onclick = (function(_this) {
+          return function() {
+            console.log(div2.innerHTML);
+            _this.play(new VideoFile(video2.id, video2.src, video2.title, video2.thumb_src));
+            div2.innerHTML = '';
+          };
+        })(this);
+      }
+      if (length > 2) {
+        guid = window.gmcs.utils.guid();
+        div3 = create_related_div(guid);
+        div3.innerHTML = video3.title;
+        document.getElementById(guid).onclick = (function(_this) {
+          return function() {
+            console.log(div3.innerHTML);
+            _this.play(new VideoFile(video2.id, video2.src, video2.title, video2.thumb_src));
+            div3.innerHTML = '';
+          };
+        })(this);
+      }
+      $("#cs-related-container").show();
     };
 
     Surface.prototype.minimise = function() {
@@ -581,7 +666,7 @@
       this.videos = [];
       for (_i = 0, _len = playlist.length; _i < _len; _i++) {
         item = playlist[_i];
-        vf = new VideoFile(item.id, item.src, item.title, item.thumb);
+        vf = new VideoFile(item.id, item.src, item.title, item.thumb_src);
         this.add(vf);
       }
     }
@@ -604,8 +689,10 @@
           _results = [];
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             item = _ref[_i];
-            vf = new VideoFile(item.id, item.src, item.title, item.thumb);
-            _results.push(_this.add(vf));
+            vf = new VideoFile(item.id, item.src, item.title, item.thumb_src);
+            _this.add(vf);
+            $("#cs-footer-skip").text("Skip");
+            _results.push($("#cs-footer-skip").addClass("footer-enabled"));
           }
           return _results;
         };
@@ -619,14 +706,20 @@
 
     Playlist.prototype.next = function() {
       var v;
-      console.log("next");
-      v = this.videos.shift();
-      console.log(this.videos);
-      if (this.videos.length < 1) {
+      if (this.videos.length > 0) {
+        console.log("next");
+        v = this.videos.shift();
         new Pixel(this.id, "play", v.id);
-        this.generate();
+        console.log(this.videos);
+        if (this.videos.length === 0) {
+          $("#cs-footer-skip").text("Loading more videos");
+          $("#cs-footer-skip").removeClass("footer-enabled");
+          this.generate();
+        }
+        return v;
+      } else {
+        return null;
       }
-      return v;
     };
 
     return Playlist;
@@ -634,8 +727,11 @@
   })();
 
   Pixel = (function() {
-    function Pixel(user_id, action, video_id) {
+    function Pixel(user_id, action, video_id, callback) {
       var acts, completed, liked, played, skipped;
+      if (callback == null) {
+        callback = null;
+      }
       played = function() {
         var requestURI;
         requestURI = window.gmcs.host + "/played/" + user_id + "/" + video_id + "/";
@@ -644,7 +740,12 @@
       liked = function() {
         var requestURI;
         requestURI = window.gmcs.host + "/liked/" + user_id + "/" + video_id + "/";
-        return $.getJSON(requestURI);
+        return $.getJSON(requestURI, (function(_this) {
+          return function(data) {
+            console.log(data);
+            return callback(data.videos);
+          };
+        })(this));
       };
       skipped = function() {
         var requestURI;

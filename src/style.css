@@ -48,7 +48,7 @@
 #cs-header {
   position:relative;
   top:0px;
-  height:120px;
+  height:70px;
   width:50%;
   background:transparent;
   z-index:10000000000000001 !important;
@@ -89,7 +89,7 @@
   background-color:transparent;
   width:100%;
   z-index:10000000000000001 !important; 
-  margin:0 0 4% 0;
+  margin:0 0 0% 0;
 }
 
 #cs-top-line{
@@ -213,6 +213,37 @@
   font-size:0.8em;
   letter-spacing:1px;
   color:#AAA;  
+}
+
+#cs-related-container {
+  position:relative;
+  padding-top:10px;
+  bottom:-90px;
+  right:0px;
+  z-index:1000000000000000001 !important;
+  font-family: "HelveticaNeue", "Helvetica Neue", "Helvetica Neue", 
+    Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-size:0.8em;
+  letter-spacing:1px;
+  color:#AAA;  
+  border-top:1px solid #777;
+}
+
+.related-active {
+
+}
+
+.related-link{
+  padding:5px 0px 5px 5px;
+  margin:5px 0 5px 0;
+  background:#666;
+  color:#AAA;
+  cursor:pointer;
+}
+
+.related-link:hover{
+  color:white;
+  background:#777;
 }
 
 .footer-enabled{

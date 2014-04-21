@@ -9,7 +9,14 @@ $ ->
   window.gmcs.host = "http://localhost:8080"    
   window.gmcs.utils = {}
   window.gmcs.utils.cookieHandler = new CookieHandler()
-  window.gmcs.utils.surface = new Surface("Nat Geo TV")
+  window.gmcs.surface = new Surface("Nat Geo TV")
+  window.gmcs.utils.guid = ->
+    chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    today = new Date()
+    result = today.valueOf().toString 16
+    result += chars.substr Math.floor(Math.random() * chars.length), 1
+    result += chars.substr Math.floor(Math.random() * chars.length), 1
+    return result
 
 
 class CookieHandler
@@ -223,6 +230,11 @@ class Surface
     @dom.appendDivToParent("cs-footer","cs-player-wrapper")
     @dom.appendDivToParent("cs-footer-skip","cs-footer")
     @dom.appendDivToParent("cs-footer-like","cs-footer")
+    @dom.appendDivToParent("cs-related-container","cs-player-wrapper")
+    @dom.appendDivToParent("cs-related-1","cs-related-container")
+    @dom.appendDivToParent("cs-related-2","cs-related-container")
+    @dom.appendDivToParent("cs-related-3","cs-related-container")
+    
     @dom.appendDivToBody("cs-slug-wrapper")
     
     @$wrapper = $("#cs-wrapper")    
@@ -253,6 +265,9 @@ class Surface
     $("#cs-footer-like").click(@like_video)
     $("#cs-footer-like").addClass("footer-enabled")
     
+    $("#cs-related-container").html("Since you liked this, you might also like:")
+    $("#cs-related-container").hide()
+    
     @player = @create_player(@video,false,true)
         
     if @start_minimised > 0
@@ -281,28 +296,87 @@ class Surface
       player.timeUpdate(@update_current_time)
     )
     player
-    
+  
+  play:(v)=>
+     @video = v      
+     console.log v
+     @$video_title.html(@video.title())
+     @player.loadFile(@video)
+     @player.play()
+     $("#cs-footer-like").text("Like")
+     $("#cs-footer-like").click(@like_video)
+     $("#cs-footer-like").addClass("footer-enabled")
+     $("#cs-related-container").html("")
+     $("#cs-related-container").hide()
+     
+     
   play_next_video:=>
-    @video = @user.playlist.next()
-    console.log "Surface: Play next video: " + @video.title()
-    @$video_title.html(@video.title())
-    @player.pause()
-    @player.loadFile(@video)
-    @player.one("play", =>
-      new Pixel @user.id, "play", @video.id
-      )
-    # @player.one("play", )
-    @player.play()
-    $("#cs-footer-like").text("Like")
-    $("#cs-footer-like").click(@like_video)
-    $("#cs-footer-like").addClass("footer-enabled")
+    v= @user.playlist.next()
+    if v != null
+      @video = v      
+      console.log "Surface: Play next video: " + @video.title()
+      @$video_title.html(@video.title())
+      @player.loadFile(@video)
+      @player.play()
+      $("#cs-footer-like").text("Like")
+      $("#cs-footer-like").click(@like_video)
+      $("#cs-footer-like").addClass("footer-enabled")
+      $("#cs-related-container").html("")
+      $("#cs-related-container").hide()
+      
       
   like_video:=>
     $("#cs-footer-like").unbind("click")
     $("#cs-footer-like").text("Liked!")
     $("#cs-footer-like").removeClass("footer-enabled")
-    new Pixel @user.id, "like", @video.id
-  
+    new Pixel(@user.id, "like", @video.id, @set_related_links)
+
+  set_related_links:(videos)=>
+    length = videos.length
+    parent = document.getElementById("cs-related-container")
+    console.log videos
+    video1 = videos[0]
+    video2 = videos[1]
+    video3 = videos[2]
+    
+    create_related_div = (guid)=>
+      div = document.createElement("div")
+      div.className = "related-link"
+      div.id = guid
+      parent.appendChild(div)
+      
+    if length > 0
+      guid = window.gmcs.utils.guid()
+      div1 = create_related_div(guid)
+      div1.innerHTML = video1.title
+      document.getElementById(guid).onclick = =>
+        @play(new VideoFile(video1.id,video1.src,video1.title,video1.thumb_src))
+        div1.innerHTML = ''
+        return
+    
+    if length > 1
+      guid = window.gmcs.utils.guid()
+      div2 = create_related_div(guid)
+      div2.innerHTML = video2.title
+      document.getElementById(guid).onclick = =>
+        console.log div2.innerHTML
+        @play(new VideoFile(video2.id,video2.src,video2.title,video2.thumb_src))
+        div2.innerHTML = ''
+        return
+    
+    if length > 2
+      guid = window.gmcs.utils.guid()
+      div3 = create_related_div(guid)
+      div3.innerHTML = video3.title
+      document.getElementById(guid).onclick = =>
+        console.log div3.innerHTML
+        @play(new VideoFile(video2.id,video2.src,video2.title,video2.thumb_src))
+        div3.innerHTML = ''
+        return
+      
+    $("#cs-related-container").show()
+    return
+    
   minimise:() =>      
     @player.dispose()
     @remove_overlay()
@@ -407,7 +481,7 @@ class Playlist
   constructor:(playlist, @id)->
     @videos = []
     for item in playlist
-      vf = new VideoFile(item.id,item.src,item.title,item.thumb)
+      vf = new VideoFile(item.id,item.src,item.title,item.thumb_src)
       @add(vf)
   
   add:(vf)=>
@@ -421,33 +495,45 @@ class Playlist
       console.log data
       @videos = []
       for item in data.videos
-        vf = new VideoFile(item.id,item.src,item.title,item.thumb)
+        vf = new VideoFile(item.id,item.src,item.title,item.thumb_src)
         @add(vf)
+        $("#cs-footer-skip").text("Skip")
+        $("#cs-footer-skip").addClass("footer-enabled")
       )
+
     console.log @videos 
     
   current:=>
     @videos[0]
     
   next:=>
-    console.log "next"
-    v = @videos.shift()
-    console.log @videos
-    if @videos.length < 1
+    if @videos.length > 0
+      console.log "next"
+      v = @videos.shift()
       new Pixel @id, "play", v.id
-      @generate()
-    return v
+      console.log @videos
+    
+      if @videos.length == 0
+        $("#cs-footer-skip").text("Loading more videos")
+        $("#cs-footer-skip").removeClass("footer-enabled")
+        @generate()
+      return v
+    else
+      return null
+      
     
 class Pixel
-  constructor: (user_id,action,video_id) ->
-       
+  constructor: (user_id,action,video_id,callback=null) ->
     played = ->
       requestURI = window.gmcs.host + "/played/" + user_id + "/" + video_id + "/"
       $.getJSON(requestURI)
     
     liked = ->
       requestURI = window.gmcs.host + "/liked/" + user_id + "/" + video_id + "/"
-      $.getJSON(requestURI)
+      $.getJSON(requestURI, (data)=>
+        console.log data
+        callback(data.videos)
+        )
   
     skipped = ->
       requestURI = window.gmcs.host + "/skipped/" + user_id + "/" + video_id + "/"
