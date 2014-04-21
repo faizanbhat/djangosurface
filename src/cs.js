@@ -503,7 +503,7 @@
         document.getElementById(guid).onclick = (function(_this) {
           return function() {
             console.log(div3.innerHTML);
-            _this.play(new VideoFile(video2.id, video2.src, video2.title, video2.thumb_src));
+            _this.play(new VideoFile(video3.id, video3.src, video3.title, video3.thumb_src));
             div1.parentElement.innerHTML = "";
           };
         })(this);

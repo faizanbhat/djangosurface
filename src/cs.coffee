@@ -369,7 +369,7 @@ class Surface
       div3.innerHTML = " > " + video3.title
       document.getElementById(guid).onclick = =>
         console.log div3.innerHTML
-        @play(new VideoFile(video2.id,video2.src,video2.title,video2.thumb_src))
+        @play(new VideoFile(video3.id,video3.src,video3.title,video3.thumb_src))
         div1.parentElement.innerHTML = ""
         return
       
