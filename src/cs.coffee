@@ -175,7 +175,8 @@ class Surface
     @cookieHandler = window.gmcs.utils.cookieHandler
     
     @callbacks = {
-      'playlist_loaded':@load_UI
+      'playlist_loaded':@load_VJS
+      'videojs_loaded':@load_UI
     }
     
     @user = new User(@callbacks['playlist_loaded'])
@@ -196,7 +197,8 @@ class Surface
     @dom.getStyle("vjs/video-js.css")
     @set_blur()
 
-    new ScriptLoader "videoJs", ->
+  load_VJS:=>
+    new ScriptLoader "videoJs", @callbacks['videojs_loaded']
     
   load_UI:=>
     # Append Surface wrapper OUTSIDE body
@@ -241,7 +243,10 @@ class Surface
     $("#cs-close").click(@minimise)
     
     $("#cs-footer-skip").text("Skip")
-    $("#cs-footer-skip").click(@play_next_video)
+    $("#cs-footer-skip").click(=>
+      new Pixel @user.id, "skip", @video.id
+      @play_next_video()
+      )
     $("#cs-footer-skip").addClass("footer-enabled")
     
     $("#cs-footer-like").text("Like")
@@ -261,8 +266,14 @@ class Surface
     player.ready(=>
       player.loadFile(video)        
       player.ended(@play_next_video)
+      
+      player.one("play", =>
+        new Pixel @user.id, "play", @video.id
+        )
+        
       if autoplay
         player.play()
+
       if resume
         player.one("loadedmetadata",=>
           player.setCurrentTime(@current_time)
@@ -277,13 +288,20 @@ class Surface
     @$video_title.html(@video.title())
     @player.pause()
     @player.loadFile(@video)
+    @player.one("play", =>
+      new Pixel @user.id, "play", @video.id
+      )
+    # @player.one("play", )
     @player.play()
+    $("#cs-footer-like").text("Like")
+    $("#cs-footer-like").click(@like_video)
+    $("#cs-footer-like").addClass("footer-enabled")
       
   like_video:=>
     $("#cs-footer-like").unbind("click")
+    $("#cs-footer-like").text("Liked!")
     $("#cs-footer-like").removeClass("footer-enabled")
-    $("#cs-footer-like").removeClass("footer-enabled")
-    
+    new Pixel @user.id, "like", @video.id
   
   minimise:() =>      
     @player.dispose()
@@ -336,11 +354,8 @@ class Surface
     })    
 
 class VideoFile
-  constructor:(@video_id,@file_src,@video_title,@thumb_href)->
+  constructor:(@id,@file_src,@video_title,@thumb_href)->
     @playback_position = 0
-
-  id:=>
-    return @video_id
 
   src:=>
     return @file_src
@@ -369,27 +384,27 @@ class User
 
     user_id= @cookie_handler.getCookie("gmcs-surface-current-user-id")
     if user_id is null
-      requestURI = window.gmcs.host + "/create-user/" + window.gmcs.site_id
+      requestURI = window.gmcs.host + "/create-user/" + window.gmcs.site_id + "/"
       $.getJSON(requestURI, (data)=>
-        @user_id = data.id.toString()
-        console.log "User: Model: New Surface User "+@user_id    
-        @cookie_handler.setCookie("gmcs-surface-current-user-id",@user_id,10000)
-        @playlist = new Playlist(data.playlist)
+        @id = data.id.toString()
+        console.log "User: Model: New Surface User "+@id    
+        @cookie_handler.setCookie("gmcs-surface-current-user-id",@id,10000)
+        @playlist = new Playlist(data.playlist.videos, @id)
         callback()
         )
         
     else
-      @user_id = user_id
-      requestURI = window.gmcs.host + "/users/" + @user_id
+      @id = user_id
+      requestURI = window.gmcs.host + "/generate/" + @id + "/"
       $.getJSON(requestURI, (data)=>
-        @playlist = new Playlist(data.playlist)
+        console.log data
+        @playlist = new Playlist(data.videos, @id)
         callback()
         )
-      console.log "Surface: User: Existing Surface User "+@user_id    
-    
+      console.log "Surface: User: Existing Surface User "+@id
 
 class Playlist
-  constructor:(playlist)->
+  constructor:(playlist, @id)->
     @videos = []
     for item in playlist
       vf = new VideoFile(item.id,item.src,item.title,item.thumb)
@@ -399,8 +414,57 @@ class Playlist
     @videos.push vf
     console.log "Surface: User: Playlist: Add: " + vf.title()
   
+  generate:=>
+    console.log "Generate called"
+    requestURI = window.gmcs.host + "/generate/" + @id + "/"
+    $.getJSON(requestURI, (data)=>
+      console.log data
+      @videos = []
+      for item in data.videos
+        vf = new VideoFile(item.id,item.src,item.title,item.thumb)
+        @add(vf)
+      )
+    console.log @videos 
+    
   current:=>
     @videos[0]
     
   next:=>
-    @videos.shift()
+    console.log "next"
+    v = @videos.shift()
+    console.log @videos
+    if @videos.length < 1
+      new Pixel @id, "play", v.id
+      @generate()
+    return v
+    
+class Pixel
+  constructor: (user_id,action,video_id) ->
+       
+    played = ->
+      requestURI = window.gmcs.host + "/played/" + user_id + "/" + video_id + "/"
+      $.getJSON(requestURI)
+    
+    liked = ->
+      requestURI = window.gmcs.host + "/liked/" + user_id + "/" + video_id + "/"
+      $.getJSON(requestURI)
+  
+    skipped = ->
+      requestURI = window.gmcs.host + "/skipped/" + user_id + "/" + video_id + "/"
+      $.getJSON(requestURI)
+    
+    completed = ->
+      requestURI = window.gmcs.host + "/completed/" + user_id + "/" + video_id + "/"
+      $.getJSON(requestURI)
+
+    acts = {
+      "play":played,
+      "like":liked,
+      "skip":skipped,
+      "complete":completed
+    }
+    
+    try
+      acts[action]()
+    catch
+      return null
