@@ -127,7 +127,7 @@ def skipped(request,user_id,video_id):
         user.save()
     except:
         pass
-    # for tag in video.tags.all()
+    # for tag in video.tags.all():
     #     user.tags.remove(tag)
     return HttpResponse("200 OK")
     
