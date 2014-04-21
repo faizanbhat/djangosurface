@@ -18,9 +18,10 @@ class CSUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CSUser
         depth = 2
-        fields = ('id','playlist','last_played')
+        fields = ('id','playlist','last_played','skips','plays','likes')
         
 class CSUserPlaylistSerializer(serializers.ModelSerializer):
     class Meta:
         model = CSUserPlaylist
+        depth = 1
         fields = ('id','videos')

@@ -12,14 +12,14 @@ class Site(models.Model):
 
 class Video(models.Model):
     src = models.CharField(max_length=100,unique=True)
-    title = models.CharField(max_length=140)
+    title = models.CharField(max_length=140, db_index=True)
     description = models.CharField(max_length=200)
     thumb_src = models.CharField(max_length=100)
     site = models.ForeignKey(Site,blank=True)
     tags = TaggableManager()
     
     def __str__(self):
-        return self.title
+        return str(self.id)
     
 class Sitemap(models.Model):
      url = models.URLField(max_length=200,unique=True)

@@ -44,7 +44,7 @@ def generate_playlist(request,user_id):
     
     try: 
         p = CSUserPlaylist.objects.get(id=u.playlist.id)
-        p.delete()
+        # p.delete()
     except:
         pass
     
@@ -53,14 +53,9 @@ def generate_playlist(request,user_id):
     u.playlist = pl
     u.save()
     new_videos = Video.objects.all()
-    new_videos = new_videos.filter(~Q(completed_by=u))
+    new_videos = new_videos.filter(~Q(played_by=u))
     new_videos = new_videos.filter(~Q(skipped_by=u))
     count = 0
-
-    if u.last_played:
-        PlaylistVideo.objects.create(playlist=pl,video=u.last_played,similarity=1.1)
-        count = 1
-        new_videos = new_videos.filter(~Q(id=u.last_played.id))
     
     rm = RecommenderManager()
     recs = rm.get_content_based_recs(u,new_videos)
@@ -100,21 +95,38 @@ def played(request,user_id,video_id):
 def liked(request,user_id,video_id):
     user = get_object_or_404(CSUser, pk=int(user_id))
     video = get_object_or_404(Video, pk=int(video_id))
-    user.likes.add(video)
+    try:
+        user.likes.add(video)
+        user.save()
+    except:
+        pass
+        
     for tag in video.tags.all():
         user.tags.add(tag)
     user.save()
     
     rm = RecommenderManager()
-    recs = rm.get_content_based_recs(user,Video.objects.all())
+    recs = rm.get_content_based_recs_for_video(video,Video.objects.filter(~Q(id=video.id)))
     
-    return HttpResponse(recs)
+    if recs != 0:
+        pl = CSUserPlaylist()
+        pl.save()
+    
+        for r in recs:
+            PlaylistVideo.objects.create(video=r[1],playlist=pl,similarity=r[0])
+        
+        return HttpResponseRedirect("/playlists/"+str(pl.id))
+
+    return HttpResponse("200 OK. No matches found.")
     
 def skipped(request,user_id,video_id):
     user = get_object_or_404(CSUser, pk=int(user_id))
     video = get_object_or_404(Video, pk=int(video_id))
-    user.skips.add(video)
-    user.save()
+    try:
+        user.skips.add(video)
+        user.save()
+    except:
+        pass
     # for tag in video.tags.all()
     #     user.tags.remove(tag)
     return HttpResponse("200 OK")
@@ -122,6 +134,9 @@ def skipped(request,user_id,video_id):
 def completed(request,user_id,video_id):
     user = get_object_or_404(CSUser, pk=int(user_id))
     video = get_object_or_404(Video, pk=int(video_id))
-    user.completes.add(video)
-    user.save()
+    try:
+        user.completes.add(video)
+        user.save()
+    except:
+        pass
     return HttpResponse("200 OK")
