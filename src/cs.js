@@ -332,7 +332,6 @@
       this.dom = new DomManager();
       this.dom.getStyle("src/style.css");
       this.dom.getStyle("vjs/video-js.css");
-      this.set_blur();
     }
 
     Surface.prototype.load_VJS = function() {
@@ -341,6 +340,7 @@
 
     Surface.prototype.load_UI = function() {
       var html, s;
+      this.set_blur();
       s = document.createElement("div");
       s.id = "cs-wrapper";
       html = document.getElementsByTagName("html")[0];
@@ -389,7 +389,7 @@
       $("#cs-footer-like").addClass("footer-enabled");
       $("#cs-related-container").html("Since you liked this, you might also like:");
       $("#cs-related-container").hide();
-      this.player = this.create_player(this.video, false, true);
+      this.player = this.create_player(this.video, false, false);
       if (this.start_minimised > 0) {
         this.minimise();
       }
@@ -429,7 +429,6 @@
       $("#cs-footer-like").text("Like");
       $("#cs-footer-like").click(this.like_video);
       $("#cs-footer-like").addClass("footer-enabled");
-      $("#cs-related-container").html("");
       return $("#cs-related-container").hide();
     };
 
@@ -445,7 +444,6 @@
         $("#cs-footer-like").text("Like");
         $("#cs-footer-like").click(this.like_video);
         $("#cs-footer-like").addClass("footer-enabled");
-        $("#cs-related-container").html("");
         return $("#cs-related-container").hide();
       }
     };
@@ -475,37 +473,38 @@
         };
       })(this);
       if (length > 0) {
+        $("#cs-related-container").html("Since you liked this, you might also like:");
         guid = window.gmcs.utils.guid();
         div1 = create_related_div(guid);
-        div1.innerHTML = video1.title;
+        div1.innerHTML = " > " + video1.title;
         document.getElementById(guid).onclick = (function(_this) {
           return function() {
             _this.play(new VideoFile(video1.id, video1.src, video1.title, video1.thumb_src));
-            div1.innerHTML = '';
+            div1.parentElement.innerHTML = "";
           };
         })(this);
       }
       if (length > 1) {
         guid = window.gmcs.utils.guid();
         div2 = create_related_div(guid);
-        div2.innerHTML = video2.title;
+        div2.innerHTML = " > " + video2.title;
         document.getElementById(guid).onclick = (function(_this) {
           return function() {
             console.log(div2.innerHTML);
             _this.play(new VideoFile(video2.id, video2.src, video2.title, video2.thumb_src));
-            div2.innerHTML = '';
+            div1.parentElement.innerHTML = "";
           };
         })(this);
       }
       if (length > 2) {
         guid = window.gmcs.utils.guid();
         div3 = create_related_div(guid);
-        div3.innerHTML = video3.title;
+        div3.innerHTML = " > " + video3.title;
         document.getElementById(guid).onclick = (function(_this) {
           return function() {
             console.log(div3.innerHTML);
             _this.play(new VideoFile(video2.id, video2.src, video2.title, video2.thumb_src));
-            div3.innerHTML = '';
+            div1.parentElement.innerHTML = "";
           };
         })(this);
       }

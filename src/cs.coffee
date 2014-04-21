@@ -202,12 +202,12 @@ class Surface
     @dom = new DomManager()
     @dom.getStyle("src/style.css")
     @dom.getStyle("vjs/video-js.css")
-    @set_blur()
 
   load_VJS:=>
     new ScriptLoader "videoJs", @callbacks['videojs_loaded']
     
   load_UI:=>
+    @set_blur()
     # Append Surface wrapper OUTSIDE body
     s = document.createElement("div")
     s.id = "cs-wrapper"
@@ -268,7 +268,7 @@ class Surface
     $("#cs-related-container").html("Since you liked this, you might also like:")
     $("#cs-related-container").hide()
     
-    @player = @create_player(@video,false,true)
+    @player = @create_player(@video,false,false)
         
     if @start_minimised > 0
         @minimise()
@@ -306,7 +306,6 @@ class Surface
      $("#cs-footer-like").text("Like")
      $("#cs-footer-like").click(@like_video)
      $("#cs-footer-like").addClass("footer-enabled")
-     $("#cs-related-container").html("")
      $("#cs-related-container").hide()
      
      
@@ -321,7 +320,6 @@ class Surface
       $("#cs-footer-like").text("Like")
       $("#cs-footer-like").click(@like_video)
       $("#cs-footer-like").addClass("footer-enabled")
-      $("#cs-related-container").html("")
       $("#cs-related-container").hide()
       
       
@@ -346,32 +344,33 @@ class Surface
       parent.appendChild(div)
       
     if length > 0
+      $("#cs-related-container").html("Since you liked this, you might also like:")
       guid = window.gmcs.utils.guid()
       div1 = create_related_div(guid)
-      div1.innerHTML = video1.title
+      div1.innerHTML = " > " + video1.title
       document.getElementById(guid).onclick = =>
         @play(new VideoFile(video1.id,video1.src,video1.title,video1.thumb_src))
-        div1.innerHTML = ''
+        div1.parentElement.innerHTML = ""
         return
     
     if length > 1
       guid = window.gmcs.utils.guid()
       div2 = create_related_div(guid)
-      div2.innerHTML = video2.title
+      div2.innerHTML = " > " + video2.title
       document.getElementById(guid).onclick = =>
         console.log div2.innerHTML
         @play(new VideoFile(video2.id,video2.src,video2.title,video2.thumb_src))
-        div2.innerHTML = ''
+        div1.parentElement.innerHTML = ""
         return
     
     if length > 2
       guid = window.gmcs.utils.guid()
       div3 = create_related_div(guid)
-      div3.innerHTML = video3.title
+      div3.innerHTML = " > " + video3.title
       document.getElementById(guid).onclick = =>
         console.log div3.innerHTML
         @play(new VideoFile(video2.id,video2.src,video2.title,video2.thumb_src))
-        div3.innerHTML = ''
+        div1.parentElement.innerHTML = ""
         return
       
     $("#cs-related-container").show()

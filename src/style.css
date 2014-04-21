@@ -236,7 +236,7 @@
 .related-link{
   padding:5px 0px 5px 5px;
   margin:5px 0 5px 0;
-  background:#666;
+  background:transparent;
   color:#AAA;
   cursor:pointer;
 }
