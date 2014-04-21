@@ -48,7 +48,7 @@
 #cs-header {
   position:relative;
   top:0px;
-  height:70px;
+  height:40px;
   width:50%;
   background:transparent;
   z-index:10000000000000001 !important;
@@ -226,12 +226,9 @@
   font-size:0.8em;
   letter-spacing:1px;
   color:#AAA;  
-  border-top:1px solid #777;
 }
 
-.related-active {
 
-}
 
 .related-link{
   padding:5px 0px 5px 5px;
