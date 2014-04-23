@@ -594,7 +594,7 @@
       this.cookie_handler = window.gmcs.utils.cookieHandler;
       user_id = this.cookie_handler.getCookie("gmcs-surface-current-user-id");
       if (user_id === null) {
-        requestURI = window.gmcs.host + "/create-user/" + window.gmcs.site_id + "/";
+        requestURI = window.gmcs.host + "/site/" + window.gmcs.site_id + "/user/create/";
         $.getJSON(requestURI, (function(_this) {
           return function(data) {
             _this.id = data.id.toString();
@@ -676,9 +676,7 @@
       if (this.videos.length > 0) {
         console.log("next");
         v = this.videos.shift();
-        if (this.player) {
-          new Pixel(this.id, "play", v.id);
-        }
+        new Pixel(this.id, "play", v.id);
         console.log(this.videos);
         if (this.videos.length === 0) {
           $("#cs-footer-skip").text("Loading more videos");

@@ -429,7 +429,7 @@ class User
 
     user_id= @cookie_handler.getCookie("gmcs-surface-current-user-id")
     if user_id is null
-      requestURI = window.gmcs.host + "/create-user/" + window.gmcs.site_id + "/"
+      requestURI = window.gmcs.host + "/site/" + window.gmcs.site_id + "/user/create/"
       $.getJSON(requestURI, (data)=>
         @id = data.id.toString()
         console.log "User: Model: New Surface User "+@id    
@@ -481,8 +481,7 @@ class Playlist
     if @videos.length > 0
       console.log "next"
       v = @videos.shift()
-      if @player
-        new Pixel @id, "play", v.id
+      new Pixel @id, "play", v.id
       console.log @videos
     
       if @videos.length == 0
