@@ -6,7 +6,7 @@ $ = jQuery
 $ ->
   window.gmcs = {}
   window.gmcs.site_id = "1"
-  window.gmcs.host = "http://localhost:8080"    
+  window.gmcs.host = "http://zippy.local:8080"    
   window.gmcs.utils = {}
   window.gmcs.utils.cookieHandler = new CookieHandler()
   window.gmcs.surface = new Surface("Nat Geo TV")
@@ -281,11 +281,7 @@ class Surface
     player.ready(=>
       player.loadFile(video)        
       player.ended(@play_next_video)
-      
-      player.one("play", =>
-        new Pixel @user.id, "play", @video.id
-        )
-        
+              
       if autoplay
         player.play()
 
@@ -330,50 +326,26 @@ class Surface
     new Pixel(@user.id, "like", @video.id, @set_related_links)
 
   set_related_links:(videos)=>
-    length = videos.length
     parent = document.getElementById("cs-related-container")
-    console.log videos
-    video1 = videos[0]
-    video2 = videos[1]
-    video3 = videos[2]
     
-    create_related_div = (guid)=>
-      div = document.createElement("div")
-      div.className = "related-link"
-      div.id = guid
-      parent.appendChild(div)
-      
-    if length > 0
+    if videos.length > 0
+    
       $("#cs-related-container").html("Since you liked this, you might also like:")
-      guid = window.gmcs.utils.guid()
-      div1 = create_related_div(guid)
-      div1.innerHTML = " > " + video1.title
-      document.getElementById(guid).onclick = =>
-        @play(new VideoFile(video1.id,video1.src,video1.title,video1.thumb_src))
-        div1.parentElement.innerHTML = ""
-        return
     
-    if length > 1
-      guid = window.gmcs.utils.guid()
-      div2 = create_related_div(guid)
-      div2.innerHTML = " > " + video2.title
-      document.getElementById(guid).onclick = =>
-        console.log div2.innerHTML
-        @play(new VideoFile(video2.id,video2.src,video2.title,video2.thumb_src))
-        div1.parentElement.innerHTML = ""
-        return
-    
-    if length > 2
-      guid = window.gmcs.utils.guid()
-      div3 = create_related_div(guid)
-      div3.innerHTML = " > " + video3.title
-      document.getElementById(guid).onclick = =>
-        console.log div3.innerHTML
-        @play(new VideoFile(video3.id,video3.src,video3.title,video3.thumb_src))
-        div1.parentElement.innerHTML = ""
-        return
+      for video in videos
+        guid = window.gmcs.utils.guid()
+        div = document.createElement("div")
+        div.className = "related-link"
+        div.id = guid
+        parent.appendChild(div)
       
-    $("#cs-related-container").show()
+        div.innerHTML = " > " + video.fields.title
+        do (video) =>
+          div.onclick = =>
+            @play(new VideoFile(video.pk,video.fields.src,video.fields.title,video.fields.thumb_src))
+            div1.parentElement.innerHTML = ""
+          return
+      $("#cs-related-container").show()
     return
     
   minimise:() =>      
@@ -468,7 +440,7 @@ class User
         
     else
       @id = user_id
-      requestURI = window.gmcs.host + "/generate/" + @id + "/"
+      requestURI = window.gmcs.host + "/users/" + @id + "/playlist/"
       $.getJSON(requestURI, (data)=>
         console.log data
         @playlist = new Playlist(data.videos, @id)
@@ -487,9 +459,9 @@ class Playlist
     @videos.push vf
     console.log "Surface: User: Playlist: Add: " + vf.title()
   
-  generate:=>
-    console.log "Generate called"
-    requestURI = window.gmcs.host + "/generate/" + @id + "/"
+  get_playlist:=>
+    console.log "Get playlist called"
+    requestURI = window.gmcs.host + "/users/" + @id + "/playlist/"
     $.getJSON(requestURI, (data)=>
       console.log data
       @videos = []
@@ -509,13 +481,14 @@ class Playlist
     if @videos.length > 0
       console.log "next"
       v = @videos.shift()
-      new Pixel @id, "play", v.id
+      if @player
+        new Pixel @id, "play", v.id
       console.log @videos
     
       if @videos.length == 0
         $("#cs-footer-skip").text("Loading more videos")
         $("#cs-footer-skip").removeClass("footer-enabled")
-        @generate()
+        @get_playlist()
       return v
     else
       return null
@@ -524,22 +497,22 @@ class Playlist
 class Pixel
   constructor: (user_id,action,video_id,callback=null) ->
     played = ->
-      requestURI = window.gmcs.host + "/played/" + user_id + "/" + video_id + "/"
+      requestURI = window.gmcs.host + "/users/" + user_id + "/played/" + video_id + "/"
       $.getJSON(requestURI)
     
     liked = ->
-      requestURI = window.gmcs.host + "/liked/" + user_id + "/" + video_id + "/"
+      requestURI = window.gmcs.host + "/users/" + user_id + "/liked/" + video_id + "/"
       $.getJSON(requestURI, (data)=>
         console.log data
-        callback(data.videos)
+        callback(data)
         )
   
     skipped = ->
-      requestURI = window.gmcs.host + "/skipped/" + user_id + "/" + video_id + "/"
+      requestURI = window.gmcs.host + "/users/" + user_id + "/skipped/" + video_id + "/"
       $.getJSON(requestURI)
     
     completed = ->
-      requestURI = window.gmcs.host + "/completed/" + user_id + "/" + video_id + "/"
+      requestURI = window.gmcs.host + "/users/" + user_id + "/completed/" + video_id + "/"
       $.getJSON(requestURI)
 
     acts = {
