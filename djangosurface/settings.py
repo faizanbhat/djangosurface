@@ -43,7 +43,12 @@ INSTALLED_APPS = (
     'csusers',
     'taggit',
     'recommender',
+    'south'
 )
+
+SOUTH_MIGRATION_MODULES = {
+    'taggit': 'taggit.south_migrations',
+}
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
