@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.core.context_processors import csrf
 from django.shortcuts import render
 from csusers.models import CSUser, PlaylistVideo, CSUserPlaylist
-from videos.models import Site, Video
+from videos.models import Site, Video, Similarity
 from django.shortcuts import get_object_or_404
 from recommender.managers import RecommenderManager
 import pdb
@@ -105,18 +105,18 @@ def liked(request,user_id,video_id):
         user.tags.add(tag)
     user.save()
     
-    rm = RecommenderManager()
-    recs = rm.get_content_based_recs_for_video(video,Video.objects.filter(~Q(id=video.id)))
+    similarities = Similarity.objects.filter(pk1=video.id) 
     
-    if recs != 0:
+    if similarities.count() > 0:
         pl = CSUserPlaylist()
         pl.save()
-    
-        for r in recs:
-            PlaylistVideo.objects.create(video=r[1],playlist=pl,similarity=r[0])
-        
+        for sim in similarities:
+            try:
+                similar_video = Video.objects.get(id=sim.pk2)
+                PlaylistVideo.objects.create(video=similar_video,playlist=pl,similarity=sim.similarity)
+            except:
+                pass
         return HttpResponseRedirect("/playlists/"+str(pl.id))
-
     return HttpResponse("200 OK. No matches found.")
     
 def skipped(request,user_id,video_id):
