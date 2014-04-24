@@ -6,10 +6,9 @@ $ = jQuery
 $ ->
   window.gmcs = {}
   window.gmcs.site_id = "1"
-  window.gmcs.host = "http://zippy.local:8080"    
+  window.gmcs.host = "http://localhost:8080"    
   window.gmcs.utils = {}
   window.gmcs.utils.cookieHandler = new CookieHandler()
-  window.gmcs.surface = new Surface("Nat Geo TV")
   window.gmcs.utils.guid = ->
     chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
     today = new Date()
@@ -17,7 +16,8 @@ $ ->
     result += chars.substr Math.floor(Math.random() * chars.length), 1
     result += chars.substr Math.floor(Math.random() * chars.length), 1
     return result
-
+  window.gmcs.surface = new Surface("Nat Geo TV")
+  
 
 class CookieHandler
   setCookie:(name, value, days) ->
@@ -204,6 +204,7 @@ class Surface
     @dom.getStyle("vjs/video-js.css")
 
   load_VJS:=>
+    console.log "Reached load VJS"
     new ScriptLoader "videoJs", @callbacks['videojs_loaded']
     
   load_UI:=>
@@ -244,7 +245,7 @@ class Surface
     
     $("#cs-player-container").addClass("largeVideoWrapper")      
     
-    @video = @user.playlist.next()    
+    @video = @user.playlist.current()    
 
     @$video_title = $("#cs-video-title")
     @$video_title.html(@video.title())
@@ -426,42 +427,42 @@ class VideoFile
 class User
   constructor:(callback)->
     @cookie_handler =  window.gmcs.utils.cookieHandler
-
-    user_id= @cookie_handler.getCookie("gmcs-surface-current-user-id")
-    if user_id is null
-      requestURI = window.gmcs.host + "/site/" + window.gmcs.site_id + "/user/create/"
-      $.getJSON(requestURI, (data)=>
-        @id = data.id.toString()
-        console.log "User: Model: New Surface User "+@id    
-        @cookie_handler.setCookie("gmcs-surface-current-user-id",@id,10000)
-        @playlist = new Playlist(data.playlist.videos, @id)
-        callback()
-        )
-        
-    else
-      @id = user_id
-      requestURI = window.gmcs.host + "/users/" + @id + "/playlist/"
-      $.getJSON(requestURI, (data)=>
-        console.log data
-        @playlist = new Playlist(data.videos, @id)
-        callback()
-        )
-      console.log "Surface: User: Existing Surface User "+@id
+    guid = @cookie_handler.getCookie("gmcs-surface-user-guid") ? window.gmcs.utils.guid()
+    requestURI = window.gmcs.host + "/users/get?guid=" + guid + "&site_id=" + window.gmcs.site_id
+    $.getJSON(requestURI, (data)=>
+      console.log data
+      @id = data.id.toString()
+      @cookie_handler.setCookie("gmcs-surface-user-guid",guid,10000)
+      @playlist = new Playlist(@id,callback)
+      console.log "Surface: User: User ID "+ @id
+      )
 
 class Playlist
-  constructor:(playlist, @id)->
+  constructor:(@id,callback)->
     @videos = []
-    for item in playlist
-      vf = new VideoFile(item.id,item.src,item.title,item.thumb_src)
-      @add(vf)
+    @load_playlist(callback)
   
   add:(vf)=>
     @videos.push vf
     console.log "Surface: User: Playlist: Add: " + vf.title()
   
-  get_playlist:=>
-    console.log "Get playlist called"
+  load_playlist:(callback,last_played)=>
+    console.log "Load playlist called"
     requestURI = window.gmcs.host + "/users/" + @id + "/playlist/"
+    $.getJSON(requestURI, (data)=>
+      console.log data
+      @videos = []
+      for item in data.videos
+        vf = new VideoFile(item.id,item.src,item.title,item.thumb_src)
+        @add(vf)
+        $("#cs-footer-skip").text("Skip")
+        $("#cs-footer-skip").addClass("footer-enabled")        
+      callback() if callback
+      )
+    
+  request_new_playlist:()=>
+    console.log "Request new playlist called"
+    requestURI = window.gmcs.host + "/users/" + @id + "/playlist/refresh/"
     $.getJSON(requestURI, (data)=>
       console.log data
       @videos = []
@@ -471,7 +472,6 @@ class Playlist
         $("#cs-footer-skip").text("Skip")
         $("#cs-footer-skip").addClass("footer-enabled")
       )
-
     console.log @videos 
     
   current:=>
@@ -483,15 +483,14 @@ class Playlist
       v = @videos.shift()
       new Pixel @id, "play", v.id
       console.log @videos
-    
       if @videos.length == 0
         $("#cs-footer-skip").text("Loading more videos")
         $("#cs-footer-skip").removeClass("footer-enabled")
-        @get_playlist()
+        @request_new_playlist()
       return v
     else
-      return null
       
+      return null
     
 class Pixel
   constructor: (user_id,action,video_id,callback=null) ->

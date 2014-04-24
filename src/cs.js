@@ -9,11 +9,10 @@
   $(function() {
     window.gmcs = {};
     window.gmcs.site_id = "1";
-    window.gmcs.host = "http://zippy.local:8080";
+    window.gmcs.host = "http://localhost:8080";
     window.gmcs.utils = {};
     window.gmcs.utils.cookieHandler = new CookieHandler();
-    window.gmcs.surface = new Surface("Nat Geo TV");
-    return window.gmcs.utils.guid = function() {
+    window.gmcs.utils.guid = function() {
       var chars, result, today;
       chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
       today = new Date();
@@ -22,6 +21,7 @@
       result += chars.substr(Math.floor(Math.random() * chars.length), 1);
       return result;
     };
+    return window.gmcs.surface = new Surface("Nat Geo TV");
   });
 
   CookieHandler = (function() {
@@ -335,6 +335,7 @@
     }
 
     Surface.prototype.load_VJS = function() {
+      console.log("Reached load VJS");
       return new ScriptLoader("videoJs", this.callbacks['videojs_loaded']);
     };
 
@@ -370,7 +371,7 @@
       this.$slugWrapper.click(this.maximise);
       this.hide_slug();
       $("#cs-player-container").addClass("largeVideoWrapper");
-      this.video = this.user.playlist.next();
+      this.video = this.user.playlist.current();
       this.$video_title = $("#cs-video-title");
       this.$video_title.html(this.video.title());
       $("#cs-label").html(this.site_name);
@@ -590,32 +591,19 @@
 
   User = (function() {
     function User(callback) {
-      var requestURI, user_id;
+      var guid, requestURI, _ref;
       this.cookie_handler = window.gmcs.utils.cookieHandler;
-      user_id = this.cookie_handler.getCookie("gmcs-surface-current-user-id");
-      if (user_id === null) {
-        requestURI = window.gmcs.host + "/site/" + window.gmcs.site_id + "/user/create/";
-        $.getJSON(requestURI, (function(_this) {
-          return function(data) {
-            _this.id = data.id.toString();
-            console.log("User: Model: New Surface User " + _this.id);
-            _this.cookie_handler.setCookie("gmcs-surface-current-user-id", _this.id, 10000);
-            _this.playlist = new Playlist(data.playlist.videos, _this.id);
-            return callback();
-          };
-        })(this));
-      } else {
-        this.id = user_id;
-        requestURI = window.gmcs.host + "/users/" + this.id + "/playlist/";
-        $.getJSON(requestURI, (function(_this) {
-          return function(data) {
-            console.log(data);
-            _this.playlist = new Playlist(data.videos, _this.id);
-            return callback();
-          };
-        })(this));
-        console.log("Surface: User: Existing Surface User " + this.id);
-      }
+      guid = (_ref = this.cookie_handler.getCookie("gmcs-surface-user-guid")) != null ? _ref : window.gmcs.utils.guid();
+      requestURI = window.gmcs.host + "/users/get?guid=" + guid + "&site_id=" + window.gmcs.site_id;
+      $.getJSON(requestURI, (function(_this) {
+        return function(data) {
+          console.log(data);
+          _this.id = data.id.toString();
+          _this.cookie_handler.setCookie("gmcs-surface-user-guid", guid, 10000);
+          _this.playlist = new Playlist(_this.id, callback);
+          return console.log("Surface: User: User ID " + _this.id);
+        };
+      })(this));
     }
 
     return User;
@@ -623,19 +611,15 @@
   })();
 
   Playlist = (function() {
-    function Playlist(playlist, id) {
-      var item, vf, _i, _len;
+    function Playlist(id, callback) {
       this.id = id;
       this.next = __bind(this.next, this);
       this.current = __bind(this.current, this);
-      this.get_playlist = __bind(this.get_playlist, this);
+      this.request_new_playlist = __bind(this.request_new_playlist, this);
+      this.load_playlist = __bind(this.load_playlist, this);
       this.add = __bind(this.add, this);
       this.videos = [];
-      for (_i = 0, _len = playlist.length; _i < _len; _i++) {
-        item = playlist[_i];
-        vf = new VideoFile(item.id, item.src, item.title, item.thumb_src);
-        this.add(vf);
-      }
+      this.load_playlist(callback);
     }
 
     Playlist.prototype.add = function(vf) {
@@ -643,10 +627,34 @@
       return console.log("Surface: User: Playlist: Add: " + vf.title());
     };
 
-    Playlist.prototype.get_playlist = function() {
+    Playlist.prototype.load_playlist = function(callback, last_played) {
       var requestURI;
-      console.log("Get playlist called");
+      console.log("Load playlist called");
       requestURI = window.gmcs.host + "/users/" + this.id + "/playlist/";
+      return $.getJSON(requestURI, (function(_this) {
+        return function(data) {
+          var item, vf, _i, _len, _ref;
+          console.log(data);
+          _this.videos = [];
+          _ref = data.videos;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            item = _ref[_i];
+            vf = new VideoFile(item.id, item.src, item.title, item.thumb_src);
+            _this.add(vf);
+            $("#cs-footer-skip").text("Skip");
+            $("#cs-footer-skip").addClass("footer-enabled");
+          }
+          if (callback) {
+            return callback();
+          }
+        };
+      })(this));
+    };
+
+    Playlist.prototype.request_new_playlist = function() {
+      var requestURI;
+      console.log("Request new playlist called");
+      requestURI = window.gmcs.host + "/users/" + this.id + "/playlist/refresh/";
       $.getJSON(requestURI, (function(_this) {
         return function(data) {
           var item, vf, _i, _len, _ref, _results;
@@ -681,7 +689,7 @@
         if (this.videos.length === 0) {
           $("#cs-footer-skip").text("Loading more videos");
           $("#cs-footer-skip").removeClass("footer-enabled");
-          this.get_playlist();
+          this.request_new_playlist();
         }
         return v;
       } else {
