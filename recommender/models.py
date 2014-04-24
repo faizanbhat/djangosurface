@@ -4,12 +4,10 @@ from django.contrib.auth.models import User
 
 from recommender.managers import RecommenderManager
 
-# Main recommender class. Add here whatever you need to be parametrizable: min values, weigths...
 class Recommender(models.Model):
 
     objects = RecommenderManager()
 
-#Test class only for testing. Delete for real projects.
 class TestItem(models.Model):
 
     name = models.CharField(max_length=200)

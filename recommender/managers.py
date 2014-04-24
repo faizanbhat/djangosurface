@@ -4,15 +4,12 @@ from csusers.models import CSUser as User
 
 import utils
 
-# from voting.models import Vote
-
 class RecommenderManager(models.Manager):
 
     MIN_RECOMMENDATION_VALUE = 0
     MIN_SIMILARITY_VALUE = 0.25
     MIN_CONTENT_BASED_RECOMMENDATION_VALUE = 0.2
        
-# Content Based Recommendations
     def get_content_based_recs(self, user, tagged_items, min_value=MIN_CONTENT_BASED_RECOMMENDATION_VALUE):
         ''' For a given user tags and a dicc of item tags, returns the distances between the user and the items
             >>> eng=RecommenderManager()

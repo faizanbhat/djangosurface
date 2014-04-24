@@ -3,10 +3,7 @@ from videos.models import Video, Similarity
 from recommender.managers import RecommenderManager
 
 class Command(BaseCommand):
-    
-    
     def handle(self, *args, **options):
-        
         rm = RecommenderManager()
         videos = Video.objects.all()
         v_list = list(videos)

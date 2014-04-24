@@ -1,9 +1,6 @@
 from django.db import models
 from videos.models import Video, Site
 from taggit.managers import TaggableManager
-
-# Create your models here.
-
            
 class CSUserPlaylist(models.Model):
     videos = models.ManyToManyField(Video, related_name="playlists", through='PlaylistVideo')

@@ -15,17 +15,11 @@ from rest_framework import viewsets
 from djangosurface.serializers import VideoSerializer, SiteSerializer
 
 class VideoViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows users to be viewed or edited.
-    """
     queryset = Video.objects.all()
     serializer_class = VideoSerializer
 
 
 class SiteViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows groups to be viewed or edited.
-    """
     queryset = Site.objects.all()
     serializer_class = SiteSerializer
 
@@ -35,10 +29,7 @@ class SitemapForm(ModelForm):
         model = Sitemap
         fields = ['site','url']
 
-# Create your views here.
-
-def add(request):
-    
+def add(request):    
     if request.method == 'POST':
         form = SitemapForm(request.POST)
         if form.is_valid():

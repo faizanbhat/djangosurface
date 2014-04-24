@@ -10,9 +10,6 @@ from recommender.managers import RecommenderManager
 import pdb
 from django.db.models import Q
 
-
-# Create your views here.
-
 from rest_framework import viewsets
 from djangosurface.serializers import CSUserSerializer, CSUserPlaylistSerializer
 
@@ -108,8 +105,6 @@ def skipped(request,user_id,video_id):
         user.save()
     except:
         pass
-    # for tag in video.tags.all():
-    #     user.tags.remove(tag)
     return HttpResponse("200 OK")
     
 def completed(request,user_id,video_id):
