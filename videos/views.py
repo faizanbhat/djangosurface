@@ -3,13 +3,14 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.context_processors import csrf
 from django.forms import ModelForm
-from videos.models import Sitemap, Video, Site
+from videos.models import Sitemap, Video, Site, Similarity
 import urllib2
 import xml.etree.ElementTree as ET
 from nltk.corpus import stopwords
 from nltk import word_tokenize
+from django.core import serializers
 stopwords = set(stopwords.words('english'))
-
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from djangosurface.serializers import VideoSerializer, SiteSerializer
 
@@ -80,4 +81,20 @@ def add(request):
     return render_to_response('../templates/add.html', c)
 
 
-    
+def related(request,video_id):
+    video = get_object_or_404(Video, pk=int(video_id))
+
+    similarities = Similarity.objects.filter(pk1=video.id) 
+        
+    if similarities.count() > 0:
+        results = []
+        for sim in similarities:
+            try:
+                similar_video = Video.objects.get(id=sim.pk2)
+                results.append(similar_video)
+            except:
+                pass
+        data = serializers.serialize("json", results)
+        return HttpResponse(data)
+
+    return HttpResponse("200 OK. No matches found.")

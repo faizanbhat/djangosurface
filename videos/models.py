@@ -16,7 +16,6 @@ class Video(models.Model):
     description = models.CharField(max_length=200)
     thumb_src = models.CharField(max_length=100)
     site = models.ForeignKey(Site,blank=True)
-    related = models.ManyToManyField("self",blank=True,null=True)
     tags = TaggableManager()
     
     def __str__(self):

@@ -36,27 +36,20 @@ def create_user(request,site_id):
     u.playlist = pl
     u.save()
     
-    return HttpResponseRedirect("/users/"+str(u.id))    
+    return HttpResponseRedirect("/users/"+str(u.id)+"/")    
 
-def generate_playlist(request,user_id):
+def playlist(request,user_id):
     # pdb.set_trace()
     u = get_object_or_404(CSUser, pk=user_id)
-    
-    try: 
-        p = CSUserPlaylist.objects.get(id=u.playlist.id)
-        # p.delete()
-    except:
-        pass
-    
-    pl = CSUserPlaylist()
+    pl = get_object_or_404(CSUserPlaylist,id=u.playlist.id)
+    pl.videos.clear()
     pl.save()
-    u.playlist = pl
-    u.save()
+    
     new_videos = Video.objects.all()
     new_videos = new_videos.filter(~Q(played_by=u))
     new_videos = new_videos.filter(~Q(skipped_by=u))
-    count = 0
     
+    count = 0
     rm = RecommenderManager()
     recs = rm.get_content_based_recs(u,new_videos)
 
@@ -80,9 +73,8 @@ def generate_playlist(request,user_id):
                 count = count + 1
         else:
             break
-        
-    return HttpResponseRedirect("/playlists/"+str(pl.id)) 
-        
+            
+    return HttpResponseRedirect("/playlists/"+str(pl.id)+"/") 
     
 def played(request,user_id,video_id):
     user = get_object_or_404(CSUser, pk=int(user_id))
@@ -105,19 +97,8 @@ def liked(request,user_id,video_id):
         user.tags.add(tag)
     user.save()
     
-    similarities = Similarity.objects.filter(pk1=video.id) 
+    return HttpResponseRedirect("/videos/"+str(video.id)+"/related/") 
     
-    if similarities.count() > 0:
-        pl = CSUserPlaylist()
-        pl.save()
-        for sim in similarities:
-            try:
-                similar_video = Video.objects.get(id=sim.pk2)
-                PlaylistVideo.objects.create(video=similar_video,playlist=pl,similarity=sim.similarity)
-            except:
-                pass
-        return HttpResponseRedirect("/playlists/"+str(pl.id))
-    return HttpResponse("200 OK. No matches found.")
     
 def skipped(request,user_id,video_id):
     user = get_object_or_404(CSUser, pk=int(user_id))
@@ -140,3 +121,4 @@ def completed(request,user_id,video_id):
     except:
         pass
     return HttpResponse("200 OK")
+
