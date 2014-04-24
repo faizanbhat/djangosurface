@@ -123,15 +123,16 @@ def liked(request,user_id,video_id):
     
     return HttpResponseRedirect("/videos/"+str(video.id)+"/related/") 
     
-    
+
 def skipped(request,user_id,video_id):
     user = get_object_or_404(CSUser, pk=int(user_id))
     video = get_object_or_404(Video, pk=int(video_id))
     try:
         user.skips.add(video)
         user.save()
+        PlaylistVideo.objects.get(video=video,playlist=user.playlist).delete()
     except:
-        pass
+        return HttpResponse("Failed to save user information.")
     return HttpResponse("200 OK")
     
 def completed(request,user_id,video_id):
@@ -140,7 +141,9 @@ def completed(request,user_id,video_id):
     try:
         user.completes.add(video)
         user.save()
+        PlaylistVideo.objects.get(video=video,playlist=user.playlist).delete()
     except:
-        pass
+        return HttpResponse("Failed to save user information.")
+
     return HttpResponse("200 OK")
 
