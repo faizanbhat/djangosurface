@@ -11,13 +11,14 @@ class PlaylistVideo(models.Model):
     video = models.ForeignKey(Video)
 
 class CSUser(models.Model):
+    guid = models.CharField(max_length=30,unique=True,db_index=True)
     site = models.ForeignKey(Site)
-    last_played = models.ForeignKey(Video, blank=True,null=True, db_index=True)
-    likes = models.ManyToManyField(Video, related_name="liked_by", blank=True, null=True, db_index=True)
-    skips = models.ManyToManyField(Video, related_name="skipped_by", blank=True, null=True, db_index=True)
-    plays = models.ManyToManyField(Video, related_name="played_by", blank=True, null=True, db_index=True)
+    last_played = models.ForeignKey(Video, blank=True,null=True)
+    likes = models.ManyToManyField(Video, related_name="liked_by", blank=True, null=True)
+    skips = models.ManyToManyField(Video, related_name="skipped_by", blank=True, null=True)
+    plays = models.ManyToManyField(Video, related_name="played_by", blank=True, null=True)
     completes = models.ManyToManyField(Video, related_name="completed_by", blank=True, null=True)
-    playlist = models.ForeignKey(CSUserPlaylist, related_name="user", db_index=True)
+    playlist = models.ForeignKey(CSUserPlaylist, related_name="user", blank=True, null=True)
     tags = TaggableManager(blank=True)
     
     def __str__(self):

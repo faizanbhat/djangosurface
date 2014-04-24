@@ -13,7 +13,7 @@ class Video(models.Model):
     title = models.CharField(max_length=140, db_index=True)
     description = models.CharField(max_length=200)
     thumb_src = models.CharField(max_length=100)
-    site = models.ForeignKey(Site,blank=True)
+    site = models.ForeignKey(Site,blank=True,db_index=True)
     tags = TaggableManager()
     
     def __str__(self):

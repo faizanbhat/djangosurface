@@ -21,6 +21,27 @@ class CSUserPlaylistViewSet(viewsets.ModelViewSet):
     queryset = CSUserPlaylist.objects.all()
     serializer_class = CSUserPlaylistSerializer    
 
+def get_or_create_user(request):
+    try:
+        guid = request.GET['guid']
+        site_id = request.GET['site_id']
+        site = Site.objects.get(id=int(site_id))
+    except:
+        raise Http404
+    try:
+        u = CSUser.objects.get(guid=guid)
+        return HttpResponseRedirect("/users/"+str(u.id)+"/")    
+    except:
+        u = CSUser(guid=guid,site=site)
+        pl = CSUserPlaylist()
+        pl.save()
+        initial_videos = Video.objects.filter(site=site)[:5]
+        for v in initial_videos:
+            PlaylistVideo.objects.create(playlist=pl,video=v,similarity=0.0)
+        u.playlist = pl
+        u.save()
+        return HttpResponseRedirect("/users/"+str(u.id)+"/")
+        
 def create_user(request,site_id):
     # pdb.set_trace()
     site = get_object_or_404(Site, pk=int(site_id))        
@@ -35,14 +56,20 @@ def create_user(request,site_id):
     
     return HttpResponseRedirect("/users/"+str(u.id)+"/")    
 
+
 def playlist(request,user_id):
+    u = get_object_or_404(CSUser, pk=user_id)
+    pl = get_object_or_404(CSUserPlaylist,id=u.playlist.id)
+    return HttpResponseRedirect("/playlists/"+str(pl.id)+"/")
+
+def refresh_playlist(request,user_id):
     # pdb.set_trace()
     u = get_object_or_404(CSUser, pk=user_id)
     pl = get_object_or_404(CSUserPlaylist,id=u.playlist.id)
     pl.videos.clear()
     pl.save()
     
-    new_videos = Video.objects.all()
+    new_videos = Video.objects.filter(site=u.site)
     new_videos = new_videos.filter(~Q(played_by=u))
     new_videos = new_videos.filter(~Q(skipped_by=u))
     
