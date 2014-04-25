@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import sys
+os.path.realpath(os.path.dirname(__file__))
 
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
