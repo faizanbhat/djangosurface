@@ -14,6 +14,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from serializers import VideoSerializer, SiteSerializer
 
+nltk.data.path.append('./nltk_data/')
+
 class VideoViewSet(viewsets.ModelViewSet):
     queryset = Video.objects.all()
     serializer_class = VideoSerializer
