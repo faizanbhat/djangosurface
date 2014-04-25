@@ -71,7 +71,6 @@ def add(request):
     c.update(csrf(request))
     return render_to_response('../templates/add.html', c)
 
-
 def related(request,video_id):
     video = get_object_or_404(Video, pk=int(video_id))
 

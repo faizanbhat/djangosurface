@@ -9,10 +9,10 @@ class Site(models.Model):
         return self.name
 
 class Video(models.Model):
-    src = models.CharField(max_length=100,unique=True)
-    title = models.CharField(max_length=140, db_index=True)
-    description = models.CharField(max_length=200)
-    thumb_src = models.CharField(max_length=100)
+    src = models.CharField(max_length=300,unique=True)
+    title = models.CharField(max_length=500, db_index=True)
+    description = models.CharField(max_length=1000)
+    thumb_src = models.CharField(max_length=300)
     site = models.ForeignKey(Site,blank=True,db_index=True)
     tags = TaggableManager()
     
