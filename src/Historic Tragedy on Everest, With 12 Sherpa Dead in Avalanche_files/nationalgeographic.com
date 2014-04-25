@@ -1,1 +1,0 @@
-PARSELY.pInit({"apikey":"nationalgeographic.com","customizations":null,"bundle":"/code/slim_v05.js","settings":{"debug":false,"widget":false,"tracker":true},"uuid":"7ba16133-8501-4634-9e84-45ec980c0b94"});
