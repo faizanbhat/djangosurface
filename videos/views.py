@@ -75,7 +75,7 @@ def add(request):
 def related(request,video_id):
     video = get_object_or_404(Video, pk=int(video_id))
 
-    similarities = Similarity.objects.filter(pk1=video.id) 
+    similarities = Similarity.objects.filter(pk1=video.id).order_by('-similarity')[:3] 
         
     if similarities.count() > 0:
         results = []
