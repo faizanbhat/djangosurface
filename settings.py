@@ -4,6 +4,8 @@ PROJECT_PATH = os.path.realpath(os.path.dirname(__file__))
 
 SECRET_KEY = 'fag(t-fn0)umr7*f847mtlwn45m7vw16v=nt@$_lv1z)j6g7^@'
 
+import dj_database_url
+
 DEBUG = True
 
 TEMPLATE_DEBUG = True
@@ -47,7 +49,16 @@ ROOT_URLCONF = 'urls'
 
 WSGI_APPLICATION = 'wsgi.application'
 
-import dj_database_url
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'djangodb',
+        'USER': 'django',
+        'PASSWORD': 'django123',
+        'HOST': 'localhost',
+    }
+}
+
 DATABASES['default'] =  dj_database_url.config()
 
 
