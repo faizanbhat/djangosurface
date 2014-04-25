@@ -16,6 +16,20 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # Allow all host headers
 ALLOWED_HOSTS = ['*']
 
+CORS_ALLOW_HEADERS = (
+    'x-requested-with',
+    'content-type',
+    'accept',
+    'origin',
+    'authorization',
+    'x-csrftoken',
+    'accept-encoding',
+    'cache-control',
+    'accept-language',
+)
+
+CORS_EXPOSE_HEADERS = ()
+
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
