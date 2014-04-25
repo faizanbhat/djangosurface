@@ -6,9 +6,9 @@ SECRET_KEY = 'fag(t-fn0)umr7*f847mtlwn45m7vw16v=nt@$_lv1z)j6g7^@'
 
 import dj_database_url
 
-DEBUG = True
+DEBUG = False
 
-TEMPLATE_DEBUG = True
+TEMPLATE_DEBUG = False
 
 ALLOWED_HOSTS = []
 
