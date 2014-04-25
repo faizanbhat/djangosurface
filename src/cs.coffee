@@ -435,41 +435,44 @@ class User
     @cookie_handler =  window.gmcs.utils.cookieHandler
     guid = @cookie_handler.getCookie("gmcs-surface-user-guid") ? window.gmcs.utils.guid()
     requestURI = window.gmcs.host + "/users/get?guid=" + guid + "&site_id=" + window.gmcs.site_id
-    $.getJSON(requestURI, (data)=>
-      @id = data.id.toString()
+    $.getJSON(requestURI, (user_data)=>
+      @id = user_data.id.toString()
       @cookie_handler.setCookie("gmcs-surface-user-guid",guid,10000)
       console.log "Surface: User: User ID "+ @id
-      @playlist = new Playlist(@id,callback,data.last_played)
+      @playlist = new Playlist(@id,callback,user_data.last_played)
       )
 
 class Playlist
   constructor:(@id,callback,last_played)->
     @videos = []
-    @load_playlist(callback,last_played)
-  
+    if last_played
+      console.log "Loading Last Played"
+      @load_video(last_played,callback)
+    else
+      @load_playlist(callback)
+        
   add:(vf)=>
     @videos.push vf
     console.log "Surface: User: Playlist: Add: " + vf.title()
   
-  load_playlist:(callback,last_played)=>
-    requestURI = window.gmcs.host + "/users/" + @id + "/playlist/"
-    @videos = []
-    if last_played
-      console.log "Loading Last Played"
-      vf = new VideoFile(last_played.id,last_played.src,last_played.title,last_played.thumb_src)
-      @add(vf)
+  load_video:(video_json,callback)=>
+    vf = new VideoFile(video_json.id,video_json.src,video_json.title,video_json.thumb_src)
+    @add(vf)
+    callback() if callback
+    
+  load_playlist:(callback)=>
+    requestURI = window.gmcs.host + "/users/" + @id + "/refreshplaylist/"
+    console.log "Requesting new playlist"
+    $.getJSON(requestURI, (data)=>
+      @videos = []
+      console.log data.videos
+      for item in data.videos.splice(0,5)
+        vf = new VideoFile(item.id,item.src,item.title,item.thumb_src)
+        @add(vf)
+      $("#cs-footer-skip").text("Skip")
+      $("#cs-footer-skip").addClass("footer-enabled")
       callback() if callback
-  
-    else
-      requestURI = window.gmcs.host + "/users/" + @id + "/refreshplaylist/"
-      $.getJSON(requestURI, (data)=>
-        for item in data.videos
-          vf = new VideoFile(item.id,item.src,item.title,item.thumb_src)
-          @add(vf)
-        $("#cs-footer-skip").text("Skip")
-        $("#cs-footer-skip").addClass("footer-enabled")
-        callback() if callback
-      )
+    )
             
   current:=>
     @videos[0]
