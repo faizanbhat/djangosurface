@@ -1,1 +1,1 @@
-web: gunicorn djangosurface.wsgi
+web: gunicorn wsgi

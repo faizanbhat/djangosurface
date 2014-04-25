@@ -11,7 +11,7 @@ import pdb
 from django.db.models import Q
 
 from rest_framework import viewsets
-from djangosurface.serializers import CSUserSerializer, CSUserPlaylistSerializer
+from serializers import CSUserSerializer, CSUserPlaylistSerializer
 
 class CSUserViewSet(viewsets.ModelViewSet):
     queryset = CSUser.objects.all()

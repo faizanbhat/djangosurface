@@ -12,7 +12,7 @@ from django.core import serializers
 stopwords = set(stopwords.words('english'))
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from djangosurface.serializers import VideoSerializer, SiteSerializer
+from serializers import VideoSerializer, SiteSerializer
 
 class VideoViewSet(viewsets.ModelViewSet):
     queryset = Video.objects.all()

@@ -43,9 +43,9 @@ MIDDLEWARE_CLASSES = (
 
 CORS_ORIGIN_ALLOW_ALL = True
 
-ROOT_URLCONF = 'djangosurface.urls'
+ROOT_URLCONF = 'urls'
 
-WSGI_APPLICATION = 'djangosurface.wsgi.application'
+WSGI_APPLICATION = 'wsgi.application'
 
 DATABASES = {
     'default': {
