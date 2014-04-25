@@ -483,7 +483,7 @@ class Playlist
       new Pixel @id, "play", v.id
       console.log @videos
       if @videos.length == 0
-        $("#cs-footer-skip").text("Loading more videos")
+        $("#cs-footer-skip").text("Optimising playlist")
         $("#cs-footer-skip").removeClass("footer-enabled")
         @load_playlist()
       return v

@@ -12,6 +12,18 @@
 @media all and (min-width: 1100px) {  #cs-bottom-line  { font-size:1.4em;  } }
 @media all and (min-width: 1200px) {  #cs-bottom-line  { font-size:1.4em;  } }
 
+
+#cs-overlay {
+    height:100%;
+    width:100%;
+    position:fixed;
+    left:0;
+    top:0;
+    z-index:10000000000000000 !important;
+    background-color:black;
+    opacity: 0.6;
+}
+
 #cs-wrapper {
     position:fixed;
     height:100%;
@@ -27,32 +39,21 @@
     
 }
 
+#cs-header {
+  position:relative;
+  top:0px;
+  height:65px;
+  width:50%;
+  background:transparent;
+  z-index:10000000000000001 !important;
+  margin: 0 auto;
+}
+
 #cs-main {
   position:relative;
   height:100%;
   width:50%;
   margin:0 auto;
-}
-
-#cs-overlay {
-    height:100%;
-    width:100%;
-    position:fixed;
-    left:0;
-    top:0;
-    z-index:10000000000000000 !important;
-    background-color:black;
-    opacity: 0.6;
-}
-
-#cs-header {
-  position:relative;
-  top:0px;
-  height:40px;
-  width:50%;
-  background:transparent;
-  z-index:10000000000000001 !important;
-  margin: 0 auto;
 }
 
 #cs-close{

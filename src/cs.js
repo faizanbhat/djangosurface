@@ -679,7 +679,7 @@
         new Pixel(this.id, "play", v.id);
         console.log(this.videos);
         if (this.videos.length === 0) {
-          $("#cs-footer-skip").text("Loading more videos");
+          $("#cs-footer-skip").text("Optimising playlist");
           $("#cs-footer-skip").removeClass("footer-enabled");
           this.load_playlist();
         }
