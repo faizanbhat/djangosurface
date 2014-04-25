@@ -6,6 +6,7 @@ from django.forms import ModelForm
 from videos.models import Sitemap, Video, Site, Similarity
 import urllib2
 import xml.etree.ElementTree as ET
+import nltk
 from nltk.corpus import stopwords
 from nltk import word_tokenize
 from django.core import serializers
