@@ -204,10 +204,11 @@ class Surface
     @dom.getStyle("vjs/video-js.css")
 
   load_VJS:=>
-    console.log "Reached load VJS"
+    console.log "Loading Video JS"
     new ScriptLoader "videoJs", @callbacks['videojs_loaded']
     
   load_UI:=>
+    console.log "Loading UI"
     @set_blur()
     # Append Surface wrapper OUTSIDE body
     s = document.createElement("div")
@@ -244,23 +245,24 @@ class Surface
     @hide_slug()
     
     $("#cs-player-container").addClass("largeVideoWrapper")      
-    
-    @video = @user.playlist.current()    
-
-    @$video_title = $("#cs-video-title")
-    @$video_title.html(@video.title())
-    
+        
     $("#cs-label").html(@site_name)
 
     $("#cs-close").addClass("cs-close")
     $("#cs-close").click(@minimise)
     
     $("#cs-footer-skip").text("Skip")
+    $("#cs-footer-skip").addClass("footer-enabled")
+    
+    # It's important that the footer is initialised before the playlist.next is called, since that method changes the footers properties
+    @video = @user.playlist.next()    
+    @$video_title = $("#cs-video-title")
+    @$video_title.html(@video.title())
+    
     $("#cs-footer-skip").click(=>
       new Pixel @user.id, "skip", @video.id
       @play_next_video()
       )
-    $("#cs-footer-skip").addClass("footer-enabled")
     
     $("#cs-footer-like").text("Like")
     $("#cs-footer-like").click(@like_video)
@@ -281,14 +283,19 @@ class Surface
     player = new Player("cs-video-player","cs-player-container")   
     player.ready(=>
       player.loadFile(video)        
-      player.ended(@play_next_video)
-              
+      player.ended(=>
+        console.log "ENDED"
+        new Pixel @user.id, "complete", @video.id
+        @play_next_video()
+        )
+     
       if autoplay
         player.play()
 
       if resume
         player.one("loadedmetadata",=>
           player.setCurrentTime(@current_time)
+            
       )
       player.timeUpdate(@update_current_time)
     )
@@ -344,7 +351,6 @@ class Surface
         do (video) =>
           div.onclick = =>
             @play(new VideoFile(video.pk,video.fields.src,video.fields.title,video.fields.thumb_src))
-            div1.parentElement.innerHTML = ""
           return
       $("#cs-related-container").show()
     return
@@ -430,66 +436,56 @@ class User
     guid = @cookie_handler.getCookie("gmcs-surface-user-guid") ? window.gmcs.utils.guid()
     requestURI = window.gmcs.host + "/users/get?guid=" + guid + "&site_id=" + window.gmcs.site_id
     $.getJSON(requestURI, (data)=>
-      console.log data
       @id = data.id.toString()
       @cookie_handler.setCookie("gmcs-surface-user-guid",guid,10000)
-      @playlist = new Playlist(@id,callback)
       console.log "Surface: User: User ID "+ @id
+      @playlist = new Playlist(@id,callback,data.last_played)
       )
 
 class Playlist
-  constructor:(@id,callback)->
+  constructor:(@id,callback,last_played)->
     @videos = []
-    @load_playlist(callback)
+    @load_playlist(callback,last_played)
   
   add:(vf)=>
     @videos.push vf
     console.log "Surface: User: Playlist: Add: " + vf.title()
   
   load_playlist:(callback,last_played)=>
-    console.log "Load playlist called"
     requestURI = window.gmcs.host + "/users/" + @id + "/playlist/"
-    $.getJSON(requestURI, (data)=>
-      console.log data
-      @videos = []
-      for item in data.videos
-        vf = new VideoFile(item.id,item.src,item.title,item.thumb_src)
-        @add(vf)
-        $("#cs-footer-skip").text("Skip")
-        $("#cs-footer-skip").addClass("footer-enabled")        
+    @videos = []
+    if last_played
+      console.log "Loading Last Played"
+      vf = new VideoFile(last_played.id,last_played.src,last_played.title,last_played.thumb_src)
+      @add(vf)
       callback() if callback
-      )
-    
-  request_new_playlist:()=>
-    console.log "Request new playlist called"
-    requestURI = window.gmcs.host + "/users/" + @id + "/playlist/refresh/"
-    $.getJSON(requestURI, (data)=>
-      console.log data
-      @videos = []
-      for item in data.videos
-        vf = new VideoFile(item.id,item.src,item.title,item.thumb_src)
-        @add(vf)
+  
+    else
+      requestURI = window.gmcs.host + "/users/" + @id + "/refreshplaylist/"
+      $.getJSON(requestURI, (data)=>
+        for item in data.videos
+          vf = new VideoFile(item.id,item.src,item.title,item.thumb_src)
+          @add(vf)
         $("#cs-footer-skip").text("Skip")
         $("#cs-footer-skip").addClass("footer-enabled")
+        callback() if callback
       )
-    console.log @videos 
-    
+            
   current:=>
     @videos[0]
     
   next:=>
     if @videos.length > 0
-      console.log "next"
       v = @videos.shift()
       new Pixel @id, "play", v.id
       console.log @videos
       if @videos.length == 0
         $("#cs-footer-skip").text("Loading more videos")
         $("#cs-footer-skip").removeClass("footer-enabled")
-        @request_new_playlist()
+        @load_playlist()
       return v
+    
     else
-      
       return null
     
 class Pixel

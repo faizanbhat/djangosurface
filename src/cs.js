@@ -335,12 +335,13 @@
     }
 
     Surface.prototype.load_VJS = function() {
-      console.log("Reached load VJS");
+      console.log("Loading Video JS");
       return new ScriptLoader("videoJs", this.callbacks['videojs_loaded']);
     };
 
     Surface.prototype.load_UI = function() {
       var html, s;
+      console.log("Loading UI");
       this.set_blur();
       s = document.createElement("div");
       s.id = "cs-wrapper";
@@ -371,20 +372,20 @@
       this.$slugWrapper.click(this.maximise);
       this.hide_slug();
       $("#cs-player-container").addClass("largeVideoWrapper");
-      this.video = this.user.playlist.current();
-      this.$video_title = $("#cs-video-title");
-      this.$video_title.html(this.video.title());
       $("#cs-label").html(this.site_name);
       $("#cs-close").addClass("cs-close");
       $("#cs-close").click(this.minimise);
       $("#cs-footer-skip").text("Skip");
+      $("#cs-footer-skip").addClass("footer-enabled");
+      this.video = this.user.playlist.next();
+      this.$video_title = $("#cs-video-title");
+      this.$video_title.html(this.video.title());
       $("#cs-footer-skip").click((function(_this) {
         return function() {
           new Pixel(_this.user.id, "skip", _this.video.id);
           return _this.play_next_video();
         };
       })(this));
-      $("#cs-footer-skip").addClass("footer-enabled");
       $("#cs-footer-like").text("Like");
       $("#cs-footer-like").click(this.like_video);
       $("#cs-footer-like").addClass("footer-enabled");
@@ -403,7 +404,11 @@
       player.ready((function(_this) {
         return function() {
           player.loadFile(video);
-          player.ended(_this.play_next_video);
+          player.ended(function() {
+            console.log("ENDED");
+            new Pixel(_this.user.id, "complete", _this.video.id);
+            return _this.play_next_video();
+          });
           if (autoplay) {
             player.play();
           }
@@ -461,8 +466,7 @@
         _fn = (function(_this) {
           return function(video) {
             div.onclick = function() {
-              _this.play(new VideoFile(video.pk, video.fields.src, video.fields.title, video.fields.thumb_src));
-              return div1.parentElement.innerHTML = "";
+              return _this.play(new VideoFile(video.pk, video.fields.src, video.fields.title, video.fields.thumb_src));
             };
           };
         })(this);
@@ -597,11 +601,10 @@
       requestURI = window.gmcs.host + "/users/get?guid=" + guid + "&site_id=" + window.gmcs.site_id;
       $.getJSON(requestURI, (function(_this) {
         return function(data) {
-          console.log(data);
           _this.id = data.id.toString();
           _this.cookie_handler.setCookie("gmcs-surface-user-guid", guid, 10000);
-          _this.playlist = new Playlist(_this.id, callback);
-          return console.log("Surface: User: User ID " + _this.id);
+          console.log("Surface: User: User ID " + _this.id);
+          return _this.playlist = new Playlist(_this.id, callback, data.last_played);
         };
       })(this));
     }
@@ -611,15 +614,14 @@
   })();
 
   Playlist = (function() {
-    function Playlist(id, callback) {
+    function Playlist(id, callback, last_played) {
       this.id = id;
       this.next = __bind(this.next, this);
       this.current = __bind(this.current, this);
-      this.request_new_playlist = __bind(this.request_new_playlist, this);
       this.load_playlist = __bind(this.load_playlist, this);
       this.add = __bind(this.add, this);
       this.videos = [];
-      this.load_playlist(callback);
+      this.load_playlist(callback, last_played);
     }
 
     Playlist.prototype.add = function(vf) {
@@ -628,51 +630,35 @@
     };
 
     Playlist.prototype.load_playlist = function(callback, last_played) {
-      var requestURI;
-      console.log("Load playlist called");
+      var requestURI, vf;
       requestURI = window.gmcs.host + "/users/" + this.id + "/playlist/";
-      return $.getJSON(requestURI, (function(_this) {
-        return function(data) {
-          var item, vf, _i, _len, _ref;
-          console.log(data);
-          _this.videos = [];
-          _ref = data.videos;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            item = _ref[_i];
-            vf = new VideoFile(item.id, item.src, item.title, item.thumb_src);
-            _this.add(vf);
+      this.videos = [];
+      if (last_played) {
+        console.log("Loading Last Played");
+        vf = new VideoFile(last_played.id, last_played.src, last_played.title, last_played.thumb_src);
+        this.add(vf);
+        if (callback) {
+          return callback();
+        }
+      } else {
+        requestURI = window.gmcs.host + "/users/" + this.id + "/refreshplaylist/";
+        return $.getJSON(requestURI, (function(_this) {
+          return function(data) {
+            var item, _i, _len, _ref;
+            _ref = data.videos;
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              item = _ref[_i];
+              vf = new VideoFile(item.id, item.src, item.title, item.thumb_src);
+              _this.add(vf);
+            }
             $("#cs-footer-skip").text("Skip");
             $("#cs-footer-skip").addClass("footer-enabled");
-          }
-          if (callback) {
-            return callback();
-          }
-        };
-      })(this));
-    };
-
-    Playlist.prototype.request_new_playlist = function() {
-      var requestURI;
-      console.log("Request new playlist called");
-      requestURI = window.gmcs.host + "/users/" + this.id + "/playlist/refresh/";
-      $.getJSON(requestURI, (function(_this) {
-        return function(data) {
-          var item, vf, _i, _len, _ref, _results;
-          console.log(data);
-          _this.videos = [];
-          _ref = data.videos;
-          _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            item = _ref[_i];
-            vf = new VideoFile(item.id, item.src, item.title, item.thumb_src);
-            _this.add(vf);
-            $("#cs-footer-skip").text("Skip");
-            _results.push($("#cs-footer-skip").addClass("footer-enabled"));
-          }
-          return _results;
-        };
-      })(this));
-      return console.log(this.videos);
+            if (callback) {
+              return callback();
+            }
+          };
+        })(this));
+      }
     };
 
     Playlist.prototype.current = function() {
@@ -682,14 +668,13 @@
     Playlist.prototype.next = function() {
       var v;
       if (this.videos.length > 0) {
-        console.log("next");
         v = this.videos.shift();
         new Pixel(this.id, "play", v.id);
         console.log(this.videos);
         if (this.videos.length === 0) {
           $("#cs-footer-skip").text("Loading more videos");
           $("#cs-footer-skip").removeClass("footer-enabled");
-          this.request_new_playlist();
+          this.load_playlist();
         }
         return v;
       } else {
