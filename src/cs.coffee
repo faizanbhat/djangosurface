@@ -208,72 +208,25 @@ class Surface
     console.log "Loading Video JS"
     new ScriptLoader "videoJs", @callbacks['videojs_loaded']
     
-  load_UI:=>
-    console.log "Loading UI"
-    @set_blur()
-    # Append Surface wrapper OUTSIDE body
-    s = document.createElement("div")
-    s.id = "cs-wrapper"
-    html = document.getElementsByTagName("html")[0]
-    html.appendChild(s)
-
-    # Create Div Structure
-    @dom.appendDivToParent("cs-overlay","cs-wrapper")
-    @dom.appendDivToParent("cs-header","cs-wrapper")
-    @dom.appendDivToParent("cs-close","cs-header")
-    @dom.appendDivToParent("cs-main","cs-wrapper")
-    @dom.appendDivToParent("cs-info-wrapper","cs-main")
-    @dom.appendDivToParent("cs-top-line","cs-info-wrapper")
-    @dom.appendDivToParent("cs-rule","cs-info-wrapper")
-    @dom.appendDivToParent("cs-bottom-line","cs-info-wrapper")
-    @dom.appendDivToParent("cs-label","cs-top-line")
-    @dom.appendDivToParent("cs-video-title","cs-bottom-line")
-    @dom.appendDivToParent("cs-player-wrapper","cs-main")
-    @dom.appendDivToParent("cs-player-container","cs-player-wrapper")
-    @dom.appendDivToParent("cs-footer","cs-player-wrapper")
-    @dom.appendDivToParent("cs-footer-skip","cs-footer")
-    @dom.appendDivToParent("cs-footer-like","cs-footer")
-    @dom.appendDivToParent("cs-related-container","cs-player-wrapper")
-    @dom.appendDivToParent("cs-related-1","cs-related-container")
-    @dom.appendDivToParent("cs-related-2","cs-related-container")
-    @dom.appendDivToParent("cs-related-3","cs-related-container")
+  load_UI:=>    
+    @overlay = new Overlay()
+    @overlay.onclose(@minimise)
+    @overlay.onlike(@like_video)
     
+    @video = @user.playlist.next()    
+    @overlay.set_title(@video.title())
     
-    @$wrapper = $("#cs-wrapper")
+    @overlay.onskip(=>
+      new Pixel @user.id, "skip", @video.id
+      @play_next_video()
+    )
+    
+    @player = @create_player(@video,false,false)
     
     @slug = new Slug()
     @slug.click(@maximise)
     @slug.hide()
     
-    $("#cs-player-container").addClass("largeVideoWrapper")      
-        
-    $("#cs-label").html(@site_name)
-
-    $("#cs-close").addClass("cs-close")
-    $("#cs-close").click(@minimise)
-    
-    $("#cs-footer-skip").text("Skip")
-    $("#cs-footer-skip").addClass("footer-enabled")
-    
-    # It's important that the footer is initialised before the playlist.next is called, since that method changes the footers properties
-    @video = @user.playlist.next()    
-    @$video_title = $("#cs-video-title")
-    @$video_title.html(@video.title())
-    
-    $("#cs-footer-skip").click(=>
-      new Pixel @user.id, "skip", @video.id
-      @play_next_video()
-      )
-    
-    $("#cs-footer-like").text("Like")
-    $("#cs-footer-like").click(@like_video)
-    $("#cs-footer-like").addClass("footer-enabled")
-    
-    $("#cs-related-container").html("Since you liked this, you might also like:")
-    $("#cs-related-container").hide()
-    
-    @player = @create_player(@video,false,false)
-        
     if @start_minimised > 0
         @minimise()
         
@@ -304,71 +257,43 @@ class Surface
   
   play:(v)=>
      @video = v      
-     console.log v
-     @$video_title.html(@video.title())
+     @overlay.set_title(@video.title())
+     @overlay.enable_like(@like_video)
+     @overlay.hide_related()
      @player.loadFile(@video)
      @player.play()
-     $("#cs-footer-like").text("Like")
-     $("#cs-footer-like").click(@like_video)
-     $("#cs-footer-like").addClass("footer-enabled")
-     $("#cs-related-container").hide()
-     
-     
+    
   play_next_video:=>
     v= @user.playlist.next()
     if v != null
       @video = v      
       console.log "Surface: Play next video: " + @video.title()
-      @$video_title.html(@video.title())
+      @overlay.set_title(@video.title())
+      @overlay.enable_like(@like_video)
+      @overlay.hide_related()
       @player.loadFile(@video)
       @player.play()
-      $("#cs-footer-like").text("Like")
-      $("#cs-footer-like").click(@like_video)
-      $("#cs-footer-like").addClass("footer-enabled")
-      $("#cs-related-container").hide()
-      
       
   like_video:=>
-    $("#cs-footer-like").unbind("click")
-    $("#cs-footer-like").text("Liked!")
-    $("#cs-footer-like").removeClass("footer-enabled")
-    new Pixel(@user.id, "like", @video.id, @set_related_links)
-
-  set_related_links:(videos)=>
-    parent = document.getElementById("cs-related-container")
-    
-    if videos.length > 0
-    
-      $("#cs-related-container").html("Since you liked this, you might also like:")
-    
-      for video in videos
-        guid = window.gmcs.utils.guid()
-        div = document.createElement("div")
-        div.className = "related-link"
-        div.id = guid
-        parent.appendChild(div)
-      
-        div.innerHTML = " > " + video.fields.title
-        do (video) =>
-          div.onclick = =>
-            @play(new VideoFile(video.pk,video.fields.src,video.fields.title,video.fields.thumb_src))
-          return
-      $("#cs-related-container").show()
-    return
+    @overlay.disable_like()
+    new Pixel(@user.id, "like", @video.id)
+    requestURI = window.gmcs.host + "/videos/" + @video.id + "/related/"
+    console.log requestURI
+    $.getJSON(requestURI, (videos)=>
+      @overlay.show_related(videos, @play)
+    )
     
   minimise:() =>      
     @player.dispose()
-    @remove_overlay()
-    @$wrapper.hide()
+    @overlay.hide()    
     @slug.show()
     @minimised = true
     @cookieHandler.setCookie("gmcs-surface-minimised",1,10000)
         
   maximise:=>
     if (@minimised==true)
-        @slug.hide() # Use twice so this gets its own method
-        @set_blur() # Add overlay + blur again
-        @$wrapper.show() # Show wrapper
+        @slug.hide()
+        @overlay.show()
         @player = @create_player(@video,true,true)
         @minimised = false        
         @cookieHandler.setCookie("gmcs-surface-minimised",0,10000)
@@ -378,30 +303,6 @@ class Surface
       @current_time = @player.currentTime()
       @cookieHandler.setCookie("gmcs-surface-current_time",@current_time,10000)
   
-  set_blur:=>
-    $("body").css("filter","blur(15px)")
-    $("body").css("filter","url(src/blur.svg#blur)")
-    $("body").css("-webkit-filter","blur(15px)")
-    $("body").css("-moz-filter","blur(15px)")
-    $("body").css("-o-filter","blur(15px)")
-    $("body").css("-ms-filter","blur(15px)")
-    # disable scroll
-    $('html, body').css({
-        'overflow': 'hidden',
-        'height': '100%'
-    })
-    
-  remove_overlay:=>
-    $("body").css("-webkit-filter","blur(0px)")
-    $("html").css("filter","blur(0px)")
-    $("body").css("filter","url(src/blur.svg#noBlur)")
-    $("body").css("-moz-filter","blur(0px)")
-    $("body").css("-o-filter","blur(0px)")
-    $("body").css("-ms-filter","blur(0px)")
-    $('html, body').css({
-        'overflow': 'auto',
-        'height': 'auto'
-    })    
 
 class VideoFile
   constructor:(@id,@file_src,@video_title,@thumb_href)->
@@ -490,18 +391,15 @@ class Playlist
       return null
     
 class Pixel
-  constructor: (user_id,action,video_id,callback=null) ->
+  constructor: (user_id,action,video_id) ->
     played = ->
       requestURI = window.gmcs.host + "/users/" + user_id + "/played/" + video_id + "/"
       $.getJSON(requestURI)
     
     liked = ->
       requestURI = window.gmcs.host + "/users/" + user_id + "/liked/" + video_id + "/"
-      $.getJSON(requestURI, (data)=>
-        console.log data
-        callback(data)
-        )
-  
+      $.getJSON(requestURI)
+        
     skipped = ->
       requestURI = window.gmcs.host + "/users/" + user_id + "/skipped/" + video_id + "/"
       $.getJSON(requestURI)
@@ -522,6 +420,139 @@ class Pixel
     catch
       return null
       
+class Overlay
+  constructor:(label)->
+    @dom = window.gmcs.utils.domManager
+    s = document.createElement("div")
+    s.id = "cs-wrapper"
+    html = document.getElementsByTagName("html")[0]
+    html.appendChild(s)
+    @dom.appendDivToParent("cs-overlay","cs-wrapper")
+    @dom.appendDivToParent("cs-header","cs-wrapper")
+    @dom.appendDivToParent("cs-close","cs-header")
+    @dom.appendDivToParent("cs-main","cs-wrapper")
+    @dom.appendDivToParent("cs-info-wrapper","cs-main")
+    @dom.appendDivToParent("cs-top-line","cs-info-wrapper")
+    @dom.appendDivToParent("cs-rule","cs-info-wrapper")
+    @dom.appendDivToParent("cs-bottom-line","cs-info-wrapper")
+    @dom.appendDivToParent("cs-label","cs-top-line")
+    @dom.appendDivToParent("cs-video-title","cs-bottom-line")
+    @dom.appendDivToParent("cs-player-wrapper","cs-main")
+    @dom.appendDivToParent("cs-player-container","cs-player-wrapper")
+    @dom.appendDivToParent("cs-footer","cs-player-wrapper")
+    @dom.appendDivToParent("cs-footer-skip","cs-footer")
+    @dom.appendDivToParent("cs-footer-like","cs-footer")
+    @dom.appendDivToParent("cs-related-container","cs-player-wrapper")
+    @dom.appendDivToParent("cs-related-1","cs-related-container")
+    @dom.appendDivToParent("cs-related-2","cs-related-container")
+    @dom.appendDivToParent("cs-related-3","cs-related-container")
+    $("#cs-player-container").addClass("largeVideoWrapper") 
+    
+    @$wrapper = $("#cs-wrapper")
+    @$site_label = $("#cs-label")
+    @$title_label = $("#cs-video-title")
+    @$close_button = $("#cs-close")
+    @$like_button = $("#cs-footer-like")
+    @$skip_button = $("#cs-footer-skip")
+    @$related_container = $("#cs-related-container")
+    
+    @$close_button.addClass("cs-close")     
+    @$site_label.html(label)
+    @$like_button.text("Like")
+    @$like_button.addClass("footer-enabled")
+    @$related_container.html("Since you liked this, you might also like:")
+    
+    @hide_related()
+    @enable_skip()
+    
+  show: =>
+    @set_blur()
+    @$wrapper.show()
+  
+  hide: =>
+    @remove_overlay()
+    @$wrapper.hide()
+    
+  set_title:(title)=>
+    @$title_label.html(title)
+  
+  enable_skip:=>
+    @$skip_button.text("Skip")
+    @$skip_button.addClass("footer-enabled")
+      
+  disable_skip:=>
+    @$skip_button.text("Optimising playlist")
+    @$skip_button.removeClass("footer-enabled")
+
+  enable_like:(func)=>
+    @$like_button.text("Like")
+    @$like_button.addClass("footer-enabled")
+    @onlike(func)
+    
+  disable_like:(func)=>
+    @$like_button.text("Liked!")
+    @$like_button.unbind("click")
+    @$like_button.removeClass("footer-enabled")
+    
+  onclose:(func)=>
+    @$close_button.click(func)
+    
+  onlike:(func)=>
+    @$like_button.click(func)
+    
+  onskip:(func)=>
+    @$skip_button.click(func)
+  
+  show_related:(videos,play_func)=>
+    parent = @$related_container  
+    if videos.length > 0
+  
+      parent.html("Since you liked this, you might also like:")
+  
+      for video in videos
+        guid = window.gmcs.utils.guid()
+        div = document.createElement("div")
+        div.className = "related-link"
+        div.id = guid
+        parent[0].appendChild(div)
+    
+        div.innerHTML = " > " + video.fields.title
+        do (video) =>
+          div.onclick = =>
+            play_func(new VideoFile(video.pk,video.fields.src,video.fields.title,video.fields.thumb_src))
+          return
+      parent.show()
+    return
+    
+  hide_related:()=>
+    @$related_container.hide()
+  
+    
+  set_blur:=>
+    $("body").css("filter","blur(15px)")
+    $("body").css("filter","url(src/blur.svg#blur)")
+    $("body").css("-webkit-filter","blur(15px)")
+    $("body").css("-moz-filter","blur(15px)")
+    $("body").css("-o-filter","blur(15px)")
+    $("body").css("-ms-filter","blur(15px)")
+    # disable scroll
+    $('html, body').css({
+        'overflow': 'hidden',
+        'height': '100%'
+    })
+    
+  remove_overlay:=>
+    $("body").css("-webkit-filter","blur(0px)")
+    $("html").css("filter","blur(0px)")
+    $("body").css("filter","url(src/blur.svg#noBlur)")
+    $("body").css("-moz-filter","blur(0px)")
+    $("body").css("-o-filter","blur(0px)")
+    $("body").css("-ms-filter","blur(0px)")
+    $('html, body').css({
+        'overflow': 'auto',
+        'height': 'auto'
+    })
+  
 class Slug
   constructor:(func) ->
     @dom = window.gmcs.utils.domManager
