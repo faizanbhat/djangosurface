@@ -6,8 +6,9 @@ $ = jQuery
 $ ->
   window.gmcs = {}
   window.gmcs.site_id = "1"
-  window.gmcs.host = "http://localhost:8080"    
+  window.gmcs.host = "http://0.0.0.0:5000"    
   window.gmcs.utils = {}
+  window.gmcs.utils.domManager = new DomManager()
   window.gmcs.utils.cookieHandler = new CookieHandler()
   window.gmcs.utils.guid = ->
     chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -199,7 +200,7 @@ class Surface
     @player = null
         
     # Setup Dom
-    @dom = new DomManager()
+    @dom = window.gmcs.utils.domManager
     @dom.getStyle("src/style.css")
     @dom.getStyle("vjs/video-js.css")
 
@@ -237,12 +238,12 @@ class Surface
     @dom.appendDivToParent("cs-related-2","cs-related-container")
     @dom.appendDivToParent("cs-related-3","cs-related-container")
     
-    @dom.appendDivToBody("cs-slug-wrapper")
     
-    @$wrapper = $("#cs-wrapper")    
-    @$slugWrapper = $("#cs-slug-wrapper")
-    @$slugWrapper.click(@maximise)
-    @hide_slug()
+    @$wrapper = $("#cs-wrapper")
+    
+    @slug = new Slug()
+    @slug.click(@maximise)
+    @slug.hide()
     
     $("#cs-player-container").addClass("largeVideoWrapper")      
         
@@ -359,22 +360,19 @@ class Surface
     @player.dispose()
     @remove_overlay()
     @$wrapper.hide()
-    $("#cs-slug-wrapper").show("100") # Show slug
+    @slug.show()
     @minimised = true
     @cookieHandler.setCookie("gmcs-surface-minimised",1,10000)
         
   maximise:=>
     if (@minimised==true)
-        @hide_slug() # Use twice so this gets its own method
+        @slug.hide() # Use twice so this gets its own method
         @set_blur() # Add overlay + blur again
         @$wrapper.show() # Show wrapper
         @player = @create_player(@video,true,true)
         @minimised = false        
         @cookieHandler.setCookie("gmcs-surface-minimised",0,10000)
-                      
-  hide_slug:=>    
-    $("#cs-slug-wrapper").hide()
-            
+                                  
   update_current_time:=>
     if @player.playing
       @current_time = @player.currentTime()
@@ -523,3 +521,23 @@ class Pixel
       acts[action]()
     catch
       return null
+      
+class Slug
+  constructor:(func) ->
+    @dom = window.gmcs.utils.domManager
+    @dom.appendDivToBody("cs-slug-wrapper")
+    @$wrapper = $("#cs-slug-wrapper")
+    @$wrapper.click(func)
+  
+  hide:->
+    @$wrapper.hide()
+  
+  show:->
+    @$wrapper.show(100)
+    
+  click:(func)->
+    @$wrapper.click(func)
+    
+  
+    
+    

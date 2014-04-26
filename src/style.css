@@ -190,8 +190,7 @@
 #cs-footer{
   position:relative;
   padding-top:10px;
-  border-top:1px solid lightgray;
-  bottom:-54px;
+  bottom:-5px;
   right:0px;
   z-index:1000000000000000001 !important;
 }
@@ -219,7 +218,7 @@
 #cs-related-container {
   position:relative;
   padding-top:10px;
-  bottom:-90px;
+  bottom:-20px;
   right:0px;
   z-index:1000000000000000001 !important;
   font-family: "HelveticaNeue", "Helvetica Neue", "Helvetica Neue", 
