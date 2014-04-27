@@ -26,7 +26,18 @@ INSTALLED_APPS = (
     'south'
 )
 
-\
+CORS_ALLOW_HEADERS = (
+    'x-requested-with',
+    'content-type',
+    'accept',
+    'origin',
+    'authorization',
+    'x-csrftoken',
+    'accept-encoding',
+    'cache-control',
+    'accept-language',
+)
+
 SOUTH_MIGRATION_MODULES = {
     'taggit': 'taggit.south_migrations',
 }

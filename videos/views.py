@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.shortcuts import render_to_response
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.core.context_processors import csrf
 from django.forms import ModelForm
 from videos.models import Sitemap, Video, Site, Similarity
@@ -91,3 +91,12 @@ def related(request,video_id):
         return HttpResponse(data)
 
     return HttpResponse("200 OK. No matches found.")
+    
+def search(request):
+    try:
+        q = request.GET['q']
+        videos = Video.objects.filter(title__icontains=q)
+    except:
+        raise Http404
+    return HttpResponse(serializers.serialize("json",videos))
+    
