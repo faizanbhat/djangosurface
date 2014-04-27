@@ -17,7 +17,7 @@ $ ->
     result += chars.substr Math.floor(Math.random() * chars.length), 1
     result += chars.substr Math.floor(Math.random() * chars.length), 1
     return result
-  window.gmcs.surface = new Surface("Nat Geo TV")
+  window.gmcs.surface = new SurfaceController("Nat Geo TV")
   
 
 class CookieHandler
@@ -177,7 +177,7 @@ class Player
   dispose:=>
     @elem.dispose()
   
-class Surface
+class SurfaceController
   constructor:(@site_name,delay)->
     @hostname = window.gmcs.host
     cookieHandler = window.gmcs.utils.cookieHandler
@@ -228,7 +228,7 @@ class Surface
     undefined
     
   create_overlay:=>
-    @overlay = new Overlay()
+    @overlay = new Overlay(@site_name)
     @overlay.onclose(@minimise)
     @overlay.onlike(@like_video)
     @overlay.set_title(@video.title())
@@ -598,12 +598,13 @@ class Slug
       @open()
     else
       @close()
+    @preload(["src/slug-close-active.png","src/slug-close-inactive.png","src/slug-open-active.png","src/slug-open-inactive.png"])
   
   hide:=>
     @$wrapper.hide()
   
   show:=>
-    @$wrapper.show(100)
+    @$wrapper.show(200)
     
   click:(func)=>
     @$slug_body.click(func)
@@ -636,7 +637,16 @@ class Slug
     @$close_button.click(@close)
     window.gmcs.utils.cookieHandler.setCookie("gmcs-surface-slug-closed",0,10000)
     
-    
+  preload:(image_urls)=>
+    for url in image_urls
+      do (url) =>
+        img = new Image()
+        img.src = url
+        
+        
+        
+      
+      
     
     
     
