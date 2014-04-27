@@ -26,6 +26,7 @@ INSTALLED_APPS = (
     'south'
 )
 
+\
 SOUTH_MIGRATION_MODULES = {
     'taggit': 'taggit.south_migrations',
 }

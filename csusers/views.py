@@ -142,6 +142,10 @@ def completed(request,user_id,video_id):
         user.save()
     except:
         return HttpResponse("Failed to save user information.")
+    
+    for tag in video.tags.all():
+        user.tags.add(tag)
+    user.save()
 
     return HttpResponse("200 OK")
 

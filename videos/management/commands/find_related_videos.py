@@ -17,8 +17,6 @@ class Command(BaseCommand):
                 for sim_set in related:
                     similarity = sim_set[0]
                     target = sim_set[1]
-                    video.related.add(target)
-                    video.save()
                     s1 = Similarity(pk1=video.id, pk2=target.id, similarity=similarity)
                     s1.save()
                     s2 = Similarity(pk1=target.id, pk2=video.id, similarity=similarity)
