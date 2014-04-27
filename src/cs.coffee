@@ -6,7 +6,13 @@ $ = jQuery
 $ ->
   window.gmcs = {}
   window.gmcs.site_id = "1"
-  window.gmcs.host = "http://0.0.0.0:5000"    
+  window.gmcs.host = "http://0.0.0.0:5000"   
+  window.gmcs.debug = false 
+  window.gmcs.log = (obj) ->
+    if window.gmcs.debug
+      console.log obj
+    else
+      return
   window.gmcs.utils = {}
   window.gmcs.utils.domManager = new DomManager()
   window.gmcs.utils.cookieHandler = new CookieHandler()
@@ -205,7 +211,7 @@ class SurfaceController
     @dom.getStyle("vjs/video-js.css")
 
   load_VJS:=>
-    console.log "Loading Video JS"
+    window.gmcs.log "Loading Video JS"
     new ScriptLoader "videoJs", @callbacks['videojs_loaded']
     
   load_UI:=>        
@@ -254,7 +260,7 @@ class SurfaceController
     player.ready(=>
       player.loadFile(video)        
       player.ended(=>
-        console.log "ENDED"
+        window.gmcs.log "ENDED"
         new Pixel @user.id, "complete", @video.id
         @play_next_video()
         )
@@ -283,7 +289,7 @@ class SurfaceController
     v= @user.playlist.next()
     if v != null
       @video = v      
-      console.log "Surface: Play next video: " + @video.title()
+      window.gmcs.log "Surface: Play next video: " + @video.title()
       @overlay.set_title(@video.title())
       @overlay.enable_like(@like_video)
       @overlay.hide_related()
@@ -294,7 +300,7 @@ class SurfaceController
     @overlay.disable_like()
     new Pixel(@user.id, "like", @video.id)
     requestURI = window.gmcs.host + "/videos/" + @video.id + "/related/"
-    console.log requestURI
+    window.gmcs.log requestURI
     $.getJSON(requestURI, (videos)=>
       @overlay.show_related(videos, @play)
     )
@@ -309,23 +315,22 @@ class SurfaceController
     @slug.open()
     @slug.show()
     @minimised = true
-    @cookieHandler.setCookie("gmcs-surface-minimised",1,10000)
+    window.gmcs.utils.cookieHandler.setCookie("gmcs-surface-minimised",1,10000)
         
   maximise:=>
     if (@minimised==true)
-        debugger;
         if @overlay is null
           @create_overlay()
         @slug.hide()
         @overlay.show()
         @player = @create_player(@video,true,true)
         @minimised = false        
-        @cookieHandler.setCookie("gmcs-surface-minimised",0,10000)
+        window.gmcs.utils.cookieHandler.setCookie("gmcs-surface-minimised",0,10000)
                                   
   update_current_time:=>
     if @player.playing
       @current_time = @player.currentTime()
-      @cookieHandler.setCookie("gmcs-surface-current_time",@current_time,10000)
+      window.gmcs.utils.cookieHandler.setCookie("gmcs-surface-current_time",@current_time,10000)
   
 
 class VideoFile
@@ -361,7 +366,7 @@ class User
     $.getJSON(requestURI, (user_data)=>
       @id = user_data.id.toString()
       @cookie_handler.setCookie("gmcs-surface-user-guid",guid,10000)
-      console.log "Surface: User: User ID "+ @id
+      window.gmcs.log "Surface: User: User ID "+ @id
       @playlist = new Playlist(@id,callback,user_data.last_played)
       )
 
@@ -369,14 +374,14 @@ class Playlist
   constructor:(@id,callback,last_played)->
     @videos = []
     if last_played
-      console.log "Loading Last Played"
+      window.gmcs.log "Loading Last Played"
       @load_video(last_played,callback)
     else
       @load_playlist(callback)
         
   add:(vf)=>
     @videos.push vf
-    console.log "Surface: User: Playlist: Add: " + vf.title()
+    window.gmcs.log "Surface: User: Playlist: Add: " + vf.title()
   
   load_video:(video_json,callback)=>
     vf = new VideoFile(video_json.id,video_json.src,video_json.title,video_json.thumb_src)
@@ -385,10 +390,10 @@ class Playlist
     
   load_playlist:(callback)=>
     requestURI = window.gmcs.host + "/users/" + @id + "/refreshplaylist/"
-    console.log "Requesting new playlist"
+    window.gmcs.log "Requesting new playlist"
     $.getJSON(requestURI, (data)=>
       @videos = []
-      console.log data.videos
+      window.gmcs.log data.videos
       for item in data.videos.splice(0,5)
         vf = new VideoFile(item.id,item.src,item.title,item.thumb_src)
         @add(vf)
@@ -404,7 +409,7 @@ class Playlist
     if @videos.length > 0
       v = @videos.shift()
       new Pixel @id, "play", v.id
-      console.log @videos
+      window.gmcs.log @videos
       if @videos.length == 0
         $("#cs-footer-skip").text("Optimising playlist")
         $("#cs-footer-skip").removeClass("footer-enabled")
@@ -625,7 +630,6 @@ class Slug
     @$close_button.addClass("slug-open-btn")
     @$close_button.unbind("click")
     @$close_button.click(@open)
-    cookieHandler = window.gmcs.utils.cookieHandler
     window.gmcs.utils.cookieHandler.setCookie("gmcs-surface-slug-closed",1,10000)
     
     
@@ -642,14 +646,3 @@ class Slug
       do (url) =>
         img = new Image()
         img.src = url
-        
-        
-        
-      
-      
-    
-    
-    
-  
-    
-    

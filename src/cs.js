@@ -10,6 +10,14 @@
     window.gmcs = {};
     window.gmcs.site_id = "1";
     window.gmcs.host = "http://0.0.0.0:5000";
+    window.gmcs.debug = false;
+    window.gmcs.log = function(obj) {
+      if (window.gmcs.debug) {
+        return console.log(obj);
+      } else {
+
+      }
+    };
     window.gmcs.utils = {};
     window.gmcs.utils.domManager = new DomManager();
     window.gmcs.utils.cookieHandler = new CookieHandler();
@@ -336,7 +344,7 @@
     }
 
     SurfaceController.prototype.load_VJS = function() {
-      console.log("Loading Video JS");
+      window.gmcs.log("Loading Video JS");
       return new ScriptLoader("videoJs", this.callbacks['videojs_loaded']);
     };
 
@@ -387,7 +395,7 @@
         return function() {
           player.loadFile(video);
           player.ended(function() {
-            console.log("ENDED");
+            window.gmcs.log("ENDED");
             new Pixel(_this.user.id, "complete", _this.video.id);
             return _this.play_next_video();
           });
@@ -419,7 +427,7 @@
       v = this.user.playlist.next();
       if (v !== null) {
         this.video = v;
-        console.log("Surface: Play next video: " + this.video.title());
+        window.gmcs.log("Surface: Play next video: " + this.video.title());
         this.overlay.set_title(this.video.title());
         this.overlay.enable_like(this.like_video);
         this.overlay.hide_related();
@@ -433,7 +441,7 @@
       this.overlay.disable_like();
       new Pixel(this.user.id, "like", this.video.id);
       requestURI = window.gmcs.host + "/videos/" + this.video.id + "/related/";
-      console.log(requestURI);
+      window.gmcs.log(requestURI);
       return $.getJSON(requestURI, (function(_this) {
         return function(videos) {
           return _this.overlay.show_related(videos, _this.play);
@@ -450,12 +458,11 @@
       this.slug.open();
       this.slug.show();
       this.minimised = true;
-      return this.cookieHandler.setCookie("gmcs-surface-minimised", 1, 10000);
+      return window.gmcs.utils.cookieHandler.setCookie("gmcs-surface-minimised", 1, 10000);
     };
 
     SurfaceController.prototype.maximise = function() {
       if (this.minimised === true) {
-        debugger;
         if (this.overlay === null) {
           this.create_overlay();
         }
@@ -463,14 +470,14 @@
         this.overlay.show();
         this.player = this.create_player(this.video, true, true);
         this.minimised = false;
-        return this.cookieHandler.setCookie("gmcs-surface-minimised", 0, 10000);
+        return window.gmcs.utils.cookieHandler.setCookie("gmcs-surface-minimised", 0, 10000);
       }
     };
 
     SurfaceController.prototype.update_current_time = function() {
       if (this.player.playing) {
         this.current_time = this.player.currentTime();
-        return this.cookieHandler.setCookie("gmcs-surface-current_time", this.current_time, 10000);
+        return window.gmcs.utils.cookieHandler.setCookie("gmcs-surface-current_time", this.current_time, 10000);
       }
     };
 
@@ -536,7 +543,7 @@
         return function(user_data) {
           _this.id = user_data.id.toString();
           _this.cookie_handler.setCookie("gmcs-surface-user-guid", guid, 10000);
-          console.log("Surface: User: User ID " + _this.id);
+          window.gmcs.log("Surface: User: User ID " + _this.id);
           return _this.playlist = new Playlist(_this.id, callback, user_data.last_played);
         };
       })(this));
@@ -556,7 +563,7 @@
       this.add = __bind(this.add, this);
       this.videos = [];
       if (last_played) {
-        console.log("Loading Last Played");
+        window.gmcs.log("Loading Last Played");
         this.load_video(last_played, callback);
       } else {
         this.load_playlist(callback);
@@ -565,7 +572,7 @@
 
     Playlist.prototype.add = function(vf) {
       this.videos.push(vf);
-      return console.log("Surface: User: Playlist: Add: " + vf.title());
+      return window.gmcs.log("Surface: User: Playlist: Add: " + vf.title());
     };
 
     Playlist.prototype.load_video = function(video_json, callback) {
@@ -580,12 +587,12 @@
     Playlist.prototype.load_playlist = function(callback) {
       var requestURI;
       requestURI = window.gmcs.host + "/users/" + this.id + "/refreshplaylist/";
-      console.log("Requesting new playlist");
+      window.gmcs.log("Requesting new playlist");
       return $.getJSON(requestURI, (function(_this) {
         return function(data) {
           var item, vf, _i, _len, _ref;
           _this.videos = [];
-          console.log(data.videos);
+          window.gmcs.log(data.videos);
           _ref = data.videos.splice(0, 5);
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             item = _ref[_i];
@@ -610,7 +617,7 @@
       if (this.videos.length > 0) {
         v = this.videos.shift();
         new Pixel(this.id, "play", v.id);
-        console.log(this.videos);
+        window.gmcs.log(this.videos);
         if (this.videos.length === 0) {
           $("#cs-footer-skip").text("Optimising playlist");
           $("#cs-footer-skip").removeClass("footer-enabled");
@@ -893,13 +900,11 @@
     };
 
     Slug.prototype.close = function() {
-      var cookieHandler;
       this.$wrapper.addClass("slug-closed");
       this.$close_button.removeClass("slug-close-btn");
       this.$close_button.addClass("slug-open-btn");
       this.$close_button.unbind("click");
       this.$close_button.click(this.open);
-      cookieHandler = window.gmcs.utils.cookieHandler;
       return window.gmcs.utils.cookieHandler.setCookie("gmcs-surface-slug-closed", 1, 10000);
     };
 
