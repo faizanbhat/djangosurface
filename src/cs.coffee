@@ -6,7 +6,7 @@ $ = jQuery
 $ ->
   window.gmcs = {}
   window.gmcs.site_id = "1"
-  window.gmcs.host = "http://0.0.0.0:5000"   
+  window.gmcs.host = "http://localhost:8080"   
   window.gmcs.debug = true 
   window.gmcs.log = (obj) ->
     if window.gmcs.debug
@@ -189,11 +189,11 @@ class SurfaceController
     cookieHandler = window.gmcs.utils.cookieHandler
     
     @callbacks = {
-      'playlist_loaded':@load_VJS
+      'user_loaded':@load_VJS
       'videojs_loaded':@load_UI
     }
     
-    @user = new User(@callbacks['playlist_loaded'])
+    @user = new User(@callbacks['user_loaded'])
     
     @current_time  = parseInt(cookieHandler.getCookie("gmcs-surface-current_time"))
     if isNaN(@current_time)
@@ -214,23 +214,30 @@ class SurfaceController
     window.gmcs.log "Loading Video JS"
     new ScriptLoader "videoJs", @callbacks['videojs_loaded']
     
-  load_UI:=>        
+  load_UI:=>   
+    @user.playlist.onload = => 
+      @playlist_ready = true
+      @overlay.enable_skip() if @overlay
+    
+    @user.playlist.onempty = =>
+      @playlist_ready = false
+      @overlay.disable_skip() if @overlay
+      
     @video = @user.playlist.next()    
     @overlay = null 
     
     if @start_minimised > 0
-     
       @minimised = true
       @create_slug()
       
     else
       @create_overlay()
+      @overlay.enable_skip() if @playlist_ready
       @create_slug()
+      @slug.hide()
       @minimised = false
-      
       @player = @create_player(@video,false,false)
       
-        
     undefined
     
   create_overlay:=>
@@ -372,6 +379,8 @@ class User
 
 class Playlist
   constructor:(@id,callback,last_played)->
+    @onload = null
+    @onempty = null
     @videos = []
     if last_played
       window.gmcs.log "Loading Last Played"
@@ -389,6 +398,7 @@ class Playlist
     callback() if callback
     
   load_playlist:(callback)=>
+    @onempty() if @onempty
     requestURI = window.gmcs.host + "/users/" + @id + "/refreshplaylist/"
     window.gmcs.log "Requesting new playlist"
     $.getJSON(requestURI, (data)=>
@@ -400,6 +410,7 @@ class Playlist
       $("#cs-footer-skip").text("Skip")
       $("#cs-footer-skip").addClass("footer-enabled")
       callback() if callback
+      @onload() if @onload
     )
             
   current:=>
@@ -411,8 +422,6 @@ class Playlist
       new Pixel @id, "play", v.id
       window.gmcs.log @videos
       if @videos.length == 0
-        $("#cs-footer-skip").text("Optimising playlist")
-        $("#cs-footer-skip").removeClass("footer-enabled")
         @load_playlist()
       return v
     
@@ -493,7 +502,7 @@ class Overlay
     @$related_container.html("Since you liked this, you might also like:")
     
     @hide_related()
-    @enable_skip()
+    @disable_skip()
     
   show: =>
     @set_blur()
@@ -617,7 +626,7 @@ class Slug
     @$label.text(text)
 
   set_title:(text)=>
-    @$video_title.text(text)
+    @$video_title.html(text)
     
   set_poster:(image_url)=>
     background = "url('"+image_url+"')"
