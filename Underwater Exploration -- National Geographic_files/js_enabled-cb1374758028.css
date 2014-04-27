@@ -40,7 +40,7 @@ Global JavaScript-Enabled CSS
 .js .dl {position: relative;}
 .js .dl li {cursor: pointer; height: 100%; margin: 0; width: 100%; z-index: 0;}
 .js .dl .dl_navigation {float: right; position: absolute; bottom: 16px; right: 16px; z-index: 2;}
-.js .dl .dl_navigation li {background: url(../i/presentation/geocore_sprites.png) no-repeat -6px -53px; font-size: 11px; height: 20px; margin: 0 5px; text-align: center; width: 17px;}
+.js .dl .dl_navigation li {background: url() no-repeat -6px -53px; font-size: 11px; height: 20px; margin: 0 5px; text-align: center; width: 17px;}
 /*.js .dl .show, .js .dl .next {display: block!important;}
 */
 
@@ -62,7 +62,6 @@ Global JavaScript-Enabled CSS
 .js .dl .dl_navigation .prev {background-position: -15px -373px; width: 8px;}
 .js .dl .dl_navigation .next {background-position: -15px -346px; width: 8px;}
 .js .dl li.show {z-index: 1;}
-.js .dl li div {background: url(../i/presentation/dl_gradient.png) repeat-x center bottom; bottom: -1px; left: 0; letter-spacing: 0.03em; line-height: normal; padding: 20px 20px 18px; position: absolute; z-index: 10;}
 .js #content .dl h4 {color: #fff; font-size: 2.25em; font-weight: normal; margin-bottom: 5px;}
 .js #content .dl div p {color: #fff; font-size: 1.438em;}
 .js .dl div p a {color: #ffd800; font-size: .814em; text-transform: uppercase;}
@@ -111,7 +110,7 @@ Global JavaScript-Enabled CSS
 ------------------------------------------------------------ */
 .js #more_from_nationalgeographic .wrap2 {background-color: #edeeef; padding: 20px 0px 20px 15px;}
 .js #more_from_nationalgeographic .wrap {float: left; padding-left: 20px;}
-.js .carousel .wrap2 button {background: url(../i/presentation/geocore_sprites.png) no-repeat -12px -374px; border: none; float: left; margin-top: 35px; padding: 0; width: 15px;}
+.js .carousel .wrap2 button {background: url() no-repeat -12px -374px; border: none; float: left; margin-top: 35px; padding: 0; width: 15px;}
 .js .carousel .wrap2 .next {background-position: -12px -347px;}
 
 /* ------------------------------------------------------------
@@ -129,7 +128,7 @@ Global JavaScript-Enabled CSS
 .js .rating fieldset {border: none; margin-bottom: 20px;}
 .js div.rating {clear: both; cursor: pointer; display: block; margin: 2em;}
 .js div.cancel, div.star {background: transparent; cursor: pointer; display: block; float: left; height: 17px; overflow:hidden; text-indent: -999em; width: 21px;}
-.js div.star, div.star a {background: url(../i/presentation/geocore_sprites.png) no-repeat -4px -150px;}
+.js div.star, div.star a {background: url() no-repeat -4px -150px;}
 .js div.cancel a, div.star a {display: block; height: 100%; width: 18px;}
 .js div.star_on a {background-position: -4px -184px!important;}
 .js div.star_hover a, div.star_live a:hover {background-position: -4px -184px;}
@@ -235,11 +234,11 @@ Global JavaScript-Enabled CSS
 #ng_comments img.pluck-comm-avatarimg {float: none;}
 #ng_comments .ngstaff {background: url(../i/presentation/ng-logo-50x15.png) no-repeat 0 0; width:55px; height:15px; clear:both; margin-top: 8px;}
 
-.pluck .comments {text-indent: 25px; background: url(../../common/i/presentation/geocore_sprites.png) no-repeat 0 -561px;}}
+.pluck .comments {text-indent: 25px; background: url() no-repeat 0 -561px;}}
 .social_stats {padding-top: 10px;}
 .social_stats p {float: left; margin-bottom: 0; padding-left: 25px;}
-.social_stats .comments {padding-right: 30px; background: url(../../common/i/presentation/geocore_sprites.png) no-repeat -5px -562px;}
-.social_stats .recommendations {background: url(../../common/i/presentation/geocore_sprites.png) no-repeat -5px -582px;}
+.social_stats .comments {padding-right: 30px; background: url() no-repeat -5px -562px;}
+.social_stats .recommendations {background: url() no-repeat -5px -582px;}
 #share_buttons .pluck .comments span {float: none; margin: 0;}
 
 /* pagination numbers from the default widget don't work on galleries so hide em */
@@ -285,7 +284,6 @@ body.gallery #ng_comments .pluck-comm-pagination-forward-area {margin-left: 14px
 #ng_comments .pluck-comm-single-comment-main textarea {width: 343px;}
 #ng_comments .pluck-comm-reply-input {margin: 0 0 0 82px!important;}
 #ng_comments .pluck-comm-message-border {width: 100%;}
-#ng_comments .pluck-comm-commenttext {background:url(../i/presentation/header_icon.gif) no-repeat scroll 0 3px transparent; color: #333; font-size: 1.375em; font-weight: bold; padding-left: 17px;}
 #ng_comments .pluck-comm-calltoaction, #ng_comments .pluck-login-comment-links-directions {color: #333; font-weight: bold; font-size: 1.25em; padding: 0;}
 #ng_comments .pluck-comm-commentcount {margin-bottom: 10px; padding: 0;}
 #ng_comments .pluck-comm-wrapper, #ng_comments .pluck-comm-commentcount {background-color: transparent;}
@@ -297,7 +295,7 @@ body.gallery #ng_comments .pluck-comm-pagination-forward-area {margin-left: 14px
 #ng_comments .pluck-comm-single-comment-top {border-top: 1px solid #d5d5d5; margin-top: 20px; padding-top: 20px; padding-bottom: 20px;}
 #ng_comments .pluck-comm-first {border: none; margin: 0; padding: 0;}
 #ng_comments .pluck-error-message {color: red; margin: 0 0 10px 0;}
-#ng_comments .pluck-comm-reply-button-ref, .anon_reply_button {background: url(../i/presentation/geocore_sprites.png) no-repeat -4px -621px transparent; height: 20px; padding: 0 0 0 25px; text-indent: 0;}
+#ng_comments .pluck-comm-reply-button-ref, .anon_reply_button {background: url() no-repeat -4px -621px transparent; height: 20px; padding: 0 0 0 25px; text-indent: 0;}
 #ng_comments .anon_reply_button {float: left;}
 #ng_comments .pluck-app-processing {text-align: center;}
 #ng_comments div.pluck-user-isStaffTier .pluck-comm-sc-avatar, #ng_comments div.pluck-user-isEditorTier .pluck-comm-sc-avatar {background: url(../i/presentation/ng_logo60x18.png) no-repeat 0 bottom; bottom: 0; height: auto; margin-left: 0; padding-bottom: 22px; width: 60px;}
@@ -327,7 +325,7 @@ body.gallery #ng_comments .pluck-comm-pagination-forward-area {margin-left: 14px
 #ng_comments .pluck-abuse-dialog .pluck-dialog-wrapper .bottomContainer div {background: none; display: none;}
 #ng_comments .pluck-abuse-dialog span.pluck-dialog-group label {color: #666; font-size: 0.875em;}
 #ng_comments .pluck-abuse-posting-form {margin-top: 10px;}
-#ng_comments .pluck-thumb-up-link, #ng_comments .pluck-thumb-voted {background: url(../i/presentation/geocore_sprites.png) no-repeat -9px -585px transparent; display: block; width: auto; padding: 0 0 0 20px;}
+#ng_comments .pluck-thumb-up-link, #ng_comments .pluck-thumb-voted {background: url() no-repeat -9px -585px transparent; display: block; width: auto; padding: 0 0 0 20px;}
 #ng_comments .pluck-thumb-voted {background-position:-9px -635px; font-size: .938em; margin-top: 1px; line-height: normal;}
 #ng_comments .pluck-comm-ReplyLevel-2 .pluck-comm-comment-content, #ng_comments .pluck-comm-ReplyLevel-2 .pluck-comm-comment-action-group-arrow-wrapper {margin-left: 162px;}
 #ng_comments .pluck-comm-show-hide-replies {padding: 20px 0 5px;}

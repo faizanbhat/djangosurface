@@ -8,9 +8,8 @@ Oceans-specific CSS
 +General
 ------------------------------------------------------------ */
 
-.promo_collection h2, .seven h2, h3.title {background-image: url(../i/presentation/header_icon.gif);}
 #body_wrap {background: url() repeat-x top center;}
-body {background: #02325a url(../i/presentation/footer_bg.jpg) no-repeat bottom left;}
+body {background: #02325a url() no-repeat bottom left;}
 .article #oceans_primary_nav div.general {border: 0;}
 #container {background-color: transparent; padding: 0; width: 990px;}
 #footer_site {background-color: #fff; width: 950px;}
@@ -30,8 +29,6 @@ body.pod #page_head h1 {margin: 1px 0; padding: 0;}
 #page_head .promo .graphic_promo img { float: none; }
 /*#shallow_deep { margin: 20px; }*/
 
-#container {background: #02325A url("../i/presentation/header_bg.png") no-repeat scroll left top;}
-.critical-issues #container {background-image: url("../i/presentation/issues_header_bg.png");}
 .news-updates #container {background-image: url("../i/presentation/news_header_bg.png");}
 .take-action #container {background-image: url("../i/presentation/action_header_bg.png");}
 
@@ -48,7 +45,6 @@ body.pod #page_head h1 {margin: 1px 0; padding: 0;}
 #oceans_primary_nav { border: 0 none; padding: 20px 0 5px; border: 0 none; background-color: transparent; }
 #oceans_primary_nav h1 { border-bottom: 1px solid #4d6375; height: 50px; color: #fff; padding: 0 15px 0; margin: 0 0 5px; font: 1.75em/28px Georgia,"Times New Roman",serif; }
 #oceans_primary_nav h1 a { display: block; width: 156px; height: 22px; text-indent: -9999px; overflow: hidden; padding-bottom: 8px; background: url(../i/presentation/oceans_header_sm.png) no-repeat 0 0; }
-#oceans_primary_nav h1.oceans_hidden { border: 0 none; width: 285px; height: 49px;  padding: 0 15px 10px; margin: 0; background: url(../i/presentation/oceans_header.gif) no-repeat 15px 8px; }
 #oceans_primary_nav h1.oceans_hidden a { display: block; border: 0 none; padding: 0; width: 285px; height: 49px; text-indent: -9999px; overflow: hidden; background: transparent none; }
 #oceans_primary_nav .general .nav a {color: #FFFFFF; font-size: 1.25em;}
 #oceans_primary_nav .general .nav li.selected a {color: #fff;}
@@ -74,9 +70,8 @@ body.pod #page_head h1 {margin: 1px 0; padding: 0;}
 
 .openHTML #donate {padding-bottom: 50px; position: relative;}
 .openHTML #donate span {display: block; float: left;}
-.openHTML #donate h3 span.hiddenText {background: #fff url(../i/presentation/donate_sprite.jpg) no-repeat top left; display: block; height: 14px; margin: 4px 0 0 7px; width: 113px;}
-.openHTML #donate .flair {background: #fff url(../i/presentation/donate_sprite.jpg) no-repeat left -14px; bottom: 5px; height: 76px; position: absolute; right: 5px; width: 112px;}
-.openHTML #donate .action .donate {background: #fff url(../i/presentation/donate_sprite.jpg) no-repeat bottom left; display: block; height: 29px; width: 97px;}
+.openHTML #donate .flair {background: #fff url() no-repeat left -14px; bottom: 5px; height: 76px; position: absolute; right: 5px; width: 112px;}
+.openHTML #donate .action .donate {background: #fff url() no-repeat bottom left; display: block; height: 29px; width: 97px;}
 /*.openHTML h3{clear: both; content: "."; display: block; height: 0; visibility: hidden;}*/
 
 #content_top > img {display: block; margin: 0 auto;}
@@ -113,7 +108,6 @@ body.pod #page_head h1 {margin: 1px 0; padding: 0;}
 /* ------------------------------------------------------------
 +A to Z module
 ------------------------------------------------------------ */
-#atoz h3 {background: url(../i/presentation/header_icon.gif) no-repeat scroll 0 3px; clear: both; line-height: 1.3; padding-left: 17px; padding-top: 0 !important;}
 #atoz input {border: 1px solid #9c9f94; width: 200px;}
 #atoz label {color: #9c9f94; margin-left: 10px;}
 #atoz form {background-color: #d1e7e9; height: 100%; padding: 5px;}

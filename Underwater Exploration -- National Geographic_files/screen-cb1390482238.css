@@ -46,7 +46,6 @@ i, em {font-style: italic!important; font-weight: inherit!important;}
 b, strong {font-weight: bold!important;}
 hr {border-color: #d5d5d5; border-style: solid; border-width: 1px 0 0; clear: both; margin: 0; height: 0;}
 h3, .story .dl h3 {display: block; color: #333333; font-size: 1.438em; font-weight: bold; margin-bottom: 15px;}
-.promo_collection h2, .seven h2, h3.title {background: url(../i/presentation/header_icon.gif) no-repeat 0 3px; line-height: 1.3; padding-left: 17px; padding-top: 0; clear: both;}
 .promo_collection h2, .seven h2 {margin-bottom: 15px;font-weight: bold;font-size: 17px;line-height: 22px;}
 p {color: #333; line-height: 1.4;}
 p.headline {clear: both;}
@@ -68,7 +67,7 @@ h4 a:first-line {line-height: normal;}
 .story002 h3 a {font-size: 1.438em; line-height: 1.125em;}
 .story002 p {font-size: 1.064em; line-height: 1.375em; margin-top: 15px;}
 .multimedia_links li {margin-top: 15px;}
-.video_link a, .gallery_link a {background: url(../i/presentation/geocore_sprites.png) no-repeat -9px -26px; padding-left: 23px;}
+.video_link a, .gallery_link a {background: url() no-repeat -9px -26px; padding-left: 23px;}
 .gallery_link a {background-position: -8px 0;}
 #top_stories h4 {font-size: 1em;}
 .archive_link {background-color: #EDEEEF; font-size: 1.25em; font-weight: bold; padding: 13px;}
@@ -94,7 +93,7 @@ h4 a:first-line {line-height: normal;}
 h3.small {font-size: 1em; margin-bottom: 10px; padding: 0;}
 #content { zoom: 1; } /*ie fix*/
 #content h3 + p {margin-bottom: 10px;}
-p.wallpaper_link {background: url(../i/presentation/geocore_sprites.png) no-repeat -4px -454px; padding: 2px 25px;}
+p.wallpaper_link {background: url() no-repeat -4px -454px; padding: 2px 25px;}
 .promo_collection .rss {float: right; margin-top: 5px;}
 .promo_collection .rss + h3 {clear: none;}
 
@@ -191,7 +190,7 @@ div.popularity_type {border-bottom: 1px solid #d5d5d5; margin: 20px 0 0 17px; pa
 #share_buttons p a:hover {background-color: #eee; -moz-border-radius: 5px; -webkit-border-radius: 5px; opacity: 1;}
 #share_buttons .hidden {width: 0;}
 #share_buttons .addthis_button_expanded span {display: none;}
-#share_buttons .im_this {background: url(../i/presentation/geocore_sprites.png) no-repeat -2px -210px; text-indent: 27px;}
+#share_buttons .im_this {background: url() no-repeat -2px -210px; text-indent: 27px;}
 div#container div.social_buttons {clear: both; height: 25px; border-top: none; padding-top: 0;}
 div#container div#pod_top.social_buttons {float: left; margin-top: -8px;}
 div#container div#pod_bottom.social_buttons {border-top: 1px solid #D5D5D5; padding-top: 20px; width: 100%;}
@@ -254,7 +253,7 @@ div#container div#pod_bottom.social_buttons {border-top: 1px solid #D5D5D5; padd
 	float: left; 
 	width: 14px; 
 	height: 14px; 
-	background:url(../i/presentation/geocore_sprites.png) no-repeat -10px -669px; 
+	background:url() no-repeat -10px -669px; 
 	margin: 0 1px; 
 	cursor:pointer; 
 	text-indent: -9999px; 
@@ -283,7 +282,7 @@ div#container div#pod_bottom.social_buttons {border-top: 1px solid #D5D5D5; padd
 #footer_breadcrumb li:first-child {margin: 0;}
 #footer_breadcrumb ul, #footer_breadcrumb li {float: left; letter-spacing: .05em;}
 #footer_breadcrumb p {float: right; letter-spacing: .05em; padding-top: 4px;}
-#footer_breadcrumb p.nav1, #footer_breadcrumb ul {background: url(../i/presentation/geocore_sprites.png) no-repeat scroll -8px -510px; padding: 2px 20px; height: 18px; line-height:18px;}
+#footer_breadcrumb p.nav1, #footer_breadcrumb ul {background: url() no-repeat scroll -8px -510px; padding: 2px 20px; height: 18px; line-height:18px;}
 .video_player #footer_breadcrumb ul {font-size: 12px;}
 #footer_site {clear: both; padding: 20px 0;}
 
@@ -506,7 +505,7 @@ body, #container {background-color: #fff;}
 .article_text h4 {font-size: 1.125em; font-weight: bold; margin-bottom: 10px;}
 .article .subsection:first-child {margin: 0;}
 .article .subsection:first-child + div {border: none; padding-top: 0;}
-#print_link a {background: url(../i/presentation/geocore_sprites.png) no-repeat -8px -245px; padding-left: 22px;}
+#print_link a {background: url() no-repeat -8px -245px; padding-left: 22px;}
 /*.interactive h1 {font-size: 2em; font-weight: bold; margin-bottom: 15px;}*/
 .gallery .timestamp {font-size: 1em; margin: 0;}
 
@@ -579,10 +578,10 @@ table.striped tr.striped {background-color: #F4F4F4;}
 .movie_tickets li {overflow: auto; width: 100%;}
 .movie_tickets p {padding-top: 20px;}
 .pod_module h4 {float: left; font-weight: bold; font-size: 1.25em; margin: 10px 0 5px;}
-.pod_module p {background: url(../i/presentation/geocore_sprites.png) no-repeat -4px -115px; float: right; margin: 10px 29px 0 0; padding: 2px 0 0 24px;}
+.pod_module p {background: url() no-repeat -4px -115px; float: right; margin: 10px 29px 0 0; padding: 2px 0 0 24px;}
 .pod_module p.credit {background: none; clear: both; float: none; font-size: 1em; margin: 5px 0 0 0; padding: 0;}
 .pod_module p a {font-weight: bold;}
-div.download_link {background: url(../i/presentation/geocore_sprites.png) no-repeat -4px -454px; padding: 3px 25px; float: left; margin-bottom: 15px;}
+div.download_link {background: url() no-repeat -4px -454px; padding: 3px 25px; float: left; margin-bottom: 15px;}
 .photo_archive #content_mainA {width: 707px; float: right;}
 .photo_archive #content_mainB {border: 1px solid #d5d5d5; float: left; margin-right: 20px; padding: 20px; width: 180px;}
 .photo_archive #content_mainB .promo_collection h4 {font-size: 1.25em;}
@@ -825,7 +824,7 @@ div.download_link {background: url(../i/presentation/geocore_sprites.png) no-rep
 .wallpaper .article_text h5.credit {color: #999999; font-style: italic; margin: 10px 0 15px; font-size: 1.1em;}
 .wallpaper .download_link {margin-bottom: 0;}
 .wallpaper .photo_origin {float: right; padding-top: 3px;}
-.wallpaper .buy_link {background: url(../i/presentation/geocore_sprites.png) no-repeat -4px -480px; padding: 2px 25px;}
+.wallpaper .buy_link {background: url() no-repeat -4px -480px; padding: 2px 25px;}
 .wallpaper-body {background: url(../i/presentation/photo_body.gif) repeat-x top center;}
 
 /* ------------------------------------------------------------

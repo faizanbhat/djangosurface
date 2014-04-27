@@ -7,7 +7,7 @@ $ ->
   window.gmcs = {}
   window.gmcs.site_id = "1"
   window.gmcs.host = "http://0.0.0.0:5000"   
-  window.gmcs.debug = false 
+  window.gmcs.debug = true 
   window.gmcs.log = (obj) ->
     if window.gmcs.debug
       console.log obj
@@ -23,7 +23,7 @@ $ ->
     result += chars.substr Math.floor(Math.random() * chars.length), 1
     result += chars.substr Math.floor(Math.random() * chars.length), 1
     return result
-  window.gmcs.surface = new SurfaceController("Nat Geo TV")
+  window.gmcs.surface = new SurfaceController("Nat Geo TV",true)
   
 
 class CookieHandler
@@ -184,7 +184,7 @@ class Player
     @elem.dispose()
   
 class SurfaceController
-  constructor:(@site_name,delay)->
+  constructor:(@site_name,minimised=false,delay=0)->
     @hostname = window.gmcs.host
     cookieHandler = window.gmcs.utils.cookieHandler
     
@@ -200,7 +200,7 @@ class SurfaceController
       @current_time = 0
     @start_minimised = parseInt(cookieHandler.getCookie("gmcs-surface-minimised"))
     if isNaN(@start_minimised)
-      @start_minimised = 0
+      @start_minimised = 1 if minimised ? 0
     
     @minimised = false
     @player = null
@@ -599,9 +599,8 @@ class Slug
     @$wrapper = $("#cs-slug-wrapper")
     @$slug_body = $("#cs-slug-body")
     @$close_button = $("#cs-slug-close")
-    if parseInt(window.gmcs.utils.cookieHandler.getCookie("gmcs-surface-slug-closed")) is 0
-      @open()
-    else
+    @open()
+    if parseInt(window.gmcs.utils.cookieHandler.getCookie("gmcs-surface-slug-closed")) is 1
       @close()
     @preload(["src/slug-close-active.png","src/slug-close-inactive.png","src/slug-open-active.png","src/slug-open-inactive.png"])
   

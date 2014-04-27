@@ -7,8 +7,8 @@
 /* Horizontal Buttons */
 .jcarousel-skin-geocore .jcarousel-prev-horizontal,
 .jcarousel-skin-geocore .jcarousel-next-horizontal {position: absolute; top: 43px; width: 32px; height: 32px; cursor: pointer;}
-.jcarousel-skin-geocore .jcarousel-prev-horizontal {left: 5px; background: transparent url(prev-horizontal.png) no-repeat 0 0;}
-.jcarousel-skin-geocore .jcarousel-next-horizontal {right: 5px; background: transparent url(next-horizontal.png) no-repeat 0 0;}
+.jcarousel-skin-geocore .jcarousel-prev-horizontal {left: 5px; background: transparent url() no-repeat 0 0;}
+.jcarousel-skin-geocore .jcarousel-next-horizontal {right: 5px; background: transparent url() no-repeat 0 0;}
 .fatty-carousel.three .jcarousel-skin-geocore .jcarousel-prev-horizontal,
 .fatty-carousel.three .jcarousel-skin-geocore .jcarousel-next-horizontal {position: absolute; top: 75px;}
 .two .jcarousel-skin-geocore .jcarousel-prev-horizontal,
@@ -17,8 +17,6 @@
 .one .jcarousel-skin-geocore .jcarousel-prev-horizontal,
 .one .jcarousel-skin-geocore .jcarousel-next-horizontal {position: absolute; top: 150px;}
 
-.fatty-carousel.three .jcarousel-skin-geocore .jcarousel-prev-horizontal {left: 10px; background: transparent url(prev-horizontal.png) no-repeat 0 0;}
-.fatty-carousel.three .jcarousel-skin-geocore .jcarousel-next-horizontal {right: 10px; background: transparent url(next-horizontal.png) no-repeat 0 0;}
 .jcarousel-skin-geocore .jcarousel-prev-horizontal:hover,
 .jcarousel-skin-geocore .jcarousel-next-horizontal:hover,
 .fatty-carousel.three .jcarousel-skin-geocore .jcarousel-prev-horizontal:hover,
