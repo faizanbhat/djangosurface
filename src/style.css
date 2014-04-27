@@ -172,20 +172,6 @@
   top: 0;
 }
 
-#cs-slug-wrapper{
-  background:url("slug-open-inactive.png");
-  position:fixed;
-  bottom:35px;
-  right:0px;
-  width:50px;
-  height:200px;
-  z-index:10000000000000001 !important;
-}
-
-#cs-slug-wrapper:hover{
-  background:url("slug-open-active.png");  
-}
-
 
 #cs-footer{
   position:relative;
@@ -254,3 +240,98 @@
   
 }
 
+#cs-slug-wrapper{
+  position:fixed;
+  bottom:35px;
+  right:0px;
+  width:360px;
+  height:200px;
+  z-index:10000000000000001 !important;
+}
+
+#cs-slug-close {
+  float:left;
+  width:45px;
+  height:100%;
+}
+
+.slug-closed{
+  right:-310px !important;
+}
+
+.slug-close-btn{
+  background:url("slug-close-inactive.png");
+}
+
+.slug-open-btn{
+  background:url("slug-open-inactive.png");
+}
+
+.slug-open-btn:hover{
+  background:url("slug-open-active.png");  
+}
+
+.slug-close-btn:hover{
+  background:url("slug-close-active.png");  
+}
+
+#cs-slug-body {
+  float:left;
+  height:100%;
+  width:315px;
+  background-size: cover;
+}
+
+#cs-slug-body-overlay {
+  height:100%;
+  width:100%;
+  background:black;
+  opacity:0.6;
+}
+
+#cs-slug-label {
+  position:relative;
+  top:25px;
+  height:20px;
+  width:60%;
+  margin:0 auto;
+  font-family: "HelveticaNeue", "Helvetica Neue", "Helvetica Neue", 
+    Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-size:0.8em;
+  letter-spacing:1px;
+  color:white;
+  text-align:center;
+  
+}
+
+#cs-slug-play-button {
+  position:relative;
+  background: url("playbtn.png") no-repeat;
+  top:40px;
+  height:75px;
+  width:75px;
+  margin: 0 auto;
+  z-index:1000;
+  opacity:1;
+}
+
+#cs-slug-body-overlay:hover > #cs-slug-play-button {
+  background: url("playbtn-active.png") no-repeat;
+  
+}
+
+
+#cs-slug-video-title {
+  position:relative;
+  top:60px;
+  height:40px;
+  width:90%;
+  margin:0 auto;
+  font-family: "HelveticaNeue", "Helvetica Neue", "Helvetica Neue", 
+    Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-size:0.8em;
+  letter-spacing:1px;
+  color:white;
+  text-align:center;
+  z-index:1000;
+}

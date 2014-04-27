@@ -299,6 +299,7 @@
 
   Surface = (function() {
     function Surface(site_name, delay) {
+      var cookieHandler;
       this.site_name = site_name;
       this.update_current_time = __bind(this.update_current_time, this);
       this.maximise = __bind(this.maximise, this);
@@ -307,20 +308,23 @@
       this.play_next_video = __bind(this.play_next_video, this);
       this.play = __bind(this.play, this);
       this.create_player = __bind(this.create_player, this);
+      this.refresh_slug = __bind(this.refresh_slug, this);
+      this.create_slug = __bind(this.create_slug, this);
+      this.create_overlay = __bind(this.create_overlay, this);
       this.load_UI = __bind(this.load_UI, this);
       this.load_VJS = __bind(this.load_VJS, this);
       this.hostname = window.gmcs.host;
-      this.cookieHandler = window.gmcs.utils.cookieHandler;
+      cookieHandler = window.gmcs.utils.cookieHandler;
       this.callbacks = {
         'playlist_loaded': this.load_VJS,
         'videojs_loaded': this.load_UI
       };
       this.user = new User(this.callbacks['playlist_loaded']);
-      this.current_time = parseInt(this.cookieHandler.getCookie("gmcs-surface-current_time"));
+      this.current_time = parseInt(cookieHandler.getCookie("gmcs-surface-current_time"));
       if (isNaN(this.current_time)) {
         this.current_time = 0;
       }
-      this.start_minimised = parseInt(this.cookieHandler.getCookie("gmcs-surface-minimised"));
+      this.start_minimised = parseInt(cookieHandler.getCookie("gmcs-surface-minimised"));
       if (isNaN(this.start_minimised)) {
         this.start_minimised = 0;
       }
@@ -337,25 +341,43 @@
     };
 
     Surface.prototype.load_UI = function() {
+      this.video = this.user.playlist.next();
+      this.overlay = null;
+      if (this.start_minimised > 0) {
+        this.minimised = true;
+        this.create_slug();
+      } else {
+        this.create_overlay();
+        this.create_slug();
+        this.minimised = false;
+        this.player = this.create_player(this.video, false, false);
+      }
+      return void 0;
+    };
+
+    Surface.prototype.create_overlay = function() {
       this.overlay = new Overlay();
       this.overlay.onclose(this.minimise);
       this.overlay.onlike(this.like_video);
-      this.video = this.user.playlist.next();
       this.overlay.set_title(this.video.title());
-      this.overlay.onskip((function(_this) {
+      return this.overlay.onskip((function(_this) {
         return function() {
           new Pixel(_this.user.id, "skip", _this.video.id);
           return _this.play_next_video();
         };
       })(this));
-      this.player = this.create_player(this.video, false, false);
-      this.slug = new Slug();
+    };
+
+    Surface.prototype.create_slug = function() {
+      this.slug = new Slug("Recommended For You");
       this.slug.click(this.maximise);
-      this.slug.hide();
-      if (this.start_minimised > 0) {
-        this.minimise();
-      }
-      return void 0;
+      this.slug.set_title(this.video.title());
+      return this.slug.set_poster(this.video.thumb());
+    };
+
+    Surface.prototype.refresh_slug = function() {
+      this.slug.set_title(this.video.title());
+      return this.slug.set_poster(this.video.thumb());
     };
 
     Surface.prototype.create_player = function(video, autoplay, resume) {
@@ -422,6 +444,10 @@
     Surface.prototype.minimise = function() {
       this.player.dispose();
       this.overlay.hide();
+      this.slug.set_label("Resume Watching");
+      this.slug.set_title(this.video.title());
+      this.slug.set_poster(this.video.thumb());
+      this.slug.open();
       this.slug.show();
       this.minimised = true;
       return this.cookieHandler.setCookie("gmcs-surface-minimised", 1, 10000);
@@ -429,6 +455,10 @@
 
     Surface.prototype.maximise = function() {
       if (this.minimised === true) {
+        debugger;
+        if (this.overlay === null) {
+          this.create_overlay();
+        }
         this.slug.hide();
         this.overlay.show();
         this.player = this.create_player(this.video, true, true);
@@ -654,6 +684,7 @@
       this.show = __bind(this.show, this);
       var html, s;
       this.dom = window.gmcs.utils.domManager;
+      this.set_blur();
       s = document.createElement("div");
       s.id = "cs-wrapper";
       html = document.getElementsByTagName("html")[0];
@@ -803,11 +834,34 @@
   })();
 
   Slug = (function() {
-    function Slug(func) {
+    function Slug(label) {
+      this.open = __bind(this.open, this);
+      this.close = __bind(this.close, this);
+      this.set_poster = __bind(this.set_poster, this);
+      this.set_title = __bind(this.set_title, this);
+      this.set_label = __bind(this.set_label, this);
+      this.click = __bind(this.click, this);
+      this.show = __bind(this.show, this);
+      this.hide = __bind(this.hide, this);
       this.dom = window.gmcs.utils.domManager;
       this.dom.appendDivToBody("cs-slug-wrapper");
+      this.dom.appendDivToParent("cs-slug-close", "cs-slug-wrapper");
+      this.dom.appendDivToParent("cs-slug-body", "cs-slug-wrapper");
+      this.dom.appendDivToParent("cs-slug-body-overlay", "cs-slug-body");
+      this.dom.appendDivToParent("cs-slug-label", "cs-slug-body-overlay");
+      this.dom.appendDivToParent("cs-slug-play-button", "cs-slug-body-overlay");
+      this.dom.appendDivToParent("cs-slug-video-title", "cs-slug-body-overlay");
+      this.$label = $("#cs-slug-label");
+      this.set_label(label);
+      this.$video_title = $("#cs-slug-video-title");
       this.$wrapper = $("#cs-slug-wrapper");
-      this.$wrapper.click(func);
+      this.$slug_body = $("#cs-slug-body");
+      this.$close_button = $("#cs-slug-close");
+      if (parseInt(window.gmcs.utils.cookieHandler.getCookie("gmcs-surface-slug-closed")) === 0) {
+        this.open();
+      } else {
+        this.close();
+      }
     }
 
     Slug.prototype.hide = function() {
@@ -819,7 +873,41 @@
     };
 
     Slug.prototype.click = function(func) {
-      return this.$wrapper.click(func);
+      return this.$slug_body.click(func);
+    };
+
+    Slug.prototype.set_label = function(text) {
+      return this.$label.text(text);
+    };
+
+    Slug.prototype.set_title = function(text) {
+      return this.$video_title.text(text);
+    };
+
+    Slug.prototype.set_poster = function(image_url) {
+      var background;
+      background = "url('" + image_url + "')";
+      return this.$slug_body.css("background", background);
+    };
+
+    Slug.prototype.close = function() {
+      var cookieHandler;
+      this.$wrapper.addClass("slug-closed");
+      this.$close_button.removeClass("slug-close-btn");
+      this.$close_button.addClass("slug-open-btn");
+      this.$close_button.unbind("click");
+      this.$close_button.click(this.open);
+      cookieHandler = window.gmcs.utils.cookieHandler;
+      return window.gmcs.utils.cookieHandler.setCookie("gmcs-surface-slug-closed", 1, 10000);
+    };
+
+    Slug.prototype.open = function() {
+      this.$wrapper.removeClass("slug-closed");
+      this.$close_button.removeClass("slug-open-btn");
+      this.$close_button.addClass("slug-close-btn");
+      this.$close_button.unbind("click");
+      this.$close_button.click(this.close);
+      return window.gmcs.utils.cookieHandler.setCookie("gmcs-surface-slug-closed", 0, 10000);
     };
 
     return Slug;

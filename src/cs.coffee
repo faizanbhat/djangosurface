@@ -180,7 +180,7 @@ class Player
 class Surface
   constructor:(@site_name,delay)->
     @hostname = window.gmcs.host
-    @cookieHandler = window.gmcs.utils.cookieHandler
+    cookieHandler = window.gmcs.utils.cookieHandler
     
     @callbacks = {
       'playlist_loaded':@load_VJS
@@ -189,10 +189,10 @@ class Surface
     
     @user = new User(@callbacks['playlist_loaded'])
     
-    @current_time  = parseInt(@cookieHandler.getCookie("gmcs-surface-current_time"))
+    @current_time  = parseInt(cookieHandler.getCookie("gmcs-surface-current_time"))
     if isNaN(@current_time)
       @current_time = 0
-    @start_minimised = parseInt(@cookieHandler.getCookie("gmcs-surface-minimised"))
+    @start_minimised = parseInt(cookieHandler.getCookie("gmcs-surface-minimised"))
     if isNaN(@start_minimised)
       @start_minimised = 0
     
@@ -208,30 +208,46 @@ class Surface
     console.log "Loading Video JS"
     new ScriptLoader "videoJs", @callbacks['videojs_loaded']
     
-  load_UI:=>    
+  load_UI:=>        
+    @video = @user.playlist.next()    
+    @overlay = null 
+    
+    if @start_minimised > 0
+     
+      @minimised = true
+      @create_slug()
+      
+    else
+      @create_overlay()
+      @create_slug()
+      @minimised = false
+      
+      @player = @create_player(@video,false,false)
+      
+        
+    undefined
+    
+  create_overlay:=>
     @overlay = new Overlay()
     @overlay.onclose(@minimise)
     @overlay.onlike(@like_video)
-    
-    @video = @user.playlist.next()    
     @overlay.set_title(@video.title())
-    
+  
     @overlay.onskip(=>
       new Pixel @user.id, "skip", @video.id
       @play_next_video()
     )
     
-    @player = @create_player(@video,false,false)
-    
-    @slug = new Slug()
+  create_slug:=>
+    @slug = new Slug("Recommended For You")
     @slug.click(@maximise)
-    @slug.hide()
-    
-    if @start_minimised > 0
-        @minimise()
-        
-    undefined
-    
+    @slug.set_title(@video.title())
+    @slug.set_poster(@video.thumb())
+
+  refresh_slug:=>
+    @slug.set_title(@video.title())
+    @slug.set_poster(@video.thumb())
+  
   create_player:(video,autoplay,resume)=>
     
     player = new Player("cs-video-player","cs-player-container")   
@@ -286,12 +302,20 @@ class Surface
   minimise:() =>      
     @player.dispose()
     @overlay.hide()    
+    @slug.set_label("Resume Watching")
+    @slug.set_title(@video.title())
+    @slug.set_poster(@video.thumb())
+    
+    @slug.open()
     @slug.show()
     @minimised = true
     @cookieHandler.setCookie("gmcs-surface-minimised",1,10000)
         
   maximise:=>
     if (@minimised==true)
+        debugger;
+        if @overlay is null
+          @create_overlay()
         @slug.hide()
         @overlay.show()
         @player = @create_player(@video,true,true)
@@ -423,6 +447,7 @@ class Pixel
 class Overlay
   constructor:(label)->
     @dom = window.gmcs.utils.domManager
+    @set_blur()
     s = document.createElement("div")
     s.id = "cs-wrapper"
     html = document.getElementsByTagName("html")[0]
@@ -554,20 +579,66 @@ class Overlay
     })
   
 class Slug
-  constructor:(func) ->
+  constructor:(label) ->
     @dom = window.gmcs.utils.domManager
     @dom.appendDivToBody("cs-slug-wrapper")
+    @dom.appendDivToParent("cs-slug-close","cs-slug-wrapper")
+    @dom.appendDivToParent("cs-slug-body","cs-slug-wrapper")
+    @dom.appendDivToParent("cs-slug-body-overlay","cs-slug-body")
+    @dom.appendDivToParent("cs-slug-label","cs-slug-body-overlay")
+    @dom.appendDivToParent("cs-slug-play-button","cs-slug-body-overlay")
+    @dom.appendDivToParent("cs-slug-video-title","cs-slug-body-overlay")
+    @$label = $("#cs-slug-label")
+    @set_label(label)
+    @$video_title = $("#cs-slug-video-title")
     @$wrapper = $("#cs-slug-wrapper")
-    @$wrapper.click(func)
+    @$slug_body = $("#cs-slug-body")
+    @$close_button = $("#cs-slug-close")
+    if parseInt(window.gmcs.utils.cookieHandler.getCookie("gmcs-surface-slug-closed")) is 0
+      @open()
+    else
+      @close()
   
-  hide:->
+  hide:=>
     @$wrapper.hide()
   
-  show:->
+  show:=>
     @$wrapper.show(100)
     
-  click:(func)->
-    @$wrapper.click(func)
+  click:(func)=>
+    @$slug_body.click(func)
+  
+  set_label:(text)=>
+    @$label.text(text)
+
+  set_title:(text)=>
+    @$video_title.text(text)
+    
+  set_poster:(image_url)=>
+    background = "url('"+image_url+"')"
+    @$slug_body.css("background",background)
+  
+  close:=>
+    @$wrapper.addClass("slug-closed")
+    @$close_button.removeClass("slug-close-btn")
+    @$close_button.addClass("slug-open-btn")
+    @$close_button.unbind("click")
+    @$close_button.click(@open)
+    cookieHandler = window.gmcs.utils.cookieHandler
+    window.gmcs.utils.cookieHandler.setCookie("gmcs-surface-slug-closed",1,10000)
+    
+    
+  open:=>
+    @$wrapper.removeClass("slug-closed")
+    @$close_button.removeClass("slug-open-btn")
+    @$close_button.addClass("slug-close-btn")
+    @$close_button.unbind("click")
+    @$close_button.click(@close)
+    window.gmcs.utils.cookieHandler.setCookie("gmcs-surface-slug-closed",0,10000)
+    
+    
+    
+    
     
   
     
