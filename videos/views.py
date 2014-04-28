@@ -94,9 +94,11 @@ def related(request,video_id):
     
 def search(request):
     try:
-        q = request.GET['q']
-        videos = Video.objects.filter(title__icontains=q)
+        queries = request.GET['q'].split(" ")
+        videos = Video.objects.filter(title__icontains=queries[0])
+        for q in queries:
+            videos = videos.filter(title__icontains=q)
     except:
         raise Http404
-    return HttpResponse(serializers.serialize("json",videos))
+    return HttpResponse(serializers.serialize("json",videos[0:3]))
     
