@@ -43,10 +43,29 @@
   position:relative;
   top:0px;
   height:65px;
-  width:50%;
+  width:80%;
   background:transparent;
   z-index:10000000000000001 !important;
   margin: 0 auto;
+}
+
+#cs-search{
+  position:absolute;
+  top:0px;
+  right:0px;
+  width:100px;
+  height:40px;
+  z-index:10000000000000000002 !important;
+}
+
+#cs-search-box{
+  float:right;
+  width:100px;
+  height:20px;
+  color:white;  
+  background:black;
+  padding:5px 5px 5px 5px;
+  
 }
 
 #cs-main {
@@ -204,6 +223,7 @@
 #cs-related-container {
   position:relative;
   padding-top:10px;
+  margin-top:20px;
   bottom:-20px;
   right:0px;
   z-index:1000000000000000001 !important;
@@ -213,7 +233,6 @@
   letter-spacing:1px;
   color:#AAA;  
 }
-
 
 
 .related-link{

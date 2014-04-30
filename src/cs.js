@@ -393,6 +393,7 @@
 
     SurfaceController.prototype.create_overlay = function() {
       this.overlay = new Overlay(this.site_name);
+      this.overlay.controller = this;
       this.overlay.onclose(this.minimise);
       this.overlay.onlike(this.like_video);
       this.overlay.set_title(this.video.title());
@@ -472,7 +473,7 @@
       window.gmcs.log(requestURI);
       return $.getJSON(requestURI, (function(_this) {
         return function(videos) {
-          return _this.overlay.show_related(videos, _this.play);
+          return _this.overlay.show_related(videos, _this.play, "Since you liked this, you might also like:");
         };
       })(this));
     };
@@ -723,7 +724,8 @@
       this.set_title = __bind(this.set_title, this);
       this.hide = __bind(this.hide, this);
       this.show = __bind(this.show, this);
-      var html, s;
+      var box, html, s;
+      this.controller = null;
       this.dom = window.gmcs.utils.domManager;
       this.set_blur();
       s = document.createElement("div");
@@ -736,6 +738,7 @@
       this.dom.appendDivToParent("cs-main", "cs-wrapper");
       this.dom.appendDivToParent("cs-info-wrapper", "cs-main");
       this.dom.appendDivToParent("cs-top-line", "cs-info-wrapper");
+      this.dom.appendDivToParent("cs-search", "cs-top-line");
       this.dom.appendDivToParent("cs-rule", "cs-info-wrapper");
       this.dom.appendDivToParent("cs-bottom-line", "cs-info-wrapper");
       this.dom.appendDivToParent("cs-label", "cs-top-line");
@@ -746,9 +749,6 @@
       this.dom.appendDivToParent("cs-footer-skip", "cs-footer");
       this.dom.appendDivToParent("cs-footer-like", "cs-footer");
       this.dom.appendDivToParent("cs-related-container", "cs-player-wrapper");
-      this.dom.appendDivToParent("cs-related-1", "cs-related-container");
-      this.dom.appendDivToParent("cs-related-2", "cs-related-container");
-      this.dom.appendDivToParent("cs-related-3", "cs-related-container");
       $("#cs-player-container").addClass("largeVideoWrapper");
       this.$wrapper = $("#cs-wrapper");
       this.$site_label = $("#cs-label");
@@ -761,9 +761,28 @@
       this.$site_label.html(label);
       this.$like_button.text("Like");
       this.$like_button.addClass("footer-enabled");
-      this.$related_container.html("Since you liked this, you might also like:");
       this.hide_related();
       this.disable_skip();
+      box = document.createElement('input');
+      box.type = "text";
+      box.id = "cs-search-box";
+      box.name = "q";
+      document.getElementById("cs-search").appendChild(box);
+      $("#cs-search-box").on("keyup", (function(_this) {
+        return function() {
+          var requestURI, text;
+          text = $("#cs-search-box")[0].value;
+          if (text.length > 0) {
+            requestURI = window.gmcs.host + "/search/?q=" + text;
+            return $.getJSON(requestURI, function(videos) {
+              console.log("videos");
+              return _this.show_related(videos, _this.controller.play, "Search results:");
+            });
+          } else {
+            return _this.hide_related();
+          }
+        };
+      })(this));
     }
 
     Overlay.prototype.show = function() {
@@ -814,11 +833,11 @@
       return this.$skip_button.click(func);
     };
 
-    Overlay.prototype.show_related = function(videos, play_func) {
+    Overlay.prototype.show_related = function(videos, play_func, prompt) {
       var div, guid, parent, video, _fn, _i, _len;
       parent = this.$related_container;
       if (videos.length > 0) {
-        parent.html("Since you liked this, you might also like:");
+        parent.html(prompt);
         _fn = (function(_this) {
           return function(video) {
             div.onclick = function() {

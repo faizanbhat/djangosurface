@@ -242,6 +242,7 @@ class SurfaceController
     
   create_overlay:=>
     @overlay = new Overlay(@site_name)
+    @overlay.controller = @
     @overlay.onclose(@minimise)
     @overlay.onlike(@like_video)
     @overlay.set_title(@video.title())
@@ -309,7 +310,7 @@ class SurfaceController
     requestURI = window.gmcs.host + "/videos/" + @video.id + "/related/"
     window.gmcs.log requestURI
     $.getJSON(requestURI, (videos)=>
-      @overlay.show_related(videos, @play)
+      @overlay.show_related(videos, @play, "Since you liked this, you might also like:")
     )
     
   minimise:() =>      
@@ -460,6 +461,7 @@ class Pixel
       
 class Overlay
   constructor:(label)->
+    @controller = null
     @dom = window.gmcs.utils.domManager
     @set_blur()
     s = document.createElement("div")
@@ -472,6 +474,7 @@ class Overlay
     @dom.appendDivToParent("cs-main","cs-wrapper")
     @dom.appendDivToParent("cs-info-wrapper","cs-main")
     @dom.appendDivToParent("cs-top-line","cs-info-wrapper")
+    @dom.appendDivToParent("cs-search","cs-top-line")
     @dom.appendDivToParent("cs-rule","cs-info-wrapper")
     @dom.appendDivToParent("cs-bottom-line","cs-info-wrapper")
     @dom.appendDivToParent("cs-label","cs-top-line")
@@ -482,9 +485,6 @@ class Overlay
     @dom.appendDivToParent("cs-footer-skip","cs-footer")
     @dom.appendDivToParent("cs-footer-like","cs-footer")
     @dom.appendDivToParent("cs-related-container","cs-player-wrapper")
-    @dom.appendDivToParent("cs-related-1","cs-related-container")
-    @dom.appendDivToParent("cs-related-2","cs-related-container")
-    @dom.appendDivToParent("cs-related-3","cs-related-container")
     $("#cs-player-container").addClass("largeVideoWrapper") 
     
     @$wrapper = $("#cs-wrapper")
@@ -499,10 +499,26 @@ class Overlay
     @$site_label.html(label)
     @$like_button.text("Like")
     @$like_button.addClass("footer-enabled")
-    @$related_container.html("Since you liked this, you might also like:")
     
     @hide_related()
     @disable_skip()
+    
+    box = document.createElement('input')
+    box.type = "text"
+    box.id = "cs-search-box"
+    box.name = "q"
+    document.getElementById("cs-search").appendChild(box)
+    $("#cs-search-box").on("keyup", =>
+      text = $("#cs-search-box")[0].value
+      if text.length > 0
+        requestURI = window.gmcs.host + "/search/?q=" + text
+        $.getJSON(requestURI, (videos)=>
+          console.log "videos"
+          @show_related(videos,@controller.play, "Search results:")
+        )
+      else 
+        @hide_related()
+    )
     
   show: =>
     @set_blur()
@@ -542,11 +558,11 @@ class Overlay
   onskip:(func)=>
     @$skip_button.click(func)
   
-  show_related:(videos,play_func)=>
+  show_related:(videos,play_func,prompt)=>
     parent = @$related_container  
     if videos.length > 0
   
-      parent.html("Since you liked this, you might also like:")
+      parent.html(prompt)
   
       for video in videos
         guid = window.gmcs.utils.guid()
