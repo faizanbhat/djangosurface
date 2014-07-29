@@ -23,7 +23,8 @@ INSTALLED_APPS = (
     'csusers',
     'taggit',
     'recommender',
-    'south'
+    'south',
+    'django_extensions',
 )
 
 CORS_ALLOW_HEADERS = (
@@ -61,11 +62,11 @@ WSGI_APPLICATION = 'wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'djangodb',
-        'USER': 'django',
-        'PASSWORD': 'django123',
-        'HOST': 'localhost',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'database.db',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
     }
 }
 
