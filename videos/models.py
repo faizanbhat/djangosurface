@@ -11,7 +11,7 @@ class Site(models.Model):
 class Video(models.Model):
     src = models.CharField(max_length=300,unique=True)
     title = models.CharField(max_length=500, db_index=True)
-    description = models.CharField(max_length=1000)
+    description = models.CharField(max_length=2000)
     thumb_src = models.CharField(max_length=300)
     site = models.ForeignKey(Site,blank=True,db_index=True,on_delete=models.CASCADE)
     tags = TaggableManager()
