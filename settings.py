@@ -42,13 +42,8 @@ INSTALLED_APPS = (
     'corsheaders',
     'csusers',
     'taggit',
-    'recommender',
-    'south'
+    'recommender'
 )
-
-SOUTH_MIGRATION_MODULES = {
-    'taggit': 'taggit.south_migrations',
-}
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',

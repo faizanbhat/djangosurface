@@ -1,6 +1,5 @@
 Django
 PyYAML
-South
 anyjson
 billiard
 dj-database-url
