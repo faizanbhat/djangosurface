@@ -1,10 +1,8 @@
 from django.shortcuts import render
-from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.core.context_processors import csrf
 from django.forms import ModelForm
 from videos.models import Sitemap, Video, Site, Similarity
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import xml.etree.ElementTree as ET
 import nltk
 from nltk.corpus import stopwords
@@ -37,7 +35,7 @@ def add(request):
         form = SitemapForm(request.POST)
         if form.is_valid():
             try:
-                r = urllib2.urlopen(request.POST['url'])
+                r = urllib.request.urlopen(request.POST['url'])
                 xml = r.read()
                 sitemap = form.save()
                 urlset = ET.fromstring(xml)
@@ -54,7 +52,7 @@ def add(request):
                         v = Video(src=video["content_loc"],thumb_src=video["thumbnail_loc"],title=video["title"],description=video["description"],site=sitemap.site)
                         try:
                             v.save()
-                            tokens = word_tokenize(video["title"])
+                            tokens = word_tokenize(video["description"])
                             filtered_words = [w for w in tokens if not w in stopwords]
                             for w in filtered_words:
                                 v.tags.add(w)
@@ -63,16 +61,16 @@ def add(request):
                             pass
 
             except Exception as e:
-                return render_to_response('../templates/error.html', {'error':e.message})
+                return render(request,'../templates/error.html', {'error':e.message})
             
-            return render_to_response('../templates/complete.html', {'videos':videos})
+            return render(request,'../templates/complete.html', {'videos':videos})
         else:
-            return render_to_response('../templates/error.html', {'error':'URL has already been indexed.'})
+            return render(request,'../templates/error.html', {'error':'URL has already been indexed.'})
         
     form = SitemapForm()
     c = {'form':form}
-    c.update(csrf(request))
-    return render_to_response('../templates/add.html', c)
+    c.update(request)
+    return render(request,'../templates/add.html', c)
 
 def related(request,video_id):
     video = get_object_or_404(Video, pk=int(video_id))

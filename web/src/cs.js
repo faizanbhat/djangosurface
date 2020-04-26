@@ -9,7 +9,7 @@
   $(function() {
     window.gmcs = {};
     window.gmcs.site_id = "1";
-    window.gmcs.host = "https://damp-ravine-5659.herokuapp.com/";
+    window.gmcs.host = "http://localhost:8000";
     window.gmcs.debug = true;
     window.gmcs.log = function(obj) {
       if (window.gmcs.debug) {
@@ -227,7 +227,7 @@
       s = vf.src();
       return this.elem.src([
         {
-          type: "video/flv",
+          type: "video/mp4",
           src: s
         }
       ]);

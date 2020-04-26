@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from csusers.models import CSUser as User
 
-import utils
+from recommender import utils
 
 class RecommenderManager(models.Manager):
 

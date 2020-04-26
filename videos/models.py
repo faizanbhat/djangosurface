@@ -13,7 +13,7 @@ class Video(models.Model):
     title = models.CharField(max_length=500, db_index=True)
     description = models.CharField(max_length=1000)
     thumb_src = models.CharField(max_length=300)
-    site = models.ForeignKey(Site,blank=True,db_index=True)
+    site = models.ForeignKey(Site,blank=True,db_index=True,on_delete=models.CASCADE)
     tags = TaggableManager()
     
     def __str__(self):
@@ -26,4 +26,4 @@ class Similarity(models.Model):
       
 class Sitemap(models.Model):
      url = models.URLField(max_length=200,unique=True)
-     site = models.ForeignKey(Site)
+     site = models.ForeignKey(Site,on_delete=models.CASCADE)

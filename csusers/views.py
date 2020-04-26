@@ -1,8 +1,4 @@
-from django.shortcuts import render
-from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.core.context_processors import csrf
-from django.shortcuts import render
 from csusers.models import CSUser, PlaylistVideo, CSUserPlaylist
 from videos.models import Site, Video, Similarity
 from django.shortcuts import get_object_or_404
